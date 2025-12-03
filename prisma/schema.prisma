@@ -1,0 +1,428 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model address {
+  address_id               Int           @id @default(autoincrement())
+  street_house_building_no String?       @db.VarChar(255)
+  barangay_id              Int?
+  user_id                  Int
+  is_default               Boolean?      @default(false)
+  barangay                 barangay?     @relation(fields: [barangay_id], references: [barangay_id], onDelete: NoAction, onUpdate: NoAction)
+  user_employee            user_employee @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_address_user")
+  customer                 customer[]
+  delivery                 delivery[]
+}
+
+model auth_group {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @unique @db.VarChar(150)
+  auth_group_permissions auth_group_permissions[]
+
+  @@index([name], map: "auth_group_name_a6ea08ec_like")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_group_permissions {
+  id              BigInt          @id @default(autoincrement())
+  group_id        Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissio_permission_id_84c5c92e_fk_auth_perm")
+  auth_group      auth_group      @relation(fields: [group_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_group_permissions_group_id_b120cbf9_fk_auth_group_id")
+
+  @@unique([group_id, permission_id], map: "auth_group_permissions_group_id_permission_id_0cd325b0_uniq")
+  @@index([group_id], map: "auth_group_permissions_group_id_b120cbf9")
+  @@index([permission_id], map: "auth_group_permissions_permission_id_84c5c92e")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model auth_permission {
+  id                     Int                      @id @default(autoincrement())
+  name                   String                   @db.VarChar(255)
+  content_type_id        Int
+  codename               String                   @db.VarChar(100)
+  auth_group_permissions auth_group_permissions[]
+  django_content_type    django_content_type      @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "auth_permission_content_type_id_2f476e4b_fk_django_co")
+
+  @@unique([content_type_id, codename], map: "auth_permission_content_type_id_codename_01ab375a_uniq")
+  @@index([content_type_id], map: "auth_permission_content_type_id_2f476e4b")
+}
+
+model barangay {
+  barangay_id     Int           @id @default(autoincrement())
+  name            String        @db.VarChar(255)
+  municipality_id Int?
+  address         address[]
+  municipality    municipality? @relation(fields: [municipality_id], references: [municipality_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model brand {
+  brand_id    Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  product     product[]
+}
+
+model car_models {
+  model_id                  Int                         @id @default(autoincrement())
+  car_id                    Int
+  model_name                String                      @db.VarChar(255)
+  cars                      cars                        @relation(fields: [car_id], references: [car_id], onDelete: NoAction, onUpdate: NoAction)
+  product_car_compatibility product_car_compatibility[]
+
+  @@unique([car_id, model_name])
+}
+
+model cars {
+  car_id     Int          @id @default(autoincrement())
+  make       String       @unique @db.VarChar(255)
+  car_models car_models[]
+}
+
+model category {
+  category_id Int       @id @default(autoincrement())
+  name        String    @db.VarChar(255)
+  description String?   @db.VarChar(255)
+  product     product[]
+}
+
+model condition_item {
+  condition_id   Int              @id @default(autoincrement())
+  name           String           @db.VarChar(255)
+  supply_details supply_details[]
+}
+
+model courier {
+  courier_id    Int        @id @default(autoincrement())
+  name          String     @db.VarChar(255)
+  base_rate     Decimal?   @default(50.00) @db.Decimal(10, 2)
+  rate_per_kg   Decimal?   @default(30.00) @db.Decimal(10, 2)
+  max_weight    Decimal?   @db.Decimal(10, 2)
+  delivery_time String?    @db.VarChar(100)
+  delivery      delivery[]
+}
+
+model customer {
+  customer_id    Int      @id @default(autoincrement())
+  name           String   @db.VarChar(255)
+  contact_number String?  @db.VarChar(20)
+  address_id     Int?
+  address        address? @relation(fields: [address_id], references: [address_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model delivery {
+  delivery_id       Int                @id @default(autoincrement())
+  sale_id           Int?
+  courier_id        Int?
+  address_id        Int?
+  delivery_fee      Int?
+  overall_total     Int
+  date              DateTime?          @db.Date
+  status_id         Int?
+  tracking_number   String?            @db.VarChar(255)
+  address           address?           @relation(fields: [address_id], references: [address_id], onDelete: NoAction, onUpdate: NoAction)
+  courier           courier?           @relation(fields: [courier_id], references: [courier_id], onDelete: NoAction, onUpdate: NoAction)
+  sale              sale?              @relation(fields: [sale_id], references: [sale_id], onDelete: NoAction, onUpdate: NoAction)
+  delivery_statuses delivery_statuses? @relation(fields: [status_id], references: [status_id], onDelete: Restrict, onUpdate: NoAction, map: "fk_delivery_current_status")
+  delivery_history  delivery_history[]
+}
+
+model delivery_history {
+  history_id        BigInt            @id @default(autoincrement())
+  delivery_id       Int
+  status_id         Int
+  timestamp_changed DateTime?         @default(now()) @db.Timestamptz(6)
+  user_id           Int?
+  location_details  String?           @db.VarChar(255)
+  delivery          delivery          @relation(fields: [delivery_id], references: [delivery_id], onDelete: Cascade, onUpdate: NoAction)
+  delivery_statuses delivery_statuses @relation(fields: [status_id], references: [status_id], onUpdate: NoAction)
+  user_employee     user_employee?    @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([delivery_id, timestamp_changed(sort: Desc)], map: "idx_delivery_history_delivery_ts")
+}
+
+model delivery_statuses {
+  status_id        Int                @id @default(autoincrement())
+  status_name      String             @unique @db.VarChar(100)
+  description      String?
+  sequence_order   Int
+  delivery         delivery[]
+  delivery_history delivery_history[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model django_admin_log {
+  id                  Int                  @id @default(autoincrement())
+  action_time         DateTime             @db.Timestamptz(6)
+  object_id           String?
+  object_repr         String               @db.VarChar(200)
+  action_flag         Int                  @db.SmallInt
+  change_message      String
+  content_type_id     Int?
+  user_id             Int
+  django_content_type django_content_type? @relation(fields: [content_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "django_admin_log_content_type_id_c4bce8eb_fk_django_co")
+
+  @@index([content_type_id], map: "django_admin_log_content_type_id_c4bce8eb")
+  @@index([user_id], map: "django_admin_log_user_id_c564eba6")
+}
+
+model django_content_type {
+  id               Int                @id @default(autoincrement())
+  app_label        String             @db.VarChar(100)
+  model            String             @db.VarChar(100)
+  auth_permission  auth_permission[]
+  django_admin_log django_admin_log[]
+
+  @@unique([app_label, model], map: "django_content_type_app_label_model_76bd3d3b_uniq")
+}
+
+model django_migrations {
+  id      BigInt   @id @default(autoincrement())
+  app     String   @db.VarChar(255)
+  name    String   @db.VarChar(255)
+  applied DateTime @db.Timestamptz(6)
+}
+
+model django_session {
+  session_key  String   @id @db.VarChar(40)
+  session_data String
+  expire_date  DateTime @db.Timestamptz(6)
+
+  @@index([expire_date], map: "django_session_expire_date_a5c62663")
+  @@index([session_key], map: "django_session_session_key_c0390e0f_like")
+}
+
+model merchant {
+  merchant_id  Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  mode_payment mode_payment[]
+}
+
+model mode_payment {
+  payment_id  Int       @id @default(autoincrement())
+  merchant_id Int?
+  sale_id     Int?
+  ref         String?   @db.VarChar(255)
+  merchant    merchant? @relation(fields: [merchant_id], references: [merchant_id], onDelete: NoAction, onUpdate: NoAction)
+  sale        sale?     @relation(fields: [sale_id], references: [sale_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model municipality {
+  municipality_id Int        @id @default(autoincrement())
+  name            String     @db.VarChar(255)
+  postal_code     String?    @db.VarChar(20)
+  province_id     Int?
+  barangay        barangay[]
+  province        province?  @relation(fields: [province_id], references: [province_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model otp_email_emaildevice {
+  id                           Int       @id @default(autoincrement())
+  name                         String    @db.VarChar(64)
+  confirmed                    Boolean
+  user_id                      Int
+  token                        String?   @db.VarChar(16)
+  valid_until                  DateTime  @db.Timestamptz(6)
+  email                        String?   @db.VarChar(254)
+  throttling_failure_count     Int
+  throttling_failure_timestamp DateTime? @db.Timestamptz(6)
+  last_generated_timestamp     DateTime? @db.Timestamptz(6)
+  created_at                   DateTime? @db.Timestamptz(6)
+  last_used_at                 DateTime? @db.Timestamptz(6)
+
+  @@index([user_id], map: "otp_email_emaildevice_user_id_0215c274")
+}
+
+model product {
+  product_id                Int                         @id @default(autoincrement())
+  name                      String                      @db.VarChar(255)
+  description               String?                     @db.VarChar(255)
+  brand_id                  Int?
+  category_id               Int?
+  purchase_price            Int?
+  selling_price             Int?
+  quantity                  Int?
+  weight                    Float?                      @default(0.5)
+  brand                     brand?                      @relation(fields: [brand_id], references: [brand_id], onDelete: NoAction, onUpdate: NoAction)
+  category                  category?                   @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction)
+  product_car_compatibility product_car_compatibility[]
+  product_image             product_image[]
+  return_item               return_item[]
+  sale_details              sale_details[]
+  supply_details            supply_details[]
+  user_cart                 user_cart[]
+}
+
+model product_car_compatibility {
+  product_id                                                           Int
+  model_id                                                             Int
+  start_year_id                                                        Int
+  end_year_id                                                          Int
+  id                                                                   Int           @id @default(autoincrement())
+  product_years_product_car_compatibility_end_year_idToproduct_years   product_years @relation("product_car_compatibility_end_year_idToproduct_years", fields: [end_year_id], references: [year_id], onDelete: NoAction, onUpdate: NoAction)
+  car_models                                                           car_models    @relation(fields: [model_id], references: [model_id], onDelete: NoAction, onUpdate: NoAction)
+  product                                                              product       @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction)
+  product_years_product_car_compatibility_start_year_idToproduct_years product_years @relation("product_car_compatibility_start_year_idToproduct_years", fields: [start_year_id], references: [year_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model product_image {
+  id         Int     @id @default(autoincrement())
+  product_id Int
+  image      String  @db.VarChar(100)
+  product    product @relation(fields: [product_id], references: [product_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_product")
+}
+
+model product_years {
+  year_id                                                                          Int                         @id @default(autoincrement())
+  year                                                                             Int                         @unique
+  product_car_compatibility_product_car_compatibility_end_year_idToproduct_years   product_car_compatibility[] @relation("product_car_compatibility_end_year_idToproduct_years")
+  product_car_compatibility_product_car_compatibility_start_year_idToproduct_years product_car_compatibility[] @relation("product_car_compatibility_start_year_idToproduct_years")
+}
+
+model province {
+  province_id  Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  region_id    Int?
+  municipality municipality[]
+  region       region?        @relation(fields: [region_id], references: [region_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model region {
+  region_id Int        @id @default(autoincrement())
+  name      String     @db.VarChar(255)
+  province  province[]
+}
+
+model return_item {
+  return_id  Int       @id @default(autoincrement())
+  sale_id    Int?
+  product_id Int?
+  quantity   Int?
+  reason     String?   @db.VarChar(255)
+  date       DateTime? @db.Date
+  product    product?  @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction)
+  sale       sale?     @relation(fields: [sale_id], references: [sale_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model role_type {
+  role_id       Int             @id @default(autoincrement())
+  title         String          @db.VarChar(100)
+  user_employee user_employee[]
+}
+
+model sale {
+  sale_id      Int            @id @default(autoincrement())
+  user_id      Int?
+  total_amount Int?
+  payment_type String?        @db.VarChar(255)
+  date         DateTime?      @db.Date
+  delivery     delivery[]
+  mode_payment mode_payment[]
+  return_item  return_item[]
+  sale_details sale_details[]
+}
+
+model sale_details {
+  sale_detail_id Int      @id @default(autoincrement())
+  sale_id        Int?
+  product_id     Int?
+  quantity       Int?
+  selling_price  Int?
+  sub_total      Int?
+  product        product? @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction)
+  sale           sale?    @relation(fields: [sale_id], references: [sale_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model supplier {
+  supplier_id    Int              @id @default(autoincrement())
+  name           String           @db.VarChar(255)
+  contact_number String?          @db.VarChar(20)
+  address        String?          @db.VarChar(255)
+  supplier_email supplier_email[]
+  supply         supply[]
+}
+
+model supplier_email {
+  email_id    Int       @id @default(autoincrement())
+  email       String?   @db.VarChar(255)
+  supplier_id Int?
+  supplier    supplier? @relation(fields: [supplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model supply {
+  supply_id      Int              @id @default(autoincrement())
+  user_id        Int?
+  supplier_id    Int?
+  total_cost     Decimal?         @db.Decimal(10, 2)
+  receipt_number String
+  date           DateTime?        @db.Date
+  supplier       supplier?        @relation(fields: [supplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction)
+  supply_details supply_details[]
+}
+
+model supply_details {
+  id             Int             @id @default(autoincrement())
+  supply_id      Int?
+  product_id     Int?
+  quantity       Int?
+  price          Int?
+  sub_total      Decimal?        @db.Decimal(10, 2)
+  condition_id   Int?
+  condition_item condition_item? @relation(fields: [condition_id], references: [condition_id], onDelete: NoAction, onUpdate: NoAction)
+  product        product?        @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction)
+  supply         supply?         @relation(fields: [supply_id], references: [supply_id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model user_cart {
+  user_id           Int
+  product_id        Int
+  quantity          Int
+  price_at_addition Decimal       @db.Decimal(10, 2)
+  created_at        DateTime?     @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?     @default(now()) @db.Timestamptz(6)
+  cart_id           Int           @id @default(autoincrement())
+  product           product       @relation(fields: [product_id], references: [product_id], onUpdate: NoAction)
+  user_employee     user_employee @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, product_id], map: "user_cart_user_product_unique")
+}
+
+/// This model has constraints using non-default deferring rules and requires additional setup for migrations. Visit https://pris.ly/d/constraint-deferring for more info.
+model user_employee {
+  user_id          Int                @id @default(autoincrement())
+  user_name        String             @db.VarChar(255)
+  username         String             @unique @db.VarChar(150)
+  password         String             @db.VarChar(128)
+  email            String?            @db.VarChar(255)
+  mobile_phone     String?            @db.VarChar(20)
+  role_id          Int
+  profile_picture  String?            @db.VarChar(255)
+  is_superuser     Boolean?           @default(false)
+  last_login       DateTime?          @db.Timestamp(6)
+  contact_type     String?            @default("email") @db.VarChar(10)
+  address          address[]
+  delivery_history delivery_history[]
+  user_cart        user_cart[]
+  role_type        role_type          @relation(fields: [role_id], references: [role_id], onDelete: NoAction, onUpdate: NoAction, map: "user_employee_role_id_fk")
+}
+
+model user_otp {
+  id          Int      @id @default(autoincrement())
+  code        String   @db.VarChar(6)
+  method      String   @db.VarChar(10)
+  confirmed   Boolean
+  used        Boolean
+  valid_until DateTime @db.Timestamptz(6)
+  created_at  DateTime @db.Timestamptz(6)
+  user_id     Int
+
+  @@index([user_id], map: "user_otp_user_id_c742b812")
+}
