@@ -4,17 +4,17 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, ShoppingCart, User } from "lucide-react";
-import Logo from "../assets/Arrival.png";
+import Logo from "@/assets/toyozu-logo.png";
 
-import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/app/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 
 const CART_STORAGE_KEY = "cartItems";
 
@@ -30,29 +30,78 @@ function getCartCountFromStorage(): number {
   }
 }
 
+function readUserIdFromStorage(): number {
+  if (typeof window === "undefined") return NaN;
+  try {
+    const raw = localStorage.getItem("user_id");
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : NaN;
+  } catch {
+    return NaN;
+  }
+}
+
 export default function Header() {
   const router = useRouter();
   const [cartCount, setCartCount] = useState<number>(0);
   const [searchValue, setSearchValue] = useState<string>("");
+  const [auth, setAuth] = useState<{ isLoggedIn: boolean; roleId: string | null }>({
+    isLoggedIn: false,
+    roleId: null,
+  });
+
+  const syncAuthFromStorage = () => {
+    if (typeof window === "undefined") return;
+    try {
+      setAuth({
+        isLoggedIn: !!localStorage.getItem("access_token"),
+        roleId: localStorage.getItem("role_id"),
+      });
+    } catch {
+      setAuth({ isLoggedIn: false, roleId: null });
+    }
+  };
 
   useEffect(() => {
-    const sync = () => setCartCount(getCartCountFromStorage());
-    sync();
+    const sync = async () => {
+      const userId = readUserIdFromStorage();
+      if (Number.isFinite(userId)) {
+        try {
+          const res = await fetch(`/api/cart?userId=${encodeURIComponent(String(userId))}`, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+            cache: "no-store",
+          });
+          const json = (await res.json()) as { data?: { items?: unknown[] } };
+          if (res.ok && json.data && Array.isArray(json.data.items)) {
+            setCartCount(json.data.items.length);
+            return;
+          }
+        } catch {
+          // fall back below
+        }
+      }
+
+      setCartCount(getCartCountFromStorage());
+    };
+
+    void sync();
+
+    // Important for SSR hydration: read localStorage only after mount.
+    syncAuthFromStorage();
 
     const onStorage = (e: StorageEvent) => {
-      if (e.key === CART_STORAGE_KEY) sync();
+      if (e.key === CART_STORAGE_KEY || e.key === "user_id") void sync();
+      if (e.key === "access_token" || e.key === "role_id") syncAuthFromStorage();
     };
 
     window.addEventListener("storage", onStorage);
-    window.addEventListener("cart:updated", sync as EventListener);
+    window.addEventListener("cart:updated", (() => void sync()) as EventListener);
     return () => {
       window.removeEventListener("storage", onStorage);
-      window.removeEventListener("cart:updated", sync as EventListener);
+      window.removeEventListener("cart:updated", (() => void sync()) as EventListener);
     };
   }, []);
-
-  const isLoggedIn = typeof window !== "undefined" && !!localStorage.getItem("access_token");
-  const roleid = typeof window !== "undefined" ? localStorage.getItem("role_id") : null;
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
@@ -105,7 +154,7 @@ export default function Header() {
 
       {/* Right Side */}
       <div className="flex items-center space-x-6 relative justify-center flex-1 gap-10 ">
-        {isLoggedIn && (
+        {auth.isLoggedIn && (
           <div className="relative">
             <Button
               type="button"
@@ -113,7 +162,7 @@ export default function Header() {
               size="icon"
               onClick={() => router.push("/cart")}
               aria-label="Cart"
-              className="relative"
+              className="relative cursor-pointer"
             >
               <ShoppingCart className="w-6 h-6" />
             </Button>
@@ -124,18 +173,18 @@ export default function Header() {
         )}
 
         {/* User Menu */}
-        {isLoggedIn ? (
+        {auth.isLoggedIn ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="ghost" size="icon" aria-label="User menu">
-                <User className="w-7 h-7" />
+              <Button type="button" variant="ghost" size="icon" aria-label="User menu" className="cursor-pointer ">
+                <User className="w-7 h-7 " />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={() => router.push("/user-dashboard")}>Account</DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push("/unauthorized")}>Purchases</DropdownMenuItem>
 
-              {(roleid === "1" || roleid === "2" || roleid === "3") && (
+              {(auth.roleId === "0" || auth.roleId === "1" || auth.roleId === "2" || auth.roleId === "3") && (
                 <DropdownMenuItem onClick={() => router.push("/admin-dashboard")}>
                   Admin Dashboard
                 </DropdownMenuItem>

@@ -1,3 +1,3 @@
 "use client";
 
-export { default } from "../user-pages/check-out";
+export { default } from "../../user-pages/check-out";
