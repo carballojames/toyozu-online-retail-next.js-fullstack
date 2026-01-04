@@ -5,31 +5,45 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function isLocalDatabaseUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
 export default async function Home() {
-  const hasDatabaseUrl = Boolean(process.env.DATABASE_URL);
+  const databaseUrl = process.env.DATABASE_URL;
+  const dbIsUsable =
+    Boolean(databaseUrl) &&
+    !(process.env.VERCEL && databaseUrl && isLocalDatabaseUrl(databaseUrl));
 
   let products: any[] = [];
   try {
-    if (!hasDatabaseUrl) {
-      console.warn("DATABASE_URL is not set; rendering home page without products.");
+    if (!dbIsUsable) {
+      console.warn(
+        "DATABASE_URL is missing or points to localhost on Vercel; rendering home page without products.",
+      );
     } else {
-    products = await prisma.product.findMany({
-      select: {
-        product_id: true,
-        name: true,
-        description: true,
-        selling_price: true,
-        quantity: true,
-        brand: { select: { name: true } },
-        product_image: {
-          select: { id: true, image: true, image_mime: true, image_updated_at: true },
-          orderBy: { id: "asc" },
-          take: 1,
+      products = await prisma.product.findMany({
+        select: {
+          product_id: true,
+          name: true,
+          description: true,
+          selling_price: true,
+          quantity: true,
+          brand: { select: { name: true } },
+          product_image: {
+            select: { id: true, image: true, image_mime: true, image_updated_at: true },
+            orderBy: { id: "asc" },
+            take: 1,
+          },
         },
-      },
-      orderBy: { product_id: "desc" },
-      take: 100,
-    });
+        orderBy: { product_id: "desc" },
+        take: 100,
+      });
     }
   } catch (e) {
     // Allows builds (and the page) to render even if the DB isn't reachable yet.

@@ -6,9 +6,25 @@ type LandingPageProps = {
   initialProducts?: ProductCard[];
 };
 
+function isLocalDatabaseUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
 export default async function LandingPage({ initialProducts }: LandingPageProps) {
-  if (!process.env.DATABASE_URL) {
-    console.warn("DATABASE_URL is not set; rendering landing page without DB lookups.");
+  const databaseUrl = process.env.DATABASE_URL;
+  const dbIsUsable =
+    Boolean(databaseUrl) &&
+    !(process.env.VERCEL && databaseUrl && isLocalDatabaseUrl(databaseUrl));
+
+  if (!dbIsUsable) {
+    console.warn(
+      "DATABASE_URL is missing or points to localhost on Vercel; rendering landing page without DB lookups.",
+    );
     return (
       <LandingClient
         initialProducts={initialProducts}

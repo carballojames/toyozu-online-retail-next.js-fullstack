@@ -3,8 +3,32 @@ import { prisma } from "@/lib/prisma";
 
 type LookupType = "supplier" | "brand" | "category" | "condition";
 
+function isLocalDatabaseUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
+function databaseNotConfiguredResponse() {
+  return NextResponse.json(
+    {
+      error:
+        "Database is not configured for deployment. Set DATABASE_URL to a hosted Postgres URL (not localhost).",
+    },
+    { status: 503 },
+  );
+}
+
 export async function GET() {
   try {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl || (process.env.VERCEL && isLocalDatabaseUrl(databaseUrl))) {
+      return databaseNotConfiguredResponse();
+    }
+
     const [suppliers, brands, categories, conditions] = await Promise.all([
       prisma.supplier.findMany({
         select: { name: true },
@@ -39,6 +63,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl || (process.env.VERCEL && isLocalDatabaseUrl(databaseUrl))) {
+      return databaseNotConfiguredResponse();
+    }
+
     const body = (await request.json()) as {
       type?: LookupType;
       name?: string;

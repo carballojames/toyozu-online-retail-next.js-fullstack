@@ -2,8 +2,28 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
+function isLocalDatabaseUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
 export async function GET() {
   try {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl || (process.env.VERCEL && isLocalDatabaseUrl(databaseUrl))) {
+      return NextResponse.json(
+        {
+          error:
+            "Database is not configured for deployment. Set DATABASE_URL to a hosted Postgres URL (not localhost).",
+        },
+        { status: 503 },
+      );
+    }
+
     const products = await prisma.product.findMany({
       select: {
         product_id: true,
@@ -51,7 +71,10 @@ export async function GET() {
 
     return NextResponse.json({ data: withUrls });
   } catch (err) {
-    return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch products" },
+      { status: 500 },
+    );
   }
 }
 
