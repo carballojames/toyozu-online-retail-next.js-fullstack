@@ -3,25 +3,34 @@ import LandingPage from "./landing/landing";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const products = await prisma.product.findMany({
-    select: {
-      product_id: true,
-      name: true,
-      description: true,
-      selling_price: true,
-      quantity: true,
-      brand: { select: { name: true } },
-      product_image: {
-        select: { id: true, image: true, image_mime: true, image_updated_at: true },
-        orderBy: { id: "asc" },
-        take: 1,
+  let products: any[] = [];
+  try {
+    products = await prisma.product.findMany({
+      select: {
+        product_id: true,
+        name: true,
+        description: true,
+        selling_price: true,
+        quantity: true,
+        brand: { select: { name: true } },
+        product_image: {
+          select: { id: true, image: true, image_mime: true, image_updated_at: true },
+          orderBy: { id: "asc" },
+          take: 1,
+        },
       },
-    },
-    orderBy: { product_id: "desc" },
-    take: 100,
-  });
+      orderBy: { product_id: "desc" },
+      take: 100,
+    });
+  } catch (e) {
+    // Allows builds (and the page) to render even if the DB isn't reachable yet.
+    // This commonly happens on deployment when DATABASE_URL isn't configured.
+    console.error("Home page product query failed:", e);
+    products = [];
+  }
 
   const initialProducts = products.map((p) => {
     const first = p.product_image?.[0];
