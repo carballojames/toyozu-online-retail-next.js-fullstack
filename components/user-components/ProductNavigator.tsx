@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
-export default function ProductNavi() {
+export default function ProductNavigator() {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -74,8 +74,8 @@ export default function ProductNavi() {
   };
 
   return (
-    <aside className="w-[230px] flex-shrink-0">
-      <div className="sticky top-24 space-y-6">
+    <aside className="w-[230px] flex-shrink-0  ">
+      <div className="sticky top-24 space-y-2">
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h3 className="font-semibold text-gray-900 mb-4">Price Range</h3>
           <div className="space-y-4">

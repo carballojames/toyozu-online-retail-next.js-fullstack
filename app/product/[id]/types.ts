@@ -36,20 +36,3 @@ export interface ProductCard {
   reviews?: number;
   selling_price: number;
 }
-
-export type ApiProduct = {
-  product_id: number;
-  name: string;
-  description: string | null;
-  selling_price: number | null;
-  quantity: number | null;
-  brand: { name: string } | null;
-  category?: { name: string } | null;
-  product_image?: { image: string }[];
-};
-
-export type ProductGridProps = {
-  initialProducts?: ProductCard[];
-  showMoreButton?: boolean;
-  moreHref?: string;
-};

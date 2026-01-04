@@ -1,6 +1,6 @@
 import Header from "@/app/common/Header";
 import Footer from "@/app/common/Footer";
-import ProductNavi from "@/components/user-components/ProductNavi";
+import ProductNavigator from "@/components/user-components/ProductNavigator";
 import ProductGrid from "@/components/user-components/product-components/ProductGrid";
 import { prisma } from "@/lib/prisma";
 import type { ProductCard } from "@/app/products/[id]/types";
@@ -13,10 +13,20 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-type Props = { searchParams?: Record<string, string | string[]> };
+type Props = { searchParams?: Promise<Record<string, string | string[]>> };
+
+export const runtime = "nodejs";
+
+function normalizePublicImagePath(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  if (trimmed.startsWith("/")) return trimmed;
+  if (trimmed.includes("/")) return `/${trimmed}`;
+  return `/products/${trimmed}`;
+}
 
 export default async function ProductsPage({ searchParams }: Props) {
-  const sp = (await Promise.resolve(searchParams)) ?? {};
+  const sp = (await searchParams) ?? {};
   const page = Number(sp.page ?? 1) || 1;
   const perPage = Number(sp.perPage ?? 50) || 50;
 
@@ -39,6 +49,28 @@ export default async function ProductsPage({ searchParams }: Props) {
     where.selling_price = {};
     if (minPrice !== undefined) where.selling_price.gte = Math.floor(minPrice);
     if (maxPrice !== undefined) where.selling_price.lte = Math.floor(maxPrice);
+  }
+
+  // Vehicle compatibility filtering
+  // Accept either `model_id` or `car_model` as the selected car model id.
+  const rawModelId = sp.model_id ?? sp.car_model;
+  const modelId = rawModelId ? Number(rawModelId) : NaN;
+  const year = sp.year ? Number(sp.year) : NaN;
+
+  if (Number.isFinite(modelId) && modelId > 0) {
+    where.product_car_compatibility = {
+      some: {
+        model_id: modelId,
+        ...(Number.isFinite(year)
+          ? {
+              product_years_product_car_compatibility_start_year_idToproduct_years:
+                { year: { lte: year } },
+              product_years_product_car_compatibility_end_year_idToproduct_years:
+                { year: { gte: year } },
+            }
+          : {}),
+      },
+    };
   }
 
   const total = await prisma.product.count({ where });
@@ -64,6 +96,7 @@ export default async function ProductsPage({ searchParams }: Props) {
       selling_price: true,
       quantity: true,
       brand: { select: { name: true } },
+      category: { select: { name: true } },
       product_image: { select: { id: true, image: true, image_mime: true, image_updated_at: true }, orderBy: { id: "asc" }, take: 1 },
     },
     orderBy: { product_id: "desc" },
@@ -73,8 +106,13 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   const mapped: ProductCard[] = products.map((p) => {
     const first = p.product_image?.[0];
+    const v = first?.image_updated_at ? first.image_updated_at.getTime() : 0;
+    const hasBytes = Boolean(first?.image_mime);
+    const raw = first?.image ?? "";
     const imageUrl = first
-      ? (first.image_mime ? `/api/products/${p.product_id}/images/${first.id}` : first.image)
+      ? hasBytes
+        ? `/api/products/${p.product_id}/images/${first.id}?v=${v}`
+        : normalizePublicImagePath(raw)
       : undefined;
 
     return {
@@ -86,6 +124,7 @@ export default async function ProductsPage({ searchParams }: Props) {
       rating: 0,
       reviews: 0,
       brand_name: p.brand?.name ?? undefined,
+      category_name: p.category?.name ?? undefined,
       images: imageUrl ? [{ image: imageUrl }] : undefined,
     };
   });
@@ -94,11 +133,13 @@ export default async function ProductsPage({ searchParams }: Props) {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="py-8 px-4">
-        <div className="w-[1300px] mx-auto flex gap-6">
-          <ProductNavi />
+      <main className="py-8 px-4 flex flex-row">
+        <div className=" mx-auto flex gap-6">
+          <div>
+            <ProductNavigator />
+          </div>
 
-          <div className="flex-1">
+          <div className="flex-1 w-[1300px]">
             <h1 className="text-2xl font-bold mb-6">Products</h1>
             <ProductGrid initialProducts={mapped} showMoreButton={false} />
 

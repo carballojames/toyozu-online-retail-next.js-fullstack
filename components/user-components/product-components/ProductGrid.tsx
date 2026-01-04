@@ -6,24 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { ProductCard, ProductGridProps, ProductImage, ApiProduct } from "@/app/products/[id]/types";
 
-/**
- * Lightweight typed ProductGrid TSX that uses mock/template data so
- * you can view the frontend without a backend.
- *
- * Drop this file at: components/user-components/ProductGrid.tsx
- *
- * Notes:
- * - Replaces axios/react-router usage with Next Link and local mock data.
- * - Later you can replace the mock loading with a fetch to /api/products.
- */
-
-
-/* -------- Component -------- */
 export default function ProductGrid({
   initialProducts,
   showMoreButton = false,
   moreHref = "/products",
-}: ProductGridProps): JSX.Element {
+  category,
+  columns = 5,
+}: ProductGridProps & { category?: string; columns?: number }): JSX.Element {
   const [products, setProducts] = useState<ProductCard[]>(() => initialProducts ?? []);
   const [loading, setLoading] = useState<boolean>(() => !(initialProducts && initialProducts.length > 0));
   const [visibleCount, setVisibleCount] = useState<number>(20); // how many to show initially
@@ -68,6 +57,7 @@ export default function ProductGrid({
             reviews: 0,
             discount: undefined,
             brand_name: p.brand?.name ?? undefined,
+            category_name: p.category?.name ?? undefined,
             images: firstImage ? [{ image: firstImage }] : undefined,
           };
         });
@@ -99,12 +89,32 @@ export default function ProductGrid({
     );
   }
 
-  const visibleProducts = products.slice(0, visibleCount);
+
+  // If category is provided, filter products by category_name (case-insensitive)
+  const filteredProducts = category
+    ? products.filter(
+        (p) =>
+          (p.category_name ?? "").toLowerCase() === category.toLowerCase(),
+      )
+    : products;
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+
+  const lgColsClass =
+    columns === 4
+      ? "lg:grid-cols-6"
+      : columns === 6
+        ? "lg:grid-cols-6"
+        : columns === 6
+          ? "lg:grid-cols-6"
+          : "lg:grid-cols-6";
 
   return (
     <div className="flex flex-col items-center mb-5">
       {/* Product Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-[1270px]">
+      <div
+        className={`grid grid-cols-2 sm:grid-cols-3 ${lgColsClass} gap-3 w-full max-w-[1270px]`}
+      >
         {visibleProducts.map((product) => {
           const firstImage =
             product.images?.[0]?.image ||
@@ -114,8 +124,8 @@ export default function ProductGrid({
           return (
             <Link
               key={product.product_id}
-              href={`/products/${product.product_id}`}
-              className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow block"
+              href={`/product/${product.product_id}`}
+              className="bg-white rounded-lg shadow-sm border hover:border-primary transition-shadow block"
             >
               {/* Image */}
               <div className="relative justify-center flex bg-white rounded-t-lg w-full h-[220px]">
@@ -177,9 +187,9 @@ export default function ProductGrid({
                 </div>
 
                 {/* Price */}
-                <div className="mb-3">
+                <div className="mb-2">
                   {product.discount && product.discount > 0 ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-7">
                       <Badge variant="primary" className="text-sm font-bold">
                         ₱{(product.selling_price * (1 - product.discount! / 100)).toFixed(2)}
                       </Badge>
@@ -199,8 +209,8 @@ export default function ProductGrid({
         })}
       </div>
 
-      {/* More Button */}
-      {showMoreButton && visibleCount < products.length && (
+      {/* More Button: only show if not filtered and only on landing */}
+      {showMoreButton && !category && visibleCount < products.length && (
         <div className="mt-6">
           <Button asChild variant="outline" className="px-8 py-2 rounded-full font-semibold max-w-[120px]">
             <Link href={moreHref}>More</Link>
