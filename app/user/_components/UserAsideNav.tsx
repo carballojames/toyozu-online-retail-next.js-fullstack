@@ -10,6 +10,7 @@ type NavItem = { id: TabId; label: string; icon: string; href: string };
 const NAV_ITEMS: NavItem[] = [
   { id: "profile", label: "User Details", icon: "👤", href: "/user/profile" },
   { id: "tracking", label: "Order Tracking", icon: "🚚", href: "/user/tracking" },
+  { id: "addresses", label: "My Addresses", icon: "📍", href: "/user/addresses" },
   { id: "orders", label: "Order History", icon: "📦", href: "/user/orders" },
   { id: "vouchers", label: "Vouchers", icon: "🎫", href: "/user/vouchers" },
 ];
