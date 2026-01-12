@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import Header from "../app/common/Header";
-import AddressSection from "@/components/user-components/user-dashboard-components/AddressSection";
 import OrderHistorySection from "@/components/user-components/user-dashboard-components/OrderHistorySection";
 
 import { Badge } from "@/components/ui/badge";
@@ -81,7 +80,7 @@ export default function AccountDashboard() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>("tracking");
-  const [orders] = useState<Order[]>(MOCK_ORDERS);
+  const [orders] = useState<Order[]>([]);
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
   const userId = user?.id;
@@ -198,27 +197,6 @@ export default function AccountDashboard() {
               </div>
             </div>
 
-            <div className="space-y-6">
-              {orders
-                .filter((order) => order.status !== "Delivered")
-                .map((order) => (
-                  <div key={order.id} className="bg-card p-6 rounded-lg border">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h4 className="text-lg font-semibold text-foreground">{order.id}</h4>
-                        <p className="text-muted-foreground">Ordered on {order.date}</p>
-                        <p className="text-sm text-muted-foreground">Tracking: {order.trackingNumber}</p>
-                      </div>
-                      <Badge variant={statusToBadgeVariant(order.status)}>{order.status}</Badge>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">Status:</span>
-                      <span>Order Placed → Processing → In Transit → Delivered</span>
-                    </div>
-                  </div>
-                ))}
-            </div>
             <OrderHistorySection userId={userId} />
           </div>
         )
@@ -266,10 +244,7 @@ export default function AccountDashboard() {
         )
 
       case "addresses":
-        return (
-          <AddressSection />
-
-        )
+        return null
 
       case "orders":
         return (
@@ -299,32 +274,7 @@ export default function AccountDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orders.map((order) => (
-                      <TableRow key={order.id}>
-                        <TableCell>
-                          <input
-                            type="checkbox"
-                            className="h-4 w-4"
-                            checked={selectedOrders.includes(order.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) setSelectedOrders((prev) => [...prev, order.id])
-                              else setSelectedOrders((prev) => prev.filter((id) => id !== order.id))
-                            }}
-                            aria-label={`Select ${order.id}`}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium text-foreground">{order.id}</TableCell>
-                        <TableCell className="text-muted-foreground">{order.date}</TableCell>
-                        <TableCell className="text-foreground">{order.items} items</TableCell>
-                        <TableCell className="text-foreground">{order.total}</TableCell>
-                        <TableCell>
-                          <Badge variant={statusToBadgeVariant(order.status)}>{order.status}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => window.alert("Demo only")}>View</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {/* Order rows removed (mock data) — use OrderHistorySection for real orders */}
                   </TableBody>
                 </Table>
               </div>

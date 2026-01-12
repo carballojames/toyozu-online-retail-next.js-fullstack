@@ -1,0 +1,65 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
+
+import type { AdminTabId, NavItem } from "../../admin-dashboard.types";
+
+function routeForTab(id: AdminTabId): string {
+  switch (id) {
+    case "products":
+      return "/admin-dashboard/product-management";
+    case "inventory":
+      return "/admin-dashboard/inventory-management";
+    case "users":
+      return "/admin-dashboard/user-management";
+    default:
+      return "/admin-dashboard";
+  }
+}
+
+export default function AdminAside({
+  title = "Admin Dashboard",
+  items,
+  activeTab,
+  onTabChange,
+}: {
+  title?: string;
+  items: NavItem[];
+  activeTab: AdminTabId;
+  onTabChange: (tab: AdminTabId) => void;
+}): ReactNode {
+  const pathname = usePathname();
+
+  return (
+    <aside className="w-64 bg-card border-r border-border min-h-[calc(100vh-4rem)] sticky top-16">
+      <nav className="p-6">
+        <div className="mb-4">
+          <div className="text-sm font-semibold text-foreground">{title}</div>
+        </div>
+        <ul className="space-y-2">
+          {items.map((item) => {
+            const href = routeForTab(item.id);
+            const isActive = activeTab === item.id || pathname?.startsWith(href);
+            return (
+              <li key={item.id}>
+                <Link
+                  href={href}
+                  onClick={() => onTabChange(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors font-medium ${
+                    isActive ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                  }`}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <span className="text-lg">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </aside>
+  );
+}

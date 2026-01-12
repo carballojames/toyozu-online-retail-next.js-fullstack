@@ -181,7 +181,7 @@ export default function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
-              <DropdownMenuItem onClick={() => router.push("/user-dashboard")}>Account</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/user")}>Account</DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push("/unauthorized")}>Purchases</DropdownMenuItem>
 
               {(auth.roleId === "0" || auth.roleId === "1" || auth.roleId === "2" || auth.roleId === "3") && (
@@ -198,12 +198,12 @@ export default function Header() {
           </DropdownMenu>
         ) : (
           <div className="flex items-center gap-4">
-            <Button type="button" variant="ghost" onClick={() => router.push("/login")}
+            <Button type="button" variant="ghost" onClick={() => router.push("/auth/login")}
               className="text-sm font-medium">
               Sign In
             </Button>
             <span className="h-6 w-px bg-border" />
-            <Button type="button" variant="ghost" onClick={() => router.push("/register")}
+            <Button type="button" variant="ghost" onClick={() => router.push("/auth/register")}
               className="text-sm font-medium">
               Sign Up
             </Button>

@@ -53,7 +53,8 @@ export default function LoginPage() {
         localStorage.setItem("access_token", "db-session");
         localStorage.setItem("refresh_token", "db-session");
         localStorage.setItem("username", json.data.username);
-        localStorage.setItem("role_id", String(json.data.role_id));
+        const roleId = Number(json.data.role_id);
+        localStorage.setItem("role_id", String(Number.isFinite(roleId) ? roleId : 4));
         localStorage.setItem("user_id", String(json.data.user_id));
       } catch {}
 
