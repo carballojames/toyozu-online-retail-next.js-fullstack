@@ -25,7 +25,7 @@ export default function InventoryPage({
           Restock
         </Button>
       </div>
-      <div className="bg-card border border-border rounded-xl p-4">
+      <div className="bg-surface border border-border rounded-xl p-4">
         <InventoryTable products={products} />
       </div>
     </>

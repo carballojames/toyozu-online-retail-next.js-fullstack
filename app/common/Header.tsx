@@ -120,7 +120,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background border-b border-border px-6 py-3 flex items-center justify-between shadow-sm w-full">
+    <header className="sticky top-0 z-50 bg-surface border-b border-border px-6 py-3 flex items-center justify-between shadow-sm w-full ">
       {/* Logo */}
       <div
         className="flex items-center justify-center cursor-pointer flex-1"
@@ -138,7 +138,7 @@ export default function Header() {
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Search"
-            className="w-full rounded-full pr-10"
+            className="w-full rounded-full pr-10 border-border"
           />
           <Button
             type="submit"
@@ -162,7 +162,7 @@ export default function Header() {
               size="icon"
               onClick={() => router.push("/cart")}
               aria-label="Cart"
-              className="relative cursor-pointer"
+              className="relative cursor-pointer rounded-full"
             >
               <ShoppingCart className="w-6 h-6" />
             </Button>
@@ -176,7 +176,7 @@ export default function Header() {
         {auth.isLoggedIn ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="ghost" size="icon" aria-label="User menu" className="cursor-pointer ">
+              <Button type="button" variant="ghost" size="icon" aria-label="User menu" className="rounded-full">
                 <User className="w-7 h-7 " />
               </Button>
             </DropdownMenuTrigger>

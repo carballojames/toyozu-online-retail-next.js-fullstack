@@ -4,53 +4,54 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #fff8f6;
-  --foreground: #231918;
+  /* Material light (red) scheme (shadcn variable mapping) */
+  --background: #FFF8F6; /* material.light.background */
+  --foreground: #2A1613; /* material.light.onBackground */
 
   /* Updated to match Material Design 3 palette from images - light mode */
   /* Primary colors */
-  --primary: #904b40;
-  --primary-foreground: #ffffff;
-  --primary-container: #ffdad4;
-  --primary-container-foreground: #73342b;
+  --primary: #BD0002; /* material.light.primary (red) */
+  --primary-foreground: #FFFFFF; /* material.light.onPrimary */
+  --primary-container: #EB0505; /* material.light.primaryContainer */
+  --primary-container-foreground: #FFFDFF; /* material.light.onPrimaryContainer */
 
   /* Secondary colors */
-  --secondary: #775651;
-  --secondary-foreground: #ffffff;
-  --secondary-container: #ffdad4;
-  --secondary-container-foreground: #5d3f3b;
+  --secondary: #B32A1D; /* material.light.secondary */
+  --secondary-foreground: #FFFFFF; /* material.light.onSecondary */
+  --secondary-container: #FC5E4B; /* material.light.secondaryContainer */
+  --secondary-container-foreground: #610000; /* material.light.onSecondaryContainer */
 
   /* Tertiary colors */
-  --tertiary: #705c2e;
-  --tertiary-foreground: #ffffff;
-  --tertiary-container: #fbdfa6;
-  --tertiary-container-foreground: #564419;
+  --tertiary: #805400; /* material.light.tertiary */
+  --tertiary-foreground: #FFFFFF; /* material.light.onTertiary */
+  --tertiary-container: #A16A00; /* material.light.tertiaryContainer */
+  --tertiary-container-foreground: #FFFDFF; /* material.light.onTertiaryContainer */
 
   /* Error colors */
-  --error: #ba1a1a;
-  --error-foreground: #ffffff;
-  --error-container: #ffdad6;
-  --error-container-foreground: #93000a;
+  --error: #BA1A1A; /* material.light.error */
+  --error-foreground: #FFFFFF; /* material.light.onError */
+  --error-container: #FFDAD6; /* material.light.errorContainer */
+  --error-container-foreground: #93000A; /* material.light.onErrorContainer */
 
   /* Surface colors */
-  --surface: #fff8f6;
-  --surface-foreground: #231918;
-  --surface-variant: #f5ddda;
-  --surface-variant-foreground: #534341;
+  --surface: #FFF8F6; /* material.light.surface */
+  --surface-foreground: #2A1613; /* material.light.onSurface */
+  --surface-variant: #FFDAD4; /* material.light.surfaceVariant */
+  --surface-variant-foreground: #5F3F3A; /* material.light.onSurfaceVariant */
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --card: #FFE9E6; /* material.light.surfaceContainer */
+  --card-foreground: #2A1613; /* use onSurface */
+  --popover: #FFF8F6; /* same as surface */
+  --popover-foreground: #2A1613;
+  --muted: #FFF0EE; /* material.light.surfaceContainerLow */
+  --muted-foreground: #5F3F3A; /* material.light.onSurfaceVariant */
+  --accent: #BD0002; /* match primary (red) */
+  --accent-foreground: #FFFFFF;
+  --destructive: #BA1A1A;
+  --destructive-foreground: #FFFFFF;
+  --border: #946E68; /* material.light.outline */
+  --input: #E9BCB5; /* material.light.outlineVariant */
+  --ring: #FFB4A8; /* material.light.inversePrimary / primaryFixedDim */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);

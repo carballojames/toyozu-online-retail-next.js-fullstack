@@ -24,7 +24,7 @@ export default function ProductsTable({
   emptyMessage = "No products found.",
 }: Props) {
   return (
-    <div className="bg-card border border-border rounded-xl p-4">
+    <div className="">
       <Table>
         <TableHeader>
           <TableRow>

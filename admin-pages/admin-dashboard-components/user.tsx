@@ -36,33 +36,32 @@ export default function UserPage({
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-end">
-        <div className="flex-1 space-y-2">
-          <div className="text-sm font-medium text-foreground">Search</div>
-          <Input
-            ref={userSearchInputRef}
-            value={userQuery}
-            onChange={(e) => onUserQueryChange(e.target.value)}
-            placeholder="Search by username, name, or email"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={onSearch} disabled={isUsersLoading}>
-            Search
-          </Button>
-          <Button variant="outline" onClick={onReset} disabled={isUsersLoading}>
-            Reset
-          </Button>
-        </div>
-      </div>
 
       {usersError ? (
-        <div className="bg-card border border-border rounded-xl p-4 text-sm text-destructive">
+        <div className="bg-surface border border-border rounded-xl p-4 text-sm text-destructive">
           {usersError}
         </div>
       ) : null}
 
-      <div className="bg-card border border-border rounded-xl p-4">
+      <div className="bg-surface border border-border rounded-xl p-4">
+         <div className="bg-surface flex flex-col md:flex-row gap-3 items-stretch md:items-end mb-4">
+            <div className="flex-1 space-y-2">
+              <Input
+                ref={userSearchInputRef}
+                value={userQuery}
+                onChange={(e) => onUserQueryChange(e.target.value)}
+                placeholder="Search by username, name, or email"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={onSearch} disabled={isUsersLoading}>
+                Search
+              </Button>
+              <Button variant="outline" onClick={onReset} disabled={isUsersLoading}>
+                Reset
+              </Button>
+            </div>
+          </div>
         {isUsersLoading ? (
           <div className="text-sm text-muted-foreground">Loading users…</div>
         ) : (

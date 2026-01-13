@@ -241,10 +241,10 @@ export default function AdminDashboardClient({
 
   if (!allowed) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-primary-background">
         <AdminHeader />
         <div className="max-w-5xl mx-auto px-4 mt-10">
-          <div className="bg-card border border-border rounded-xl p-6 space-y-3">
+          <div className="bg-surface border border-border rounded-xl p-6 space-y-3">
             <div className="text-xl font-semibold text-foreground">Unauthorized</div>
             <div className="text-sm text-muted-foreground">You do not have access to the admin dashboard.</div>
             <div className="flex gap-2">
@@ -260,13 +260,16 @@ export default function AdminDashboardClient({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <AdminHeader
-        onSearchClick={() => {
-          setActiveTab("users");
-          requestAnimationFrame(() => userSearchInputRef.current?.focus());
-        }}
-      />
+    <div className="min-h-screen bg-primary-background flex">
+      <AdminAside items={navItems} activeTab={activeTab} onTabChange={setActiveTab} />
+
+      <div className="flex-1 min-w-0 flex flex-col">
+        <AdminHeader
+          onSearchClick={() => {
+            setActiveTab("users");
+            requestAnimationFrame(() => userSearchInputRef.current?.focus());
+          }}
+        />
 
       <AddProductModal
         open={isAddProductOpen}
@@ -299,9 +302,6 @@ export default function AdminDashboardClient({
           void loadUsers(userQuery);
         }}
       />
-
-      <div className="flex w-full">
-        <AdminAside items={navItems} activeTab={activeTab} onTabChange={setActiveTab} />
 
         <main className="flex-1 p-8 space-y-6">
           {activeTab === "products" ? (

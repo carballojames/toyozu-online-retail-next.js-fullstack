@@ -5,7 +5,7 @@ export default function Footer(): JSX.Element {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-primary-container text-black mt-auto">
+    <footer className="w-full bg-surface-variant text-black mt-auto">
       {/* Main Footer Content */}
       <div className="px-8 py-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">

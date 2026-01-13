@@ -131,30 +131,30 @@ export default function ProductDetailClient({
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-surface text-foreground">
       <Header />
       {/* Breadcrumb */}
-      <div className="w-[1300px] mx-auto px-4 mt-4 mb-4">
-        <nav className="text-sm text-muted-foreground" aria-label="Breadcrumb">
+      <div className="w-[1300px] mx-auto px-4 mt-20 mb-4">
+        <nav className="text-sm text-foreground" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li>
               <span className="text-primary hover:underline cursor-pointer">
                 Home
               </span>
             </li>
-            <li className="text-muted-foreground">›</li>
+            <li className="text-foreground">›</li>
             <li>
               <span className="text-primary hover:underline cursor-pointer">
                 {product.category_name ?? "Products"}
               </span>
             </li>
-            <li className="text-muted-foreground">›</li>
+            <li className="text-foreground">›</li>
             <li>
               <span className="text-primary hover:underline cursor-pointer">
                 {product.brand_name ?? "Brand"}
               </span>
             </li>
-            <li className="text-muted-foreground">›</li>
+            <li className="text-foreground">›</li>
             <li>
               <span className="text-foreground font-medium">{product.name}</span>
             </li>
@@ -163,7 +163,7 @@ export default function ProductDetailClient({
       </div>
 
       <div className="w-[1300px] mx-auto px-4 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-card p-6 rounded-lg shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-surface p-6 rounded-lg shadow-sm">
           {/* Left: Images */}
           <div className="space-y-4">
             <div className="relative overflow-hidden rounded-lg flex items-center justify-center w-[500px] h-[400px]">

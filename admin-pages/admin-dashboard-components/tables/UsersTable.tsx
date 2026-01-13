@@ -35,7 +35,7 @@ function roleLabel(roleId: number): string {
 
 export default function UsersTable({ users, onRowClick }: Props) {
   return (
-    <div className="bg-card border border-border rounded-xl p-4">
+    <div className="">
       <Table>
         <TableHeader>
           <TableRow>

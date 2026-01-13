@@ -125,10 +125,10 @@ export default function ProductGrid({
             <Link
               key={product.product_id}
               href={`/product/${product.product_id}`}
-              className="bg-white rounded-lg shadow-sm border hover:border-primary transition-shadow block"
+              className="bg-surface rounded-lg shadow-sm border hover:border-primary transition-shadow block"
             >
               {/* Image */}
-              <div className="relative justify-center flex bg-white rounded-t-lg w-full h-[220px]">
+              <div className="relative justify-center flex bg-transparent rounded-t-lg w-full h-[220px]">
                 <img
                   src={firstImage}
                   alt={product.name}

@@ -5,29 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { StaticImageData } from "next/image";
 
-import bremboLogo from "../assets/brembo-logo.png";
-import boschLogo from "../assets/bosch-logo.png";
-import ngkLogo from "../assets/ngk-logo.png";
-import densoLogo from "../assets/denso-logo.png";
-import mobil1Logo from "../assets/mobil-1-logo.png";
-import castrolLogo from "../assets/castrol-logo.png";
-import michelinLogo from "../assets/michelin-logo.png";
-import bridgestoneLogo from "../assets/bridgestone-logo.png";
-import continentalLogo from "../assets/continental-logo.png";
-import acdelcoLogo from "../assets/acdelco-logo.png";
-import mannFilterLogo from "../assets/mann-filter-logo.png";
-import kybLogo from "../assets/kyb-logo.png";
-import automotiveBanner from "../assets/automotive-banner.png";
-import brakePadsBanner from "../assets/brake-pads-promotion-banner.png";
-import oilFiltersBanner from "../assets/oil-filters-sale-banner.png";
 import ToyozuGIF from "../assets/New.jpg";
-
 import Header from "../app/common/Header";
 import Footer from "../app/common/Footer";
 import ProductGrid from "@/components/user-components/product-components/ProductGrid";
-import type { ProductCard } from "@/app/products/[id]/types";
 import { ShieldUser, Truck, Wrench } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Carousel,
@@ -44,7 +26,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import type { LandingClientProps, CarMake, CarModel, YearItem, Category, Brand } from "@/app/landing/types";
+import type { LandingClientProps } from "@/app/landing/types";
+
+type DbBrand = {
+  id: number;
+  name: string;
+  productCount: number;
+};
+
+function getBrandWeightClass(productCount: number): string {
+  if (productCount >= 50) return "font-extrabold";
+  if (productCount >= 20) return "font-bold";
+  if (productCount >= 10) return "font-semibold";
+  return "font-medium";
+}
+const features = [
+  {
+    icon: ShieldUser,
+    title: "Services",
+    description:
+      "We provide reliable and secure services designed to meet your business needs efficiently.",
+  },
+  {
+    icon: Truck,
+    title: "Shipping",
+    description:
+      "Fast and dependable shipping solutions to ensure your products arrive safely and on time.",
+  },
+  {
+    icon: Wrench,
+    title: "Support",
+    description:
+      "Our dedicated support team is always ready to assist you with any concerns or technical issues.",
+  },
+];
 
 export default function Landing({
   initialProducts,
@@ -54,52 +69,51 @@ export default function Landing({
   years,
 }: LandingClientProps) {
   const router = useRouter();
-  const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [showAllCategories, setShowAllCategories] = useState<boolean>(false);
-
+  const [brands, setBrands] = useState<DbBrand[]>([]);
+  const [loadingBrands, setLoadingBrands] = useState<boolean>(true);
   const [selectedMake, setSelectedMake] = useState<string>("");
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [selectedYear, setSelectedYear] = useState<string>("");
 
-  const slideImages = [automotiveBanner, brakePadsBanner, oilFiltersBanner];
 
-  const brands: Brand[] = [
-    { name: "Brembo", logo: bremboLogo },
-    { name: "Bosch", logo: boschLogo },
-    { name: "NGK", logo: ngkLogo },
-    { name: "Denso", logo: densoLogo },
-    { name: "Mobil 1", logo: mobil1Logo },
-    { name: "Castrol", logo: castrolLogo },
-    { name: "Michelin", logo: michelinLogo },
-    { name: "Bridgestone", logo: bridgestoneLogo },
-    { name: "Continental", logo: continentalLogo },
-    { name: "ACDelco", logo: acdelcoLogo },
-    { name: "Mann Filter", logo: mannFilterLogo },
-    { name: "KYB", logo: kybLogo },
-  ];
-
-  const iconMap: Record<string, string> = {
-    "Wield Shield": "🛡️",
-    "Brake Fluid": "💧",
-    Coolant: "🧊",
-    "Head Lights": "💡",
-    "Spark Plug": "⚡",
-    "Engine Oil": "🛢️",
-    "Brake Pad": "🛞",
-    "Air Filter": "🌬️",
-    "Fuel Filter": "⛽",
-  };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slideImages.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [slideImages.length]);
+    let cancelled = false;
 
-  const nextSlide = (): void => setCurrentSlide((prev) => (prev + 1) % slideImages.length);
-  const prevSlide = (): void =>
-    setCurrentSlide((prev) => (prev - 1 + slideImages.length) % slideImages.length);
+    const loadBrands = async () => {
+      setLoadingBrands(true);
+      try {
+        const res = await fetch("/api/brands", {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+        const json = (await res.json()) as
+          | { data: { brands: DbBrand[] } }
+          | { error: string };
+
+        if (!res.ok || !("data" in json)) {
+          if (!cancelled) setBrands([]);
+          return;
+        }
+
+        if (!cancelled) setBrands(Array.isArray(json.data.brands) ? json.data.brands : []);
+      } catch {
+        if (!cancelled) setBrands([]);
+      } finally {
+        if (!cancelled) setLoadingBrands(false);
+      }
+    };
+
+    void loadBrands();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+
+
+
 
   const handleSearch = async (): Promise<void> => {
     const q = new URLSearchParams();
@@ -111,7 +125,7 @@ export default function Landing({
   const displayedCategories = showAllCategories ? categories : categories.slice(0, 10);
 
   return (
-    <div className="min-h-screen bg-background  mx-auto">
+    <div className="min-h-screen bg-primary-foreground  mx-auto">
       <Header />
       <section className="relative w-full h-screen overflow-hidden">
         <img
@@ -132,8 +146,8 @@ export default function Landing({
               <div className="w-24 h-1  mx-auto mt-4 rounded-full" />
             </div>
 
-            <div className="w-[800px] p-6 rounded-lg shadow-lg flex-row flex justify-between items-start gap-6 bg-surface text-surface-foreground">
-              <div className="w-[600px]">
+            <div className="w-[800px] p-6 rounded-lg shadow-lg flex-col flex justify-between items-start gap-6 bg-surface text-surface-foreground">
+              <div className="w-full">
                 <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-semibold text-gray-800 mb-2">
@@ -216,28 +230,25 @@ export default function Landing({
                 </div>
               </div>
 
-              <div className="flex flex-col justify-center p-6 rounded-lg w-[250px] bg-primary-container border-primary-container text-tertiary-foreground">
-                <h3 className="text-lg font-bold mb-2">Quick Tip</h3>
-                <p className="text-sm leading-relaxed">
-                  Select your vehicle’s brand, model, and year to instantly find parts compatible with your car.
-                </p>
+              <div className="flex flex-col justify-center text-center rounded-lg w-full text-muted-foreground bg-muted/10">
+                <p className="text-sm leading-relaxed ">
+                  Quick Tip: Select your vehicle’s brand, model, and year to instantly find parts compatible with your car.
+                </p> 
               </div>
             </div>
           </div>
-          <section className="py-12 px-4 bg-transparent flex flex-row w-[1270px] h-[100px] mx-auto">
-            <div className="grid grid-cols-3 gap-6 w-full justify-center text-center  h-[100px]">
-              <div className="bg-white rounded-lg shadow-md p-4">
-                <ShieldUser />
-                Services
-              </div>
-              <div className="bg-white rounded-lg shadow-md p-4">
-                <Truck />
-                Shipping
-              </div>
-              <div className="bg-white rounded-lg shadow-md p-4">
-                <Wrench />
-                Support
-              </div>
+          <section className="py-12 px-4 bg-transparent max-w-[1270px] mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+              {features.map(({ icon: Icon, title, description }) => (
+                <div
+                  key={title}
+                  className="bg-surface rounded-lg shadow-md p-6 flex flex-col items-center gap-3"
+                >
+                  <Icon className="w-10 h-10 text-primary" />
+                  <h3 className="text-lg font-semibold text-primary">{title}</h3>
+                  <p className="text-sm text-muted-foreground ">{description}</p>
+                </div>
+              ))}
             </div>
           </section>
         </div>
@@ -247,22 +258,19 @@ export default function Landing({
       <section className="py-12 px-4">
         <div className="w-[1270px] mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold ">CATEGORIES</h2>
+            <h2 className="text-2xl font-bold text-secondary">CATEGORIES</h2>
           </div>
 
           <div className="grid grid-cols-5 gap-4">
             {displayedCategories.map((category) => {
-              const icon = iconMap[category.name] || "📦";
               return (
                 <Link
                   key={category.id}
                   href={`/products/category/${encodeURIComponent(category.name)}`}
-                  className="px-4 py-3 rounded-lg flex items-center space-x-2 font-medium hover:scale-105 transition-all duration-200 hover:shadow-lg transform bg-primary-container text-primary-container-foreground"
+                  className="w-full px-4 py-3 rounded-2xl flex items-center justify-center space-x-2 font-semibold  hover:scale-105 transition-all duration-200 hover:shadow-lg transform bg-surface text-primary-container-foreground"
                 >
-                  <div className="w-6 h-6 bg-white rounded flex items-center justify-center text-lg">
-                    <span>{icon}</span>
-                  </div>
-                  <span className="text-sm">{category.name}</span>
+       
+                  <span className="text-md text-center italic text-muted-foreground">{category.name}</span>
                 </Link>
               );
             })}
@@ -271,7 +279,7 @@ export default function Landing({
           <div className="text-center mt-6">
             <button
               onClick={() => setShowAllCategories(!showAllCategories)}
-              className="text-gray-600 font-medium hover:underline transition-all duration-150 hover:scale-105"
+              className="text-muted-foreground font-medium hover:underline transition-all duration-150 hover:scale-105"
             >
               {showAllCategories ? "Show Less" : "More"}
             </button>
@@ -281,24 +289,37 @@ export default function Landing({
 
       <section id="brands" className="py-12 px-4 bg-transparent">
         <div className="w-[1270px] mx-auto ">
-          <h2 className="text-2xl font-bold text-justify mb-8">TRUSTED BRANDS</h2>
+          <h2 className="text-2xl font-bold text-secondary mb-8">TRUSTED BRANDS</h2>
 
           <Carousel opts={{ align: "start", loop: true }} className="w-[1200px] mx-auto relative">
             <CarouselContent className="-ml-6">
-              {brands.map((brand) => (
+              {(loadingBrands ? [] : brands).map((brand) => (
                 <CarouselItem
                   key={brand.name}
                   className="pl-6 basis-full sm:basis-1/2 lg:basis-1/3"
                 >
-                  <div className="p-4 rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center bg-primary-foreground text-surface-foreground">
-                    <img
-                      src={(brand.logo as StaticImageData).src}
-                      alt={brand.name}
-                      className="h-18 w-auto object-contain grayscale hover:grayscale-0 transition-all duration-300"
-                    />
+                  <div className="p-6 rounded-2xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center bg-surface text-surface-foreground">
+                    <div className="text-center">
+                      <div className={`text-2xl font-semibold italic tracking-wide ${getBrandWeightClass(brand.productCount)}`}>{brand.name}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{brand.productCount} products</div>
+                    </div>
                   </div>
                 </CarouselItem>
               ))}
+              {loadingBrands && (
+                <CarouselItem className="pl-6 basis-full sm:basis-1/2 lg:basis-1/3">
+                  <div className="p-6 rounded-lg bg-surface text-surface-foreground border">
+                    <div className="text-center text-sm text-muted-foreground">Loading brands…</div>
+                  </div>
+                </CarouselItem>
+              )}
+              {!loadingBrands && brands.length === 0 && (
+                <CarouselItem className="pl-6 basis-full sm:basis-1/2 lg:basis-1/3">
+                  <div className="p-6 rounded-lg bg-surface text-surface-foreground border">
+                    <div className="text-center text-sm text-muted-foreground">No brands found.</div>
+                  </div>
+                </CarouselItem>
+              )}
             </CarouselContent>
 
             <CarouselPrevious />
@@ -309,8 +330,8 @@ export default function Landing({
 
       <section>
         <div className="max-w-full mx-auto flex justify-center items-center flex-col">
-          <div className="w-[1270px] h-12 bg-white rounded-lg shadow-md mb-4 border-b-2 border-primary flex justify-center items-center">
-            <h2 className="text-2xl font-bold  text-center ">Explore </h2>
+          <div className="w-[1270px] h-12 bg-surface rounded-lg shadow-md mb-4 border-b-2 border-border flex justify-center items-center">
+            <h2 className="text-2xl font-bold italic text-secondary text-center ">Explore </h2>
           </div>
           
           <ProductGrid initialProducts={initialProducts} showMoreButton={true} columns={5} />

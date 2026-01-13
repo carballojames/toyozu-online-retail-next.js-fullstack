@@ -290,16 +290,14 @@ export default function CheckoutPage() {
   const hasItems = items.length > 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-primary-background">
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 pb-12 mt-8">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
-            <p className="text-sm text-muted-foreground">Demo only • No backend calls</p>
+            <h1 className="text-3xl font-bold text-secondary">Checkout</h1>
           </div>
-          <Badge variant="secondary">Light mode</Badge>
         </div>
 
         {!hasItems ? (
@@ -313,7 +311,7 @@ export default function CheckoutPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="bg-surface rounded-xl border border-border overflow-hidden">
                 <div className="p-6 border-b border-border">
                   <h2 className="text-xl font-semibold text-foreground">Order Items</h2>
                 </div>
@@ -340,7 +338,6 @@ export default function CheckoutPage() {
                               />
                               <div className="min-w-0">
                                 <div className="font-medium text-foreground line-clamp-1">{it.product_name}</div>
-                                <div className="text-xs text-muted-foreground">ID: {it.product}</div>
                               </div>
                             </div>
                           </TableCell>
@@ -359,7 +356,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="bg-card rounded-xl border border-border p-6 space-y-5">
+              <div className="bg-surface rounded-xl border border-border p-6 space-y-5">
                 <div>
                   <h3 className="text-lg font-semibold text-foreground">Delivery</h3>
                   <p className="text-sm text-muted-foreground">Select delivery address and courier. Payment is Cash on Delivery for now.</p>
@@ -437,7 +434,7 @@ export default function CheckoutPage() {
             </div>
 
             <div className="lg:sticky lg:top-24 lg:h-fit">
-              <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+              <div className="bg-surface rounded-xl border border-border p-6 space-y-4">
                 <h2 className="text-xl font-semibold text-foreground">Order Summary</h2>
 
                 <div className="space-y-2 text-sm">

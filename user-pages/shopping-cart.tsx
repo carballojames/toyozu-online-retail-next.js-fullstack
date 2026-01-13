@@ -255,7 +255,7 @@ export default function ShoppingCart() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-primary-background">
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 pb-12 mt-8">
@@ -266,7 +266,7 @@ export default function ShoppingCart() {
         )}
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-3xl font-bold text-secondary">
             Products{" "}
             <span className="text-primary">
               ({cartItems.length > 0 ? cartItems.length : 0})

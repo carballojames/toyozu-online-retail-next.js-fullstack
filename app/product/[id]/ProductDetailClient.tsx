@@ -127,13 +127,40 @@ export default function ProductDetailClient({
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-primary-background text-foreground">
       <Header />
+       <div className="w-[1300px] mx-auto px-4 mt-4 mb-4">
+        <nav className="text-sm text-foreground" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2">
+            <li>
+              <span className="text-primary hover:underline cursor-pointer">
+                Home
+              </span>
+            </li>
+            <li className="text-foreground">›</li>
+            <li>
+              <span className="text-primary hover:underline cursor-pointer">
+                {product.category_name ?? "Products"}
+              </span>
+            </li>
+            <li className="text-foreground">›</li>
+            <li>
+              <span className="text-primary hover:underline cursor-pointer">
+                {product.brand_name ?? "Brand"}
+              </span>
+            </li>
+            <li className="text-foreground">›</li>
+            <li>
+              <span className="text-foreground font-medium">{product.name}</span>
+            </li>
+          </ol>
+        </nav>
+      </div>
 
       <div className="w-[1300px] mx-auto px-4 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-card p-6 rounded-lg shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-surface p-6 rounded-2xl shadow-sm">
           <div className="space-y-4">
-            <div className="relative overflow-hidden rounded-lg flex items-center justify-center w-[500px] h-[400px]">
+            <div className="relative overflow-hidden rounded-2xl flex items-center justify-center w-[500px] h-[400px]">
               {product.images && product.images.length > 0 ? (
                 <img
                   src={product.images[selectedImage].image}
@@ -168,7 +195,7 @@ export default function ProductDetailClient({
 
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">{product.name}</h1>
+              <h1 className="text-3xl font-bold text-secondary  mb-2">{product.name}</h1>
               <p className="text-muted-foreground">{product.brand_name ?? ""}</p>
             </div>
 
@@ -177,13 +204,13 @@ export default function ProductDetailClient({
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="flex items-center border rounded-lg overflow-hidden">
+              <div className="flex items-center border rounded-2xl overflow-hidden ">
                 <button
                   className="px-3 py-2 hover:bg-muted"
                   onClick={decrementQuantity}
                   aria-label="Decrease quantity"
                 >
-                  <Minus className="w-4 h-4" />
+                  <Minus className="w-full text-muted-foreground font-light" />
                 </button>
                 <div className="px-4 py-2 min-w-[48px] text-center">{quantity}</div>
                 <button
@@ -191,7 +218,7 @@ export default function ProductDetailClient({
                   onClick={incrementQuantity}
                   aria-label="Increase quantity"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-full" />
                 </button>
               </div>
 
@@ -217,7 +244,7 @@ export default function ProductDetailClient({
           </div>
         </div>
 
-        <div className="mt-16 bg-card p-8 rounded-lg shadow-sm">
+        <div className="mt-16 bg-surface p-8 rounded-2xl shadow-sm">
           <nav className="flex space-x-8">
             {(["description", "specifications"] as const).map((tab) => (
               <button
@@ -234,10 +261,10 @@ export default function ProductDetailClient({
             ))}
           </nav>
 
-          <div className="py-8 bg-card rounded-lg">
+          <div className="py-8 bg-surface rounded-2xl">
             {activeTab === "description" && (
               <div className="prose max-w-none">
-                <h3 className="text-xl font-semibold mb-4 text-foreground">Product Description</h3>
+                <h3 className="text-xl font-semibold mb-4 text-secondary">Product Description: </h3>
                 {(product.description || "No description available.")
                   .split(/\n+/)
                   .filter((p) => p.trim().length > 0)
@@ -251,7 +278,7 @@ export default function ProductDetailClient({
 
             {activeTab === "specifications" && (
               <div>
-                <div className="font-medium">Car Compatibility:</div>
+                <div className="text-xl font-semibold mb-4 text-secondary">Car Compatibility:</div>
                 {compatibility.length > 0 ? (
                   <div className="space-y-2 mt-2">
                     {compatibility.map((c) => (

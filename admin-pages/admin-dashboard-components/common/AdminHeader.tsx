@@ -49,31 +49,20 @@ export default function AdminHeader({ onSearchClick }: Props) {
 
 	return (
 		<header className="sticky top-0 z-50 w-full bg-background border-b border-border">
-			<div className="h-16 px-6 flex items-center justify-between">
+			<div className="h-16 px-6 flex items-center gap-4">
 				<button
 					type="button"
-					className="flex items-center gap-3"
+					className="flex items-center gap-3 cursor-pointer"
 					onClick={() => router.push("/")}
 					aria-label="Go to home"
 				>
 					<Image src={Logo} alt="Toyozu Logo" width={44} height={44} priority />
-					<span className="font-semibold text-foreground hidden sm:inline">Admin</span>
 				</button>
 
 				<div className="flex items-center gap-3">
-					<Badge variant="secondary" className="max-w-[260px] truncate">
+					<Badge variant="secondary" className="max-w-[260px] py-2 truncate">
 						{profileText}
 					</Badge>
-
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => onSearchClick?.()}
-						aria-label="Search users"
-					>
-						<Search className="h-4 w-4" />
-						<span className="ml-2 hidden sm:inline">Search</span>
-					</Button>
 				</div>
 			</div>
 		</header>

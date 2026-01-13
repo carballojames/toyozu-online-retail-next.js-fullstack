@@ -18,7 +18,7 @@ type Props = {
 
 export default function InventoryTable({ products }: Props) {
   return (
-    <div className="bg-card border border-border rounded-xl p-4">
+    <div className="bg-surface ">
       <Table>
         <TableHeader>
           <TableRow>

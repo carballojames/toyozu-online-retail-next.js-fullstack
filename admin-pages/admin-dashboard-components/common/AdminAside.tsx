@@ -33,10 +33,10 @@ export default function AdminAside({
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-card border-r border-border min-h-[calc(100vh-4rem)] sticky top-16">
+    <aside className="w-64 shrink-0 bg-surface border-r border-border min-h-screen sticky top-0">
       <nav className="p-6">
         <div className="mb-4">
-          <div className="text-sm font-semibold text-foreground">{title}</div>
+          <h2 className="text-lg font-semibold italic text-foreground text-center">Admin Dashboard</h2>
         </div>
         <ul className="space-y-2">
           {items.map((item) => {
@@ -47,8 +47,8 @@ export default function AdminAside({
                 <Link
                   href={href}
                   onClick={() => onTabChange(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors font-medium ${
-                    isActive ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+                  className={`w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-left transition-colors font-medium ${
+                    isActive ? "bg-secondary text-primary-foreground" : "text-foreground hover:bg-muted"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >
