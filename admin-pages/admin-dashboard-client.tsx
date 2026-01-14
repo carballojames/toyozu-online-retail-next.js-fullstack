@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Package, UserRoundCog, Wrench } from "lucide-react";
+import { Package, ShoppingBag, UserRoundCog, Wrench } from "lucide-react";
 
 import AdminHeader from "./admin-dashboard-components/common/AdminHeader";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import EditProductModal from "./admin-dashboard-components/modals/EditProductMod
 import EditUserModal from "./admin-dashboard-components/modals/EditUserModal";
 
 import InventoryPage from "./admin-dashboard-components/inventory";
+import OrdersPage from "./admin-dashboard-components/orders";
 import ProductPage from "./admin-dashboard-components/product";
 import UserPage from "./admin-dashboard-components/user";
 import { type AdminUserRow } from "./admin-dashboard-components/tables/UsersTable";
@@ -60,6 +61,12 @@ function hasPermission(roleId: RoleId, permission: Permission): boolean {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  {
+    id: "orders",
+    label: "Orders",
+    icon: <ShoppingBag />,
+    permission: "VIEW_ORDERS",
+  },
   {
     id: "products",
     label: "Product ",
@@ -274,7 +281,7 @@ export default function AdminDashboardClient({
       <AddProductModal
         open={isAddProductOpen}
         onOpenChange={setIsAddProductOpen}
-        onConfirm={(newProducts, meta) => {
+        onConfirm={() => {
           void refreshProducts();
         }}
       />
@@ -304,6 +311,8 @@ export default function AdminDashboardClient({
       />
 
         <main className="flex-1 p-8 space-y-6">
+          {activeTab === "orders" ? <OrdersPage /> : null}
+
           {activeTab === "products" ? (
             <ProductPage
               productQuery={productQuery}

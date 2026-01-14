@@ -30,7 +30,9 @@ export type NavItem = {
 
 export type AdminOrderStatus =
   | "Pending"
-  | "Processing"
+  | "Prepare to ship"
+  | "Pickup by courier"
+  | "Tracking number posted"
   | "In Transit"
   | "Delivered"
   | "Cancelled";

@@ -29,12 +29,14 @@ export type AggregateAddress = {
 export type AddressAvgAggregateOutputType = {
   address_id: number | null
   barangay_id: number | null
+  approved_address_id: number | null
   user_id: number | null
 }
 
 export type AddressSumAggregateOutputType = {
   address_id: number | null
   barangay_id: number | null
+  approved_address_id: number | null
   user_id: number | null
 }
 
@@ -42,6 +44,7 @@ export type AddressMinAggregateOutputType = {
   address_id: number | null
   street_house_building_no: string | null
   barangay_id: number | null
+  approved_address_id: number | null
   user_id: number | null
   is_default: boolean | null
 }
@@ -50,6 +53,7 @@ export type AddressMaxAggregateOutputType = {
   address_id: number | null
   street_house_building_no: string | null
   barangay_id: number | null
+  approved_address_id: number | null
   user_id: number | null
   is_default: boolean | null
 }
@@ -58,6 +62,7 @@ export type AddressCountAggregateOutputType = {
   address_id: number
   street_house_building_no: number
   barangay_id: number
+  approved_address_id: number
   user_id: number
   is_default: number
   _all: number
@@ -67,12 +72,14 @@ export type AddressCountAggregateOutputType = {
 export type AddressAvgAggregateInputType = {
   address_id?: true
   barangay_id?: true
+  approved_address_id?: true
   user_id?: true
 }
 
 export type AddressSumAggregateInputType = {
   address_id?: true
   barangay_id?: true
+  approved_address_id?: true
   user_id?: true
 }
 
@@ -80,6 +87,7 @@ export type AddressMinAggregateInputType = {
   address_id?: true
   street_house_building_no?: true
   barangay_id?: true
+  approved_address_id?: true
   user_id?: true
   is_default?: true
 }
@@ -88,6 +96,7 @@ export type AddressMaxAggregateInputType = {
   address_id?: true
   street_house_building_no?: true
   barangay_id?: true
+  approved_address_id?: true
   user_id?: true
   is_default?: true
 }
@@ -96,6 +105,7 @@ export type AddressCountAggregateInputType = {
   address_id?: true
   street_house_building_no?: true
   barangay_id?: true
+  approved_address_id?: true
   user_id?: true
   is_default?: true
   _all?: true
@@ -191,6 +201,7 @@ export type AddressGroupByOutputType = {
   address_id: number
   street_house_building_no: string | null
   barangay_id: number | null
+  approved_address_id: number | null
   user_id: number
   is_default: boolean | null
   _count: AddressCountAggregateOutputType | null
@@ -222,9 +233,11 @@ export type addressWhereInput = {
   address_id?: Prisma.IntFilter<"address"> | number
   street_house_building_no?: Prisma.StringNullableFilter<"address"> | string | null
   barangay_id?: Prisma.IntNullableFilter<"address"> | number | null
+  approved_address_id?: Prisma.IntNullableFilter<"address"> | number | null
   user_id?: Prisma.IntFilter<"address"> | number
   is_default?: Prisma.BoolNullableFilter<"address"> | boolean | null
   barangay?: Prisma.XOR<Prisma.BarangayNullableScalarRelationFilter, Prisma.barangayWhereInput> | null
+  approved_address?: Prisma.XOR<Prisma.Approved_addressNullableScalarRelationFilter, Prisma.approved_addressWhereInput> | null
   user_employee?: Prisma.XOR<Prisma.User_employeeScalarRelationFilter, Prisma.user_employeeWhereInput>
   customer?: Prisma.CustomerListRelationFilter
   delivery?: Prisma.DeliveryListRelationFilter
@@ -234,9 +247,11 @@ export type addressOrderByWithRelationInput = {
   address_id?: Prisma.SortOrder
   street_house_building_no?: Prisma.SortOrderInput | Prisma.SortOrder
   barangay_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  approved_address_id?: Prisma.SortOrderInput | Prisma.SortOrder
   user_id?: Prisma.SortOrder
   is_default?: Prisma.SortOrderInput | Prisma.SortOrder
   barangay?: Prisma.barangayOrderByWithRelationInput
+  approved_address?: Prisma.approved_addressOrderByWithRelationInput
   user_employee?: Prisma.user_employeeOrderByWithRelationInput
   customer?: Prisma.customerOrderByRelationAggregateInput
   delivery?: Prisma.deliveryOrderByRelationAggregateInput
@@ -249,9 +264,11 @@ export type addressWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.addressWhereInput | Prisma.addressWhereInput[]
   street_house_building_no?: Prisma.StringNullableFilter<"address"> | string | null
   barangay_id?: Prisma.IntNullableFilter<"address"> | number | null
+  approved_address_id?: Prisma.IntNullableFilter<"address"> | number | null
   user_id?: Prisma.IntFilter<"address"> | number
   is_default?: Prisma.BoolNullableFilter<"address"> | boolean | null
   barangay?: Prisma.XOR<Prisma.BarangayNullableScalarRelationFilter, Prisma.barangayWhereInput> | null
+  approved_address?: Prisma.XOR<Prisma.Approved_addressNullableScalarRelationFilter, Prisma.approved_addressWhereInput> | null
   user_employee?: Prisma.XOR<Prisma.User_employeeScalarRelationFilter, Prisma.user_employeeWhereInput>
   customer?: Prisma.CustomerListRelationFilter
   delivery?: Prisma.DeliveryListRelationFilter
@@ -261,6 +278,7 @@ export type addressOrderByWithAggregationInput = {
   address_id?: Prisma.SortOrder
   street_house_building_no?: Prisma.SortOrderInput | Prisma.SortOrder
   barangay_id?: Prisma.SortOrderInput | Prisma.SortOrder
+  approved_address_id?: Prisma.SortOrderInput | Prisma.SortOrder
   user_id?: Prisma.SortOrder
   is_default?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.addressCountOrderByAggregateInput
@@ -277,6 +295,7 @@ export type addressScalarWhereWithAggregatesInput = {
   address_id?: Prisma.IntWithAggregatesFilter<"address"> | number
   street_house_building_no?: Prisma.StringNullableWithAggregatesFilter<"address"> | string | null
   barangay_id?: Prisma.IntNullableWithAggregatesFilter<"address"> | number | null
+  approved_address_id?: Prisma.IntNullableWithAggregatesFilter<"address"> | number | null
   user_id?: Prisma.IntWithAggregatesFilter<"address"> | number
   is_default?: Prisma.BoolNullableWithAggregatesFilter<"address"> | boolean | null
 }
@@ -285,6 +304,7 @@ export type addressCreateInput = {
   street_house_building_no?: string | null
   is_default?: boolean | null
   barangay?: Prisma.barangayCreateNestedOneWithoutAddressInput
+  approved_address?: Prisma.approved_addressCreateNestedOneWithoutAddressInput
   user_employee: Prisma.user_employeeCreateNestedOneWithoutAddressInput
   customer?: Prisma.customerCreateNestedManyWithoutAddressInput
   delivery?: Prisma.deliveryCreateNestedManyWithoutAddressInput
@@ -294,6 +314,7 @@ export type addressUncheckedCreateInput = {
   address_id?: number
   street_house_building_no?: string | null
   barangay_id?: number | null
+  approved_address_id?: number | null
   user_id: number
   is_default?: boolean | null
   customer?: Prisma.customerUncheckedCreateNestedManyWithoutAddressInput
@@ -304,6 +325,7 @@ export type addressUpdateInput = {
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   barangay?: Prisma.barangayUpdateOneWithoutAddressNestedInput
+  approved_address?: Prisma.approved_addressUpdateOneWithoutAddressNestedInput
   user_employee?: Prisma.user_employeeUpdateOneRequiredWithoutAddressNestedInput
   customer?: Prisma.customerUpdateManyWithoutAddressNestedInput
   delivery?: Prisma.deliveryUpdateManyWithoutAddressNestedInput
@@ -313,6 +335,7 @@ export type addressUncheckedUpdateInput = {
   address_id?: Prisma.IntFieldUpdateOperationsInput | number
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   barangay_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  approved_address_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   user_id?: Prisma.IntFieldUpdateOperationsInput | number
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   customer?: Prisma.customerUncheckedUpdateManyWithoutAddressNestedInput
@@ -323,6 +346,7 @@ export type addressCreateManyInput = {
   address_id?: number
   street_house_building_no?: string | null
   barangay_id?: number | null
+  approved_address_id?: number | null
   user_id: number
   is_default?: boolean | null
 }
@@ -336,6 +360,7 @@ export type addressUncheckedUpdateManyInput = {
   address_id?: Prisma.IntFieldUpdateOperationsInput | number
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   barangay_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  approved_address_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   user_id?: Prisma.IntFieldUpdateOperationsInput | number
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
 }
@@ -344,6 +369,7 @@ export type addressCountOrderByAggregateInput = {
   address_id?: Prisma.SortOrder
   street_house_building_no?: Prisma.SortOrder
   barangay_id?: Prisma.SortOrder
+  approved_address_id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   is_default?: Prisma.SortOrder
 }
@@ -351,6 +377,7 @@ export type addressCountOrderByAggregateInput = {
 export type addressAvgOrderByAggregateInput = {
   address_id?: Prisma.SortOrder
   barangay_id?: Prisma.SortOrder
+  approved_address_id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
 }
 
@@ -358,6 +385,7 @@ export type addressMaxOrderByAggregateInput = {
   address_id?: Prisma.SortOrder
   street_house_building_no?: Prisma.SortOrder
   barangay_id?: Prisma.SortOrder
+  approved_address_id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   is_default?: Prisma.SortOrder
 }
@@ -366,6 +394,7 @@ export type addressMinOrderByAggregateInput = {
   address_id?: Prisma.SortOrder
   street_house_building_no?: Prisma.SortOrder
   barangay_id?: Prisma.SortOrder
+  approved_address_id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
   is_default?: Prisma.SortOrder
 }
@@ -373,6 +402,7 @@ export type addressMinOrderByAggregateInput = {
 export type addressSumOrderByAggregateInput = {
   address_id?: Prisma.SortOrder
   barangay_id?: Prisma.SortOrder
+  approved_address_id?: Prisma.SortOrder
   user_id?: Prisma.SortOrder
 }
 
@@ -413,6 +443,48 @@ export type NullableIntFieldUpdateOperationsInput = {
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type addressCreateNestedManyWithoutApproved_addressInput = {
+  create?: Prisma.XOR<Prisma.addressCreateWithoutApproved_addressInput, Prisma.addressUncheckedCreateWithoutApproved_addressInput> | Prisma.addressCreateWithoutApproved_addressInput[] | Prisma.addressUncheckedCreateWithoutApproved_addressInput[]
+  connectOrCreate?: Prisma.addressCreateOrConnectWithoutApproved_addressInput | Prisma.addressCreateOrConnectWithoutApproved_addressInput[]
+  createMany?: Prisma.addressCreateManyApproved_addressInputEnvelope
+  connect?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+}
+
+export type addressUncheckedCreateNestedManyWithoutApproved_addressInput = {
+  create?: Prisma.XOR<Prisma.addressCreateWithoutApproved_addressInput, Prisma.addressUncheckedCreateWithoutApproved_addressInput> | Prisma.addressCreateWithoutApproved_addressInput[] | Prisma.addressUncheckedCreateWithoutApproved_addressInput[]
+  connectOrCreate?: Prisma.addressCreateOrConnectWithoutApproved_addressInput | Prisma.addressCreateOrConnectWithoutApproved_addressInput[]
+  createMany?: Prisma.addressCreateManyApproved_addressInputEnvelope
+  connect?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+}
+
+export type addressUpdateManyWithoutApproved_addressNestedInput = {
+  create?: Prisma.XOR<Prisma.addressCreateWithoutApproved_addressInput, Prisma.addressUncheckedCreateWithoutApproved_addressInput> | Prisma.addressCreateWithoutApproved_addressInput[] | Prisma.addressUncheckedCreateWithoutApproved_addressInput[]
+  connectOrCreate?: Prisma.addressCreateOrConnectWithoutApproved_addressInput | Prisma.addressCreateOrConnectWithoutApproved_addressInput[]
+  upsert?: Prisma.addressUpsertWithWhereUniqueWithoutApproved_addressInput | Prisma.addressUpsertWithWhereUniqueWithoutApproved_addressInput[]
+  createMany?: Prisma.addressCreateManyApproved_addressInputEnvelope
+  set?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+  disconnect?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+  delete?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+  connect?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+  update?: Prisma.addressUpdateWithWhereUniqueWithoutApproved_addressInput | Prisma.addressUpdateWithWhereUniqueWithoutApproved_addressInput[]
+  updateMany?: Prisma.addressUpdateManyWithWhereWithoutApproved_addressInput | Prisma.addressUpdateManyWithWhereWithoutApproved_addressInput[]
+  deleteMany?: Prisma.addressScalarWhereInput | Prisma.addressScalarWhereInput[]
+}
+
+export type addressUncheckedUpdateManyWithoutApproved_addressNestedInput = {
+  create?: Prisma.XOR<Prisma.addressCreateWithoutApproved_addressInput, Prisma.addressUncheckedCreateWithoutApproved_addressInput> | Prisma.addressCreateWithoutApproved_addressInput[] | Prisma.addressUncheckedCreateWithoutApproved_addressInput[]
+  connectOrCreate?: Prisma.addressCreateOrConnectWithoutApproved_addressInput | Prisma.addressCreateOrConnectWithoutApproved_addressInput[]
+  upsert?: Prisma.addressUpsertWithWhereUniqueWithoutApproved_addressInput | Prisma.addressUpsertWithWhereUniqueWithoutApproved_addressInput[]
+  createMany?: Prisma.addressCreateManyApproved_addressInputEnvelope
+  set?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+  disconnect?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+  delete?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+  connect?: Prisma.addressWhereUniqueInput | Prisma.addressWhereUniqueInput[]
+  update?: Prisma.addressUpdateWithWhereUniqueWithoutApproved_addressInput | Prisma.addressUpdateWithWhereUniqueWithoutApproved_addressInput[]
+  updateMany?: Prisma.addressUpdateManyWithWhereWithoutApproved_addressInput | Prisma.addressUpdateManyWithWhereWithoutApproved_addressInput[]
+  deleteMany?: Prisma.addressScalarWhereInput | Prisma.addressScalarWhereInput[]
 }
 
 export type addressCreateNestedManyWithoutBarangayInput = {
@@ -531,9 +603,67 @@ export type addressUncheckedUpdateManyWithoutUser_employeeNestedInput = {
   deleteMany?: Prisma.addressScalarWhereInput | Prisma.addressScalarWhereInput[]
 }
 
+export type addressCreateWithoutApproved_addressInput = {
+  street_house_building_no?: string | null
+  is_default?: boolean | null
+  barangay?: Prisma.barangayCreateNestedOneWithoutAddressInput
+  user_employee: Prisma.user_employeeCreateNestedOneWithoutAddressInput
+  customer?: Prisma.customerCreateNestedManyWithoutAddressInput
+  delivery?: Prisma.deliveryCreateNestedManyWithoutAddressInput
+}
+
+export type addressUncheckedCreateWithoutApproved_addressInput = {
+  address_id?: number
+  street_house_building_no?: string | null
+  barangay_id?: number | null
+  user_id: number
+  is_default?: boolean | null
+  customer?: Prisma.customerUncheckedCreateNestedManyWithoutAddressInput
+  delivery?: Prisma.deliveryUncheckedCreateNestedManyWithoutAddressInput
+}
+
+export type addressCreateOrConnectWithoutApproved_addressInput = {
+  where: Prisma.addressWhereUniqueInput
+  create: Prisma.XOR<Prisma.addressCreateWithoutApproved_addressInput, Prisma.addressUncheckedCreateWithoutApproved_addressInput>
+}
+
+export type addressCreateManyApproved_addressInputEnvelope = {
+  data: Prisma.addressCreateManyApproved_addressInput | Prisma.addressCreateManyApproved_addressInput[]
+  skipDuplicates?: boolean
+}
+
+export type addressUpsertWithWhereUniqueWithoutApproved_addressInput = {
+  where: Prisma.addressWhereUniqueInput
+  update: Prisma.XOR<Prisma.addressUpdateWithoutApproved_addressInput, Prisma.addressUncheckedUpdateWithoutApproved_addressInput>
+  create: Prisma.XOR<Prisma.addressCreateWithoutApproved_addressInput, Prisma.addressUncheckedCreateWithoutApproved_addressInput>
+}
+
+export type addressUpdateWithWhereUniqueWithoutApproved_addressInput = {
+  where: Prisma.addressWhereUniqueInput
+  data: Prisma.XOR<Prisma.addressUpdateWithoutApproved_addressInput, Prisma.addressUncheckedUpdateWithoutApproved_addressInput>
+}
+
+export type addressUpdateManyWithWhereWithoutApproved_addressInput = {
+  where: Prisma.addressScalarWhereInput
+  data: Prisma.XOR<Prisma.addressUpdateManyMutationInput, Prisma.addressUncheckedUpdateManyWithoutApproved_addressInput>
+}
+
+export type addressScalarWhereInput = {
+  AND?: Prisma.addressScalarWhereInput | Prisma.addressScalarWhereInput[]
+  OR?: Prisma.addressScalarWhereInput[]
+  NOT?: Prisma.addressScalarWhereInput | Prisma.addressScalarWhereInput[]
+  address_id?: Prisma.IntFilter<"address"> | number
+  street_house_building_no?: Prisma.StringNullableFilter<"address"> | string | null
+  barangay_id?: Prisma.IntNullableFilter<"address"> | number | null
+  approved_address_id?: Prisma.IntNullableFilter<"address"> | number | null
+  user_id?: Prisma.IntFilter<"address"> | number
+  is_default?: Prisma.BoolNullableFilter<"address"> | boolean | null
+}
+
 export type addressCreateWithoutBarangayInput = {
   street_house_building_no?: string | null
   is_default?: boolean | null
+  approved_address?: Prisma.approved_addressCreateNestedOneWithoutAddressInput
   user_employee: Prisma.user_employeeCreateNestedOneWithoutAddressInput
   customer?: Prisma.customerCreateNestedManyWithoutAddressInput
   delivery?: Prisma.deliveryCreateNestedManyWithoutAddressInput
@@ -542,6 +672,7 @@ export type addressCreateWithoutBarangayInput = {
 export type addressUncheckedCreateWithoutBarangayInput = {
   address_id?: number
   street_house_building_no?: string | null
+  approved_address_id?: number | null
   user_id: number
   is_default?: boolean | null
   customer?: Prisma.customerUncheckedCreateNestedManyWithoutAddressInput
@@ -574,21 +705,11 @@ export type addressUpdateManyWithWhereWithoutBarangayInput = {
   data: Prisma.XOR<Prisma.addressUpdateManyMutationInput, Prisma.addressUncheckedUpdateManyWithoutBarangayInput>
 }
 
-export type addressScalarWhereInput = {
-  AND?: Prisma.addressScalarWhereInput | Prisma.addressScalarWhereInput[]
-  OR?: Prisma.addressScalarWhereInput[]
-  NOT?: Prisma.addressScalarWhereInput | Prisma.addressScalarWhereInput[]
-  address_id?: Prisma.IntFilter<"address"> | number
-  street_house_building_no?: Prisma.StringNullableFilter<"address"> | string | null
-  barangay_id?: Prisma.IntNullableFilter<"address"> | number | null
-  user_id?: Prisma.IntFilter<"address"> | number
-  is_default?: Prisma.BoolNullableFilter<"address"> | boolean | null
-}
-
 export type addressCreateWithoutCustomerInput = {
   street_house_building_no?: string | null
   is_default?: boolean | null
   barangay?: Prisma.barangayCreateNestedOneWithoutAddressInput
+  approved_address?: Prisma.approved_addressCreateNestedOneWithoutAddressInput
   user_employee: Prisma.user_employeeCreateNestedOneWithoutAddressInput
   delivery?: Prisma.deliveryCreateNestedManyWithoutAddressInput
 }
@@ -597,6 +718,7 @@ export type addressUncheckedCreateWithoutCustomerInput = {
   address_id?: number
   street_house_building_no?: string | null
   barangay_id?: number | null
+  approved_address_id?: number | null
   user_id: number
   is_default?: boolean | null
   delivery?: Prisma.deliveryUncheckedCreateNestedManyWithoutAddressInput
@@ -622,6 +744,7 @@ export type addressUpdateWithoutCustomerInput = {
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   barangay?: Prisma.barangayUpdateOneWithoutAddressNestedInput
+  approved_address?: Prisma.approved_addressUpdateOneWithoutAddressNestedInput
   user_employee?: Prisma.user_employeeUpdateOneRequiredWithoutAddressNestedInput
   delivery?: Prisma.deliveryUpdateManyWithoutAddressNestedInput
 }
@@ -630,6 +753,7 @@ export type addressUncheckedUpdateWithoutCustomerInput = {
   address_id?: Prisma.IntFieldUpdateOperationsInput | number
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   barangay_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  approved_address_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   user_id?: Prisma.IntFieldUpdateOperationsInput | number
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   delivery?: Prisma.deliveryUncheckedUpdateManyWithoutAddressNestedInput
@@ -639,6 +763,7 @@ export type addressCreateWithoutDeliveryInput = {
   street_house_building_no?: string | null
   is_default?: boolean | null
   barangay?: Prisma.barangayCreateNestedOneWithoutAddressInput
+  approved_address?: Prisma.approved_addressCreateNestedOneWithoutAddressInput
   user_employee: Prisma.user_employeeCreateNestedOneWithoutAddressInput
   customer?: Prisma.customerCreateNestedManyWithoutAddressInput
 }
@@ -647,6 +772,7 @@ export type addressUncheckedCreateWithoutDeliveryInput = {
   address_id?: number
   street_house_building_no?: string | null
   barangay_id?: number | null
+  approved_address_id?: number | null
   user_id: number
   is_default?: boolean | null
   customer?: Prisma.customerUncheckedCreateNestedManyWithoutAddressInput
@@ -672,6 +798,7 @@ export type addressUpdateWithoutDeliveryInput = {
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   barangay?: Prisma.barangayUpdateOneWithoutAddressNestedInput
+  approved_address?: Prisma.approved_addressUpdateOneWithoutAddressNestedInput
   user_employee?: Prisma.user_employeeUpdateOneRequiredWithoutAddressNestedInput
   customer?: Prisma.customerUpdateManyWithoutAddressNestedInput
 }
@@ -680,6 +807,7 @@ export type addressUncheckedUpdateWithoutDeliveryInput = {
   address_id?: Prisma.IntFieldUpdateOperationsInput | number
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   barangay_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  approved_address_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   user_id?: Prisma.IntFieldUpdateOperationsInput | number
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   customer?: Prisma.customerUncheckedUpdateManyWithoutAddressNestedInput
@@ -689,6 +817,7 @@ export type addressCreateWithoutUser_employeeInput = {
   street_house_building_no?: string | null
   is_default?: boolean | null
   barangay?: Prisma.barangayCreateNestedOneWithoutAddressInput
+  approved_address?: Prisma.approved_addressCreateNestedOneWithoutAddressInput
   customer?: Prisma.customerCreateNestedManyWithoutAddressInput
   delivery?: Prisma.deliveryCreateNestedManyWithoutAddressInput
 }
@@ -697,6 +826,7 @@ export type addressUncheckedCreateWithoutUser_employeeInput = {
   address_id?: number
   street_house_building_no?: string | null
   barangay_id?: number | null
+  approved_address_id?: number | null
   is_default?: boolean | null
   customer?: Prisma.customerUncheckedCreateNestedManyWithoutAddressInput
   delivery?: Prisma.deliveryUncheckedCreateNestedManyWithoutAddressInput
@@ -728,9 +858,45 @@ export type addressUpdateManyWithWhereWithoutUser_employeeInput = {
   data: Prisma.XOR<Prisma.addressUpdateManyMutationInput, Prisma.addressUncheckedUpdateManyWithoutUser_employeeInput>
 }
 
+export type addressCreateManyApproved_addressInput = {
+  address_id?: number
+  street_house_building_no?: string | null
+  barangay_id?: number | null
+  user_id: number
+  is_default?: boolean | null
+}
+
+export type addressUpdateWithoutApproved_addressInput = {
+  street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  barangay?: Prisma.barangayUpdateOneWithoutAddressNestedInput
+  user_employee?: Prisma.user_employeeUpdateOneRequiredWithoutAddressNestedInput
+  customer?: Prisma.customerUpdateManyWithoutAddressNestedInput
+  delivery?: Prisma.deliveryUpdateManyWithoutAddressNestedInput
+}
+
+export type addressUncheckedUpdateWithoutApproved_addressInput = {
+  address_id?: Prisma.IntFieldUpdateOperationsInput | number
+  street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barangay_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  user_id?: Prisma.IntFieldUpdateOperationsInput | number
+  is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  customer?: Prisma.customerUncheckedUpdateManyWithoutAddressNestedInput
+  delivery?: Prisma.deliveryUncheckedUpdateManyWithoutAddressNestedInput
+}
+
+export type addressUncheckedUpdateManyWithoutApproved_addressInput = {
+  address_id?: Prisma.IntFieldUpdateOperationsInput | number
+  street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  barangay_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  user_id?: Prisma.IntFieldUpdateOperationsInput | number
+  is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+}
+
 export type addressCreateManyBarangayInput = {
   address_id?: number
   street_house_building_no?: string | null
+  approved_address_id?: number | null
   user_id: number
   is_default?: boolean | null
 }
@@ -738,6 +904,7 @@ export type addressCreateManyBarangayInput = {
 export type addressUpdateWithoutBarangayInput = {
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  approved_address?: Prisma.approved_addressUpdateOneWithoutAddressNestedInput
   user_employee?: Prisma.user_employeeUpdateOneRequiredWithoutAddressNestedInput
   customer?: Prisma.customerUpdateManyWithoutAddressNestedInput
   delivery?: Prisma.deliveryUpdateManyWithoutAddressNestedInput
@@ -746,6 +913,7 @@ export type addressUpdateWithoutBarangayInput = {
 export type addressUncheckedUpdateWithoutBarangayInput = {
   address_id?: Prisma.IntFieldUpdateOperationsInput | number
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approved_address_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   user_id?: Prisma.IntFieldUpdateOperationsInput | number
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   customer?: Prisma.customerUncheckedUpdateManyWithoutAddressNestedInput
@@ -755,6 +923,7 @@ export type addressUncheckedUpdateWithoutBarangayInput = {
 export type addressUncheckedUpdateManyWithoutBarangayInput = {
   address_id?: Prisma.IntFieldUpdateOperationsInput | number
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  approved_address_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   user_id?: Prisma.IntFieldUpdateOperationsInput | number
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
 }
@@ -763,6 +932,7 @@ export type addressCreateManyUser_employeeInput = {
   address_id?: number
   street_house_building_no?: string | null
   barangay_id?: number | null
+  approved_address_id?: number | null
   is_default?: boolean | null
 }
 
@@ -770,6 +940,7 @@ export type addressUpdateWithoutUser_employeeInput = {
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   barangay?: Prisma.barangayUpdateOneWithoutAddressNestedInput
+  approved_address?: Prisma.approved_addressUpdateOneWithoutAddressNestedInput
   customer?: Prisma.customerUpdateManyWithoutAddressNestedInput
   delivery?: Prisma.deliveryUpdateManyWithoutAddressNestedInput
 }
@@ -778,6 +949,7 @@ export type addressUncheckedUpdateWithoutUser_employeeInput = {
   address_id?: Prisma.IntFieldUpdateOperationsInput | number
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   barangay_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  approved_address_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
   customer?: Prisma.customerUncheckedUpdateManyWithoutAddressNestedInput
   delivery?: Prisma.deliveryUncheckedUpdateManyWithoutAddressNestedInput
@@ -787,6 +959,7 @@ export type addressUncheckedUpdateManyWithoutUser_employeeInput = {
   address_id?: Prisma.IntFieldUpdateOperationsInput | number
   street_house_building_no?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   barangay_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  approved_address_id?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   is_default?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
 }
 
@@ -834,9 +1007,11 @@ export type addressSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   address_id?: boolean
   street_house_building_no?: boolean
   barangay_id?: boolean
+  approved_address_id?: boolean
   user_id?: boolean
   is_default?: boolean
   barangay?: boolean | Prisma.address$barangayArgs<ExtArgs>
+  approved_address?: boolean | Prisma.address$approved_addressArgs<ExtArgs>
   user_employee?: boolean | Prisma.user_employeeDefaultArgs<ExtArgs>
   customer?: boolean | Prisma.address$customerArgs<ExtArgs>
   delivery?: boolean | Prisma.address$deliveryArgs<ExtArgs>
@@ -847,9 +1022,11 @@ export type addressSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   address_id?: boolean
   street_house_building_no?: boolean
   barangay_id?: boolean
+  approved_address_id?: boolean
   user_id?: boolean
   is_default?: boolean
   barangay?: boolean | Prisma.address$barangayArgs<ExtArgs>
+  approved_address?: boolean | Prisma.address$approved_addressArgs<ExtArgs>
   user_employee?: boolean | Prisma.user_employeeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["address"]>
 
@@ -857,9 +1034,11 @@ export type addressSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   address_id?: boolean
   street_house_building_no?: boolean
   barangay_id?: boolean
+  approved_address_id?: boolean
   user_id?: boolean
   is_default?: boolean
   barangay?: boolean | Prisma.address$barangayArgs<ExtArgs>
+  approved_address?: boolean | Prisma.address$approved_addressArgs<ExtArgs>
   user_employee?: boolean | Prisma.user_employeeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["address"]>
 
@@ -867,13 +1046,15 @@ export type addressSelectScalar = {
   address_id?: boolean
   street_house_building_no?: boolean
   barangay_id?: boolean
+  approved_address_id?: boolean
   user_id?: boolean
   is_default?: boolean
 }
 
-export type addressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"address_id" | "street_house_building_no" | "barangay_id" | "user_id" | "is_default", ExtArgs["result"]["address"]>
+export type addressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"address_id" | "street_house_building_no" | "barangay_id" | "approved_address_id" | "user_id" | "is_default", ExtArgs["result"]["address"]>
 export type addressInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   barangay?: boolean | Prisma.address$barangayArgs<ExtArgs>
+  approved_address?: boolean | Prisma.address$approved_addressArgs<ExtArgs>
   user_employee?: boolean | Prisma.user_employeeDefaultArgs<ExtArgs>
   customer?: boolean | Prisma.address$customerArgs<ExtArgs>
   delivery?: boolean | Prisma.address$deliveryArgs<ExtArgs>
@@ -881,10 +1062,12 @@ export type addressInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
 }
 export type addressIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   barangay?: boolean | Prisma.address$barangayArgs<ExtArgs>
+  approved_address?: boolean | Prisma.address$approved_addressArgs<ExtArgs>
   user_employee?: boolean | Prisma.user_employeeDefaultArgs<ExtArgs>
 }
 export type addressIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   barangay?: boolean | Prisma.address$barangayArgs<ExtArgs>
+  approved_address?: boolean | Prisma.address$approved_addressArgs<ExtArgs>
   user_employee?: boolean | Prisma.user_employeeDefaultArgs<ExtArgs>
 }
 
@@ -892,6 +1075,7 @@ export type $addressPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "address"
   objects: {
     barangay: Prisma.$barangayPayload<ExtArgs> | null
+    approved_address: Prisma.$approved_addressPayload<ExtArgs> | null
     user_employee: Prisma.$user_employeePayload<ExtArgs>
     customer: Prisma.$customerPayload<ExtArgs>[]
     delivery: Prisma.$deliveryPayload<ExtArgs>[]
@@ -900,6 +1084,7 @@ export type $addressPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     address_id: number
     street_house_building_no: string | null
     barangay_id: number | null
+    approved_address_id: number | null
     user_id: number
     is_default: boolean | null
   }, ExtArgs["result"]["address"]>
@@ -1297,6 +1482,7 @@ readonly fields: addressFieldRefs;
 export interface Prisma__addressClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   barangay<T extends Prisma.address$barangayArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.address$barangayArgs<ExtArgs>>): Prisma.Prisma__barangayClient<runtime.Types.Result.GetResult<Prisma.$barangayPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  approved_address<T extends Prisma.address$approved_addressArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.address$approved_addressArgs<ExtArgs>>): Prisma.Prisma__approved_addressClient<runtime.Types.Result.GetResult<Prisma.$approved_addressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   user_employee<T extends Prisma.user_employeeDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.user_employeeDefaultArgs<ExtArgs>>): Prisma.Prisma__user_employeeClient<runtime.Types.Result.GetResult<Prisma.$user_employeePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   customer<T extends Prisma.address$customerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.address$customerArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$customerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   delivery<T extends Prisma.address$deliveryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.address$deliveryArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$deliveryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1332,6 +1518,7 @@ export interface addressFieldRefs {
   readonly address_id: Prisma.FieldRef<"address", 'Int'>
   readonly street_house_building_no: Prisma.FieldRef<"address", 'String'>
   readonly barangay_id: Prisma.FieldRef<"address", 'Int'>
+  readonly approved_address_id: Prisma.FieldRef<"address", 'Int'>
   readonly user_id: Prisma.FieldRef<"address", 'Int'>
   readonly is_default: Prisma.FieldRef<"address", 'Boolean'>
 }
@@ -1746,6 +1933,25 @@ export type address$barangayArgs<ExtArgs extends runtime.Types.Extensions.Intern
    */
   include?: Prisma.barangayInclude<ExtArgs> | null
   where?: Prisma.barangayWhereInput
+}
+
+/**
+ * address.approved_address
+ */
+export type address$approved_addressArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the approved_address
+   */
+  select?: Prisma.approved_addressSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the approved_address
+   */
+  omit?: Prisma.approved_addressOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.approved_addressInclude<ExtArgs> | null
+  where?: Prisma.approved_addressWhereInput
 }
 
 /**

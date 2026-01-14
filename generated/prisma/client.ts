@@ -45,6 +45,11 @@ export { Prisma }
  */
 export type address = Prisma.addressModel
 /**
+ * Model approved_address
+ * 
+ */
+export type approved_address = Prisma.approved_addressModel
+/**
  * Model auth_group
  * 
  */

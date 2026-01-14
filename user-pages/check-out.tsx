@@ -7,7 +7,6 @@ import Header from "../app/common/Header";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -144,9 +143,10 @@ export default function CheckoutPage() {
   const [couriers, setCouriers] = useState<Courier[]>(FALLBACK_COURIERS);
   const [selectedAddressId, setSelectedAddressId] = useState<string>(FALLBACK_ADDRESSES[0]?.id ?? "");
   const [selectedCourierId, setSelectedCourierId] = useState<string>(FALLBACK_COURIERS[0]?.id ?? "");
-  const [notes, setNotes] = useState<string>("");
   const [weightsKg, setWeightsKg] = useState<Record<string, number>>({});
   const [shippingError, setShippingError] = useState<string | null>(null);
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [placeOrderError, setPlaceOrderError] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -163,30 +163,29 @@ export default function CheckoutPage() {
     let cancelled = false;
 
     const userId = readUserIdFromStorage();
-    if (!userId) {
-      setAddresses(FALLBACK_ADDRESSES);
-      setCouriers(FALLBACK_COURIERS);
-      setSelectedAddressId((prev) => prev || FALLBACK_ADDRESSES[0]?.id || "");
-      setSelectedCourierId((prev) => prev || FALLBACK_COURIERS[0]?.id || "");
-      return;
-    }
 
     (async () => {
       try {
-        const res = await fetch(`/api/checkout/lookups?userId=${userId}`, { cache: "no-store" });
+        const url = userId ? `/api/checkout/lookups?userId=${userId}` : "/api/checkout/lookups";
+        const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to load checkout lookups");
+
         const json = (await res.json()) as {
           data?: { couriers?: Courier[]; addresses?: Address[] };
         };
 
-        const nextAddresses = json.data?.addresses?.length ? json.data.addresses : FALLBACK_ADDRESSES;
         const nextCouriers = json.data?.couriers?.length ? json.data.couriers : FALLBACK_COURIERS;
+        const nextAddresses = userId
+          ? json.data?.addresses?.length
+            ? json.data.addresses
+            : FALLBACK_ADDRESSES
+          : FALLBACK_ADDRESSES;
 
         if (cancelled) return;
-        setAddresses(nextAddresses);
         setCouriers(nextCouriers);
-        setSelectedAddressId((prev) => prev || nextAddresses[0]?.id || "");
+        setAddresses(nextAddresses);
         setSelectedCourierId((prev) => prev || nextCouriers[0]?.id || "");
+        setSelectedAddressId((prev) => prev || nextAddresses[0]?.id || "");
       } catch {
         if (cancelled) return;
         setAddresses(FALLBACK_ADDRESSES);
@@ -265,7 +264,9 @@ export default function CheckoutPage() {
 
   const total = subtotal + shippingCost;
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
+    setPlaceOrderError(null);
+
     if (items.length === 0) {
       window.alert("No items selected for checkout.");
       return;
@@ -279,12 +280,47 @@ export default function CheckoutPage() {
       return;
     }
 
-    window.alert(
-      `Order placed (demo only).\n\nItems: ${items.length}\nPayment: CASH ON DELIVERY\nTotal: ₱${total.toLocaleString()}`
-    );
+    const userId = readUserIdFromStorage();
+    if (!userId) {
+      window.alert("Please sign in to place an order.");
+      router.push("/login");
+      return;
+    }
 
-    localStorage.removeItem(CHECKOUT_STORAGE_KEY);
-    router.push("/user-dashboard");
+    try {
+      setPlacingOrder(true);
+      const res = await fetch("/api/checkout/place", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          userId,
+          addressId: selectedAddressId,
+          courierId: selectedCourierId,
+          paymentType: "CASH_ON_DELIVERY",
+          items: items.map((it) => ({ productId: it.product, quantity: it.quantity })),
+        }),
+      });
+
+      const json = (await res.json()) as {
+        data?: { saleId?: number; total?: number };
+        error?: string;
+      };
+
+      if (!res.ok || !json.data?.saleId) {
+        throw new Error(json.error || "Failed to place order");
+      }
+
+      localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+      window.alert(
+        `Order placed!\n\nOrder ID: ${json.data.saleId}\nPayment: CASH ON DELIVERY\nTotal: ₱${Number(json.data.total ?? total).toLocaleString()}`,
+      );
+
+      router.push("/user/orders");
+    } catch (e) {
+      setPlaceOrderError(e instanceof Error ? e.message : "Failed to place order");
+    } finally {
+      setPlacingOrder(false);
+    }
   };
 
   const hasItems = items.length > 0;
@@ -311,13 +347,11 @@ export default function CheckoutPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-surface rounded-xl border border-border overflow-hidden">
-                <div className="p-6 border-b border-border">
-                  <h2 className="text-xl font-semibold text-foreground">Order Items</h2>
-                </div>
-                <div className="p-4">
+              <div className="bg-surface rounded-2xl border border-border overflow-hidden">
+
+                <div className="">
                   <Table>
-                    <TableHeader>
+                    <TableHeader className="h-16 text-md font-semibold">
                       <TableRow>
                         <TableHead>Product</TableHead>
                         <TableHead>Category / Brand</TableHead>
@@ -329,15 +363,15 @@ export default function CheckoutPage() {
                     <TableBody>
                       {items.map((it) => (
                         <TableRow key={it.product}>
-                          <TableCell className="whitespace-normal">
+                          <TableCell className="whitespace-normal h-20">
                             <div className="flex items-center gap-3">
                               <img
                                 src={it.product_image || "/placeholder.svg"}
                                 alt={it.product_name}
-                                className="h-12 w-12 rounded-md border border-border object-cover"
+                                className="h-12 w-12  object-cover"
                               />
                               <div className="min-w-0">
-                                <div className="font-medium text-foreground line-clamp-1">{it.product_name}</div>
+                                <div className="font-semibold text-foreground line-clamp-1 text-md">{it.product_name}</div>
                               </div>
                             </div>
                           </TableCell>
@@ -356,7 +390,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="bg-surface rounded-xl border border-border p-6 space-y-5">
+              <div className="bg-surface rounded-xl border border-border p-6 space-y-5 w-full">
                 <div>
                   <h3 className="text-lg font-semibold text-foreground">Delivery</h3>
                   <p className="text-sm text-muted-foreground">Select delivery address and courier. Payment is Cash on Delivery for now.</p>
@@ -368,8 +402,8 @@ export default function CheckoutPage() {
                   </div>
                 ) : null}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                <div className="">
+                  <div className="space-y-2 lg:col-span-1">
                     <div className="text-sm font-medium text-foreground">Address</div>
                     <Select value={selectedAddressId} onValueChange={setSelectedAddressId}>
                       <SelectTrigger>
@@ -383,12 +417,9 @@ export default function CheckoutPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <div className="text-xs text-muted-foreground">
-                      {(addresses.find((a) => a.id === selectedAddressId)?.lines ?? []).join(" • ")}
-                    </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-2 flex flex-row justify-between lg:justify-start lg:gap-6 mt-4">
                     <div className="text-sm font-medium text-foreground">Courier</div>
                     <Select value={selectedCourierId} onValueChange={setSelectedCourierId}>
                       <SelectTrigger>
@@ -402,34 +433,21 @@ export default function CheckoutPage() {
                         ))}
                       </SelectContent>
                     </Select>
-                    <div className="text-xs text-muted-foreground">
-                      {selectedCourier
-                        ? [
-                            selectedCourier.eta,
-                            `Base: ₱${selectedCourier.base_rate.toLocaleString()} (≤ 1kg)`,
-                            `+ ₱${selectedCourier.rate_per_kg.toLocaleString()}/kg after`,
-                          ]
-                            .filter(Boolean)
-                            .join(" • ")
-                        : ""}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">Payment method</div>
-                    <div className="text-sm text-muted-foreground">Cash on Delivery</div>
-                    <div className="text-xs text-muted-foreground">
-                      Total weight: {totalWeightKg.toFixed(2)} kg (min fee starts at {MIN_FEE_WEIGHT_KG} kg)
+                    <div className="space-y-1 lg:col-span-1">
+                      <div className="text-sm font-medium text-foreground">Payment</div>
+                      <div className="text-sm text-muted-foreground">Cash on Delivery</div>
+                      <div className="text-xs text-muted-foreground">Total weight: {totalWeightKg.toFixed(2)} kg</div>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">Notes (optional)</div>
-                    <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. Call upon arrival" />
-                  </div>
                 </div>
+
+                {placeOrderError ? (
+                  <div className="text-sm text-destructive border border-destructive/30 bg-destructive/10 rounded-md p-3">
+                    {placeOrderError}
+                  </div>
+                ) : null}
+
               </div>
             </div>
 
@@ -452,8 +470,8 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <Button className="w-full" onClick={handlePlaceOrder}>
-                  Place Order
+                <Button className="w-full" onClick={handlePlaceOrder} disabled={placingOrder}>
+                  {placingOrder ? "Placing…" : "Place Order"}
                 </Button>
 
                 <p className="text-xs text-muted-foreground">

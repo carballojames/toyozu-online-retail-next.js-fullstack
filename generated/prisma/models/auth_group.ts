@@ -292,10 +292,6 @@ export type Auth_groupScalarRelationFilter = {
   isNot?: Prisma.auth_groupWhereInput
 }
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string
-}
-
 export type auth_groupCreateNestedOneWithoutAuth_group_permissionsInput = {
   create?: Prisma.XOR<Prisma.auth_groupCreateWithoutAuth_group_permissionsInput, Prisma.auth_groupUncheckedCreateWithoutAuth_group_permissionsInput>
   connectOrCreate?: Prisma.auth_groupCreateOrConnectWithoutAuth_group_permissionsInput

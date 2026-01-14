@@ -12,6 +12,8 @@ function routeForTab(id: AdminTabId): string {
       return "/admin-dashboard/product-management";
     case "inventory":
       return "/admin-dashboard/inventory-management";
+    case "addresses":
+      return "/admin-dashboard/address-management";
     case "users":
       return "/admin-dashboard/user-management";
     default:

@@ -4,6 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "../app/common/Header";
 import { Button } from "@/components/ui/button";
+import { Trash2 }from "lucide-react"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -258,7 +267,7 @@ export default function ShoppingCart() {
     <div className="min-h-screen bg-primary-background">
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 pb-12 mt-8">
+      <div className="max-w-[1500px] mx-auto px-4 pb-12 mt-8">
         {cartError && (
           <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
             {cartError}
@@ -288,90 +297,160 @@ export default function ShoppingCart() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_auto]">
           {/* Left Column */}
-          <div className="lg:col-span-2 bg-surface text-surface-foreground rounded-xl shadow-sm border border-border">
-            {/* Header Row */}
-            <div className="hidden sm:grid grid-cols-6 font-semibold text-muted-foreground border-b border-border px-6 py-3 text-sm uppercase tracking-wide">
-              <div className="col-span-2">Product</div>
-              <div>Category / Brand</div>
-              <div>Price</div>
-              <div>Quantity</div>
-              <div className="text-right">Subtotal</div>
+          <div className="bg-surface text-surface-foreground rounded-xl shadow-sm border border-border">
+            {/* Desktop Table */}
+            <div className="hidden sm:block">
+              <Table>
+                <TableHeader>
+                  <TableRow className="text-muted-foreground uppercase tracking-wide text-xs">
+                    <TableHead className="w-[520px]">Product</TableHead>
+                    <TableHead>Category / Brand</TableHead>
+                    <TableHead className="text-right">Price</TableHead>
+                    <TableHead className="text-right">Quantity</TableHead>
+                    <TableHead className="text-right">Subtotal</TableHead>
+                    <TableHead className="w-[56px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cartItems.map((item) => {
+                    const imageSrc = item.product_image || "/placeholder.svg";
+                    const quantity = quantities[item.product] ?? item.quantity ?? 1;
+                    const subtotal = (Number(item.selling_price) * quantity).toFixed(2);
+
+                    return (
+                      <TableRow key={item.product} className="hover:bg-muted/50">
+                        <TableCell>
+                          <div className="flex items-center gap-4">
+                            <input
+                              type="checkbox"
+                              checked={!!selectedItems[item.product]}
+                              onChange={() => toggleSelection(item.product)}
+                              className="w-4 h-4"
+                            />
+                            <img
+                              src={imageSrc}
+                              alt={item.product_name || "Product image"}
+                              className="w-20 h-20 object-cover rounded-md border border-border"
+                            />
+                            <div>
+                              <div className="font-medium text-foreground line-clamp-1">{item.product_name}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-sm text-muted-foreground">
+                          {item.category_name || "Category"} › {item.brand_name || "Brand"}
+                        </TableCell>
+
+                        <TableCell className="text-right font-medium text-foreground">
+                          ₱{Number(item.selling_price).toFixed(2)}
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              onClick={() => updateQuantity(item.product, -1)}
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
+                              −
+                            </Button>
+                            <span className="w-8 text-center font-medium">{quantity}</span>
+                            <Button
+                              onClick={() => updateQuantity(item.product, 1)}
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
+                              +
+                            </Button>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-right font-semibold text-primary">₱{subtotal}</TableCell>
+
+                        <TableCell className="text-right">
+                          <Button
+                            onClick={() => handleDelete(item.product)}
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive"
+                            aria-label="Remove item"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
 
-            {/* Items */}
-            <div className="divide-y">
+            {/* Mobile List */}
+            <div className="divide-y sm:hidden">
               {cartItems.map((item) => {
                 const imageSrc = item.product_image || "/placeholder.svg";
-
                 const quantity = quantities[item.product] ?? item.quantity ?? 1;
                 const subtotal = (Number(item.selling_price) * quantity).toFixed(2);
 
                 return (
-                  <div
-                    key={item.product}
-                    className="grid grid-cols-1 sm:grid-cols-6 items-center gap-4 p-4 sm:px-6 hover:bg-muted/50 transition"
-                  >
-                    {/* Product */}
-                    <div className="col-span-2 flex items-center gap-4">
+                  <div key={item.product} className="p-4 hover:bg-muted/50 transition">
+                    <div className="flex items-start gap-4">
                       <input
                         type="checkbox"
                         checked={!!selectedItems[item.product]}
                         onChange={() => toggleSelection(item.product)}
-                        className="w-4 h-4"
+                        className="mt-1 w-4 h-4"
                       />
                       <img
                         src={imageSrc}
                         alt={item.product_name || "Product image"}
                         className="w-20 h-20 object-cover rounded-md border border-border"
                       />
-                      <div>
-                        <h3 className="font-semibold text-foreground line-clamp-1">
-                          {item.product_name}
-                        </h3>
-                        <Button
-                          onClick={() => handleDelete(item.product)}
-                          variant="link"
-                          className="h-auto p-0 mt-1 text-xs text-destructive"
-                        >
-                          Remove
-                        </Button>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-foreground line-clamp-1">{item.product_name}</div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {item.category_name || "Category"} › {item.brand_name || "Brand"}
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <div className="text-foreground font-medium">₱{Number(item.selling_price).toFixed(2)}</div>
+                          <div className="text-right font-semibold text-primary">₱{subtotal}</div>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={() => updateQuantity(item.product, -1)}
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
+                              −
+                            </Button>
+                            <span className="w-8 text-center font-medium">{quantity}</span>
+                            <Button
+                              onClick={() => updateQuantity(item.product, 1)}
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
+                              +
+                            </Button>
+                          </div>
+                          <Button
+                            onClick={() => handleDelete(item.product)}
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive"
+                            aria-label="Remove item"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="text-sm text-muted-foreground">
-                      {item.category_name || "Category"} › {item.brand_name || "Brand"}
-                    </div>
-
-                    <div className="text-foreground font-medium text-center sm:text-left">
-                      ₱{Number(item.selling_price).toFixed(2)}
-                    </div>
-
-                    <div className="flex items-center justify-center sm:justify-start gap-2">
-                      <Button
-                        onClick={() => updateQuantity(item.product, -1)}
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                      >
-                        −
-                      </Button>
-                      <span className="w-8 text-center font-medium">
-                        {quantity}
-                      </span>
-                      <Button
-                        onClick={() => updateQuantity(item.product, 1)}
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                      >
-                        +
-                      </Button>
-                    </div>
-
-                    <div className="text-right font-semibold text-primary">
-                      ₱{subtotal}
                     </div>
                   </div>
                 );
@@ -405,7 +484,7 @@ export default function ShoppingCart() {
           </div>
 
           {/* Right Column - Order Summary */}
-          <div className="lg:sticky lg:top-6 h-fit">
+          <div className="h-fit w-fit lg:sticky lg:top-6">
             <div className="bg-surface text-surface-foreground rounded-xl shadow-sm border border-border p-6">
               <h3 className="text-lg font-semibold mb-4 text-foreground">
                 Order Summary

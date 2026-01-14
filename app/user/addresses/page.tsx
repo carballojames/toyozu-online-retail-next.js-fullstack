@@ -14,5 +14,5 @@ export default function AddressesPage() {
     return <p className="text-center text-muted-foreground">{profileError ?? "No user data found."}</p>;
   }
 
-  return <AddressSection />;
+  return <AddressSection userId={user.id} />;
 }

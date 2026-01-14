@@ -385,6 +385,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   address: 'address',
+  approved_address: 'approved_address',
   auth_group: 'auth_group',
   auth_group_permissions: 'auth_group_permissions',
   auth_permission: 'auth_permission',
@@ -439,7 +440,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "address" | "auth_group" | "auth_group_permissions" | "auth_permission" | "barangay" | "brand" | "car_models" | "cars" | "category" | "condition_item" | "courier" | "customer" | "delivery" | "delivery_history" | "delivery_statuses" | "django_admin_log" | "django_content_type" | "django_migrations" | "django_session" | "merchant" | "mode_payment" | "municipality" | "otp_email_emaildevice" | "product" | "product_car_compatibility" | "product_image" | "product_years" | "province" | "region" | "return_item" | "role_type" | "sale" | "sale_details" | "supplier" | "supplier_email" | "supply" | "supply_details" | "user_cart" | "user_employee" | "user_otp"
+    modelProps: "address" | "approved_address" | "auth_group" | "auth_group_permissions" | "auth_permission" | "barangay" | "brand" | "car_models" | "cars" | "category" | "condition_item" | "courier" | "customer" | "delivery" | "delivery_history" | "delivery_statuses" | "django_admin_log" | "django_content_type" | "django_migrations" | "django_session" | "merchant" | "mode_payment" | "municipality" | "otp_email_emaildevice" | "product" | "product_car_compatibility" | "product_image" | "product_years" | "province" | "region" | "return_item" | "role_type" | "sale" | "sale_details" | "supplier" | "supplier_email" | "supply" | "supply_details" | "user_cart" | "user_employee" | "user_otp"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -514,6 +515,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.addressCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.AddressCountAggregateOutputType> | number
+        }
+      }
+    }
+    approved_address: {
+      payload: Prisma.$approved_addressPayload<ExtArgs>
+      fields: Prisma.approved_addressFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.approved_addressFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.approved_addressFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload>
+        }
+        findFirst: {
+          args: Prisma.approved_addressFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.approved_addressFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload>
+        }
+        findMany: {
+          args: Prisma.approved_addressFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload>[]
+        }
+        create: {
+          args: Prisma.approved_addressCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload>
+        }
+        createMany: {
+          args: Prisma.approved_addressCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.approved_addressCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload>[]
+        }
+        delete: {
+          args: Prisma.approved_addressDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload>
+        }
+        update: {
+          args: Prisma.approved_addressUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload>
+        }
+        deleteMany: {
+          args: Prisma.approved_addressDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.approved_addressUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.approved_addressUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload>[]
+        }
+        upsert: {
+          args: Prisma.approved_addressUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$approved_addressPayload>
+        }
+        aggregate: {
+          args: Prisma.Approved_addressAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateApproved_address>
+        }
+        groupBy: {
+          args: Prisma.approved_addressGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Approved_addressGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.approved_addressCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Approved_addressCountAggregateOutputType> | number
         }
       }
     }
@@ -3446,11 +3521,23 @@ export const AddressScalarFieldEnum = {
   address_id: 'address_id',
   street_house_building_no: 'street_house_building_no',
   barangay_id: 'barangay_id',
+  approved_address_id: 'approved_address_id',
   user_id: 'user_id',
   is_default: 'is_default'
 } as const
 
 export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum]
+
+
+export const Approved_addressScalarFieldEnum = {
+  approved_address_id: 'approved_address_id',
+  street_house_building_no: 'street_house_building_no',
+  barangay_id: 'barangay_id',
+  is_active: 'is_active',
+  created_at: 'created_at'
+} as const
+
+export type Approved_addressScalarFieldEnum = (typeof Approved_addressScalarFieldEnum)[keyof typeof Approved_addressScalarFieldEnum]
 
 
 export const Auth_groupScalarFieldEnum = {
@@ -3942,6 +4029,20 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
  * Reference to a field of type 'BigInt'
  */
 export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
@@ -3966,20 +4067,6 @@ export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Decimal[]'
  */
 export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-/**
- * Reference to a field of type 'DateTime'
- */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
-    
-
-
-/**
- * Reference to a field of type 'DateTime[]'
- */
-export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
 
 
@@ -4106,6 +4193,7 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   address?: Prisma.addressOmit
+  approved_address?: Prisma.approved_addressOmit
   auth_group?: Prisma.auth_groupOmit
   auth_group_permissions?: Prisma.auth_group_permissionsOmit
   auth_permission?: Prisma.auth_permissionOmit

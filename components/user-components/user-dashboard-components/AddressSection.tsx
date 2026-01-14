@@ -1,97 +1,182 @@
-"use client"
+"use client";
 
-import { useMemo, useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-type Address = {
-  id: string
-  label: string
-  fullName: string
-  phone: string
-  line1: string
-  city: string
-  province: string
-  region: string
-  isDefault?: boolean
+import { GeocodeAddressSearch, type GeocodeAddressOption } from "@/components/common/geocode-address-search";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+
+type ApiAddress = {
+  id: number;
+  street: string | null;
+  approved_address: { id: number; label: string } | null;
+  is_default: boolean;
+  barangay: {
+    id: number;
+    name: string;
+    municipality: {
+      id: number;
+      name: string;
+      province: {
+        id: number;
+        name: string;
+        region: { id: number; name: string } | null;
+      } | null;
+    } | null;
+  } | null;
+};
+
+type Props = {
+  userId: number;
+};
+
+function formatAddress(a: ApiAddress): string {
+  const parts: string[] = [];
+  if (a.approved_address?.label) parts.push(a.approved_address.label);
+  else if (a.street) parts.push(a.street);
+  if (a.barangay?.name) parts.push(a.barangay.name);
+  if (a.barangay?.municipality?.name) parts.push(a.barangay.municipality.name);
+  if (a.barangay?.municipality?.province?.name) parts.push(a.barangay.municipality.province.name);
+  if (a.barangay?.municipality?.province?.region?.name) parts.push(a.barangay.municipality.province.region.name);
+  return parts.filter(Boolean).join(", ");
 }
 
-const MOCK_ADDRESSES: Address[] = [
-  {
-    id: "addr_1",
-    label: "Home",
-    fullName: "Juan Dela Cruz",
-    phone: "0917 000 0000",
-    line1: "123 Main St, Barangay Sample",
-    city: "Makati",
-    province: "Metro Manila",
-    region: "NCR",
-    isDefault: true,
-  },
-  {
-    id: "addr_2",
-    label: "Work",
-    fullName: "Juan Dela Cruz",
-    phone: "0917 000 0000",
-    line1: "Bldg 2, Example Ave",
-    city: "Taguig",
-    province: "Metro Manila",
-    region: "NCR",
-  },
-]
+export default function AddressSection({ userId }: Props) {
+  const [addresses, setAddresses] = useState<ApiAddress[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-export default function AddressSection() {
-  const [addresses, setAddresses] = useState<Address[]>(MOCK_ADDRESSES)
-  const [showForm, setShowForm] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<GeocodeAddressOption | null>(null);
+  const [isDefault, setIsDefault] = useState(false);
 
-  const [label, setLabel] = useState("")
-  const [fullName, setFullName] = useState("")
-  const [phone, setPhone] = useState("")
-  const [line1, setLine1] = useState("")
-  const [city, setCity] = useState("")
-  const [province, setProvince] = useState("")
-  const [region, setRegion] = useState("")
+  const hasDefault = useMemo(() => addresses.some((a) => a.is_default), [addresses]);
 
-  const hasDefault = useMemo(() => addresses.some((a) => a.isDefault), [addresses])
+  const loadAddresses = useCallback(async (): Promise<void> => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch(`/api/me/addresses?userId=${encodeURIComponent(String(userId))}`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      const json = (await res.json()) as { data?: ApiAddress[]; error?: string };
+      if (!res.ok) {
+        setError(json.error || "Failed to load addresses");
+        setAddresses([]);
+        return;
+      }
+
+      setAddresses(json.data ?? []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load addresses");
+      setAddresses([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    void loadAddresses();
+  }, [loadAddresses]);
 
   const resetForm = () => {
-    setLabel("")
-    setFullName("")
-    setPhone("")
-    setLine1("")
-    setCity("")
-    setProvince("")
-    setRegion("")
-  }
+    setQuery("");
+    setSelected(null);
+    setIsDefault(false);
+  };
 
-  const handleAddAddress = (e: React.FormEvent) => {
-    e.preventDefault()
-    setMessage(null)
+  const handleAddAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    setError(null);
 
-    if (!label || !fullName || !phone || !line1 || !city || !province || !region) {
-      setMessage("Please complete all fields.")
-      return
+    if (!selected) {
+      setError("Please select an address from the search results.");
+      return;
     }
 
-    const newAddress: Address = {
-      id: `addr_${Date.now()}`,
-      label,
-      fullName,
-      phone,
-      line1,
-      city,
-      province,
-      region,
-      isDefault: !hasDefault,
-    }
+    try {
+      const res = await fetch("/api/me/addresses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          userId,
+          street: selected.label,
+          isDefault: isDefault || !hasDefault,
+        }),
+      });
 
-    setAddresses((prev) => [newAddress, ...prev])
-    setShowForm(false)
-    resetForm()
-    setMessage("Address saved (demo only).")
-  }
+      const json = (await res.json()) as { data?: { id: number }; error?: string };
+      if (!res.ok) {
+        setError(json.error || "Failed to save address");
+        return;
+      }
+
+      setShowForm(false);
+      resetForm();
+      setMessage("Address saved.");
+      await loadAddresses();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save address");
+    }
+  };
+
+  const setDefaultAddress = async (addressId: number) => {
+    setMessage(null);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/me/addresses/${encodeURIComponent(String(addressId))}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ userId, isDefault: true }),
+      });
+
+      const json = (await res.json()) as { data?: { ok: boolean }; error?: string };
+      if (!res.ok) {
+        setError(json.error || "Failed to set default address");
+        return;
+      }
+
+      setMessage("Default address updated.");
+      await loadAddresses();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to set default address");
+    }
+  };
+
+  const removeAddress = async (addressId: number) => {
+    setMessage(null);
+    setError(null);
+
+    try {
+      const res = await fetch(
+        `/api/me/addresses/${encodeURIComponent(String(addressId))}?userId=${encodeURIComponent(String(userId))}`,
+        {
+          method: "DELETE",
+          headers: { Accept: "application/json" },
+        }
+      );
+
+      const json = (await res.json()) as { data?: { ok: boolean }; error?: string };
+      if (!res.ok) {
+        setError(json.error || "Failed to remove address");
+        return;
+      }
+
+      setMessage("Address removed.");
+      await loadAddresses();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to remove address");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -102,46 +187,41 @@ export default function AddressSection() {
 
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">Demo only (no backend)</div>
+          <div className="text-sm text-muted-foreground">Your saved delivery addresses</div>
           <Button onClick={() => setShowForm((v) => !v)}>{showForm ? "Cancel" : "+ Add New Address"}</Button>
         </div>
 
-        {message && (
+        {message ? (
           <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground">{message}</div>
-        )}
+        ) : null}
+
+        {error ? (
+          <div className="rounded-lg border border-destructive/30 bg-card px-4 py-3 text-sm text-destructive">{error}</div>
+        ) : null}
 
         {showForm && (
           <form onSubmit={handleAddAddress} className="bg-card p-6 rounded-lg border space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Label</label>
-                <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Home / Work" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Full name</label>
-                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Juan Dela Cruz" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Phone</label>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0917 000 0000" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Region</label>
-                <Input value={region} onChange={(e) => setRegion(e.target.value)} placeholder="NCR" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Province</label>
-                <Input value={province} onChange={(e) => setProvince(e.target.value)} placeholder="Metro Manila" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">City</label>
-                <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Makati" />
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Search address</label>
+              <GeocodeAddressSearch
+                value={query}
+                onValueChange={(v) => {
+                  setQuery(v);
+                  setSelected(null);
+                }}
+                onSelect={(opt) => {
+                  setSelected(opt);
+                  setQuery(opt.label);
+                }}
+              />
+              <p className="text-xs text-muted-foreground">Tip: type at least 3 characters.</p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Address line</label>
-              <Input value={line1} onChange={(e) => setLine1(e.target.value)} placeholder="Street / House / Building No." />
+            <div className="flex items-center gap-3">
+              <Checkbox id="isDefault" checked={isDefault} onCheckedChange={(v) => setIsDefault(Boolean(v))} />
+              <label htmlFor="isDefault" className="text-sm text-muted-foreground">
+                Set as default address
+              </label>
             </div>
 
             <div className="flex justify-end gap-2">
@@ -161,56 +241,36 @@ export default function AddressSection() {
           </form>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {addresses.map((address) => (
-            <div key={address.id} className="bg-card p-6 rounded-lg border relative">
-              {address.isDefault && (
-                <div className="absolute top-4 right-4">
-                  <Badge variant="primary">Default</Badge>
-                </div>
-              )}
+        {loading ? (
+          <div className="text-sm text-muted-foreground">Loading addresses…</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {addresses.map((address) => (
+              <div key={address.id} className="bg-card p-6 rounded-lg border relative">
+                {address.is_default ? (
+                  <div className="absolute top-4 right-4">
+                    <Badge variant="primary">Default</Badge>
+                  </div>
+                ) : null}
 
-              <div className="mb-3">
-                <div className="text-lg font-semibold text-foreground">{address.label}</div>
-                <div className="text-sm text-muted-foreground">
-                  {address.fullName} • {address.phone}
+                <div className="mb-3">
+                  <div className="text-lg font-semibold text-foreground">Delivery address</div>
+                  <div className="text-sm text-muted-foreground">{formatAddress(address)}</div>
+                </div>
+
+                <div className="mt-4 flex gap-2">
+                  <Button type="button" variant="outline" onClick={() => void setDefaultAddress(address.id)}>
+                    Set Default
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={() => void removeAddress(address.id)}>
+                    Remove
+                  </Button>
                 </div>
               </div>
-
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <div className="text-foreground font-medium">{address.line1}</div>
-                <div>
-                  {address.city}, {address.province}
-                </div>
-                <div>{address.region}</div>
-              </div>
-
-              <div className="mt-4 flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a.id === address.id })))
-                    setMessage("Default address updated (demo only).")
-                  }}
-                >
-                  Set Default
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setAddresses((prev) => prev.filter((a) => a.id !== address.id))
-                    setMessage("Address removed (demo only).")
-                  }}
-                >
-                  Remove
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }

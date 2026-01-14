@@ -11,12 +11,27 @@ model address {
   address_id               Int           @id @default(autoincrement())
   street_house_building_no String?       @db.VarChar(255)
   barangay_id              Int?
+  approved_address_id      Int?
   user_id                  Int
   is_default               Boolean?      @default(false)
   barangay                 barangay?     @relation(fields: [barangay_id], references: [barangay_id], onDelete: NoAction, onUpdate: NoAction)
+  approved_address         approved_address? @relation(fields: [approved_address_id], references: [approved_address_id], onDelete: SetNull, onUpdate: NoAction)
   user_employee            user_employee @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "fk_address_user")
   customer                 customer[]
   delivery                 delivery[]
+}
+
+model approved_address {
+  approved_address_id      Int       @id @default(autoincrement())
+  street_house_building_no String    @db.VarChar(255)
+  barangay_id              Int
+  is_active                Boolean   @default(true)
+  created_at               DateTime  @default(now()) @db.Timestamptz(6)
+  barangay                 barangay  @relation(fields: [barangay_id], references: [barangay_id], onDelete: Restrict, onUpdate: NoAction)
+  address                  address[]
+
+  @@unique([barangay_id, street_house_building_no], map: "uq_approved_address_barangay_street")
+  @@index([barangay_id], map: "idx_approved_address_barangay")
 }
 
 model auth_group {
@@ -58,6 +73,7 @@ model barangay {
   name            String        @db.VarChar(255)
   municipality_id Int?
   address         address[]
+  approved_address approved_address[]
   municipality    municipality? @relation(fields: [municipality_id], references: [municipality_id], onDelete: NoAction, onUpdate: NoAction)
 }
 

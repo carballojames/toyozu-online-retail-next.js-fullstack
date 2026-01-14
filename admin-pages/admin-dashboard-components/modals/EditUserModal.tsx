@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { AddressCascader, type AddressCascaderValue } from "@/components/common/address-cascader";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -31,6 +33,26 @@ type ApiUser = {
   contact_type: string | null;
 };
 
+type ApiAddress = {
+  id: number;
+  street: string | null;
+  approved_address: { id: number; label: string } | null;
+  is_default: boolean;
+  barangay: {
+    id: number;
+    name: string;
+    municipality: {
+      id: number;
+      name: string;
+      province: {
+        id: number;
+        name: string;
+        region: { id: number; name: string } | null;
+      } | null;
+    } | null;
+  } | null;
+};
+
 type Props = {
   open: boolean;
   userId: number | null;
@@ -50,6 +72,17 @@ function toStringOrEmpty(value: unknown): string {
   return String(value);
 }
 
+function formatAddress(a: ApiAddress): string {
+  const parts: string[] = [];
+  if (a.approved_address?.label) parts.push(a.approved_address.label);
+  else if (a.street) parts.push(a.street);
+  if (a.barangay?.name) parts.push(a.barangay.name);
+  if (a.barangay?.municipality?.name) parts.push(a.barangay.municipality.name);
+  if (a.barangay?.municipality?.province?.name) parts.push(a.barangay.municipality.province.name);
+  if (a.barangay?.municipality?.province?.region?.name) parts.push(a.barangay.municipality.province.region.name);
+  return parts.filter(Boolean).join(", ");
+}
+
 export default function EditUserModal({ open, userId, onOpenChange, onSaved }: Props) {
   const numericUserId = useMemo(() => {
     if (!userId) return NaN;
@@ -66,6 +99,83 @@ export default function EditUserModal({ open, userId, onOpenChange, onSaved }: P
   const [mobilePhone, setMobilePhone] = useState<string>("");
   const [roleId, setRoleId] = useState<string>("4");
   const [contactType, setContactType] = useState<string>("email");
+
+  const [addresses, setAddresses] = useState<ApiAddress[]>([]);
+  const [addressesLoading, setAddressesLoading] = useState(false);
+  const [addressesError, setAddressesError] = useState<string>("");
+  const [addressApprovedId, setAddressApprovedId] = useState<string>("");
+  const [approvedOptions, setApprovedOptions] = useState<Array<{ id: number; label: string }>>([]);
+  const [approvedLoading, setApprovedLoading] = useState(false);
+  const [addressIsDefault, setAddressIsDefault] = useState(false);
+  const [addressCascade, setAddressCascade] = useState<AddressCascaderValue>({
+    islandGroup: "",
+    regionId: null,
+    municipalityId: null,
+    barangayId: null,
+  });
+
+  const loadApprovedAddresses = useCallback(async (barangayId: number | null) => {
+    if (!barangayId) {
+      setApprovedOptions([]);
+      setAddressApprovedId("");
+      return;
+    }
+
+    try {
+      setApprovedLoading(true);
+      const res = await fetch(`/api/locations/approved-addresses?barangayId=${encodeURIComponent(String(barangayId))}`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      const json = (await res.json()) as { data?: Array<{ id: number; label: string }>; error?: string };
+      if (!res.ok) {
+        setApprovedOptions([]);
+        setAddressApprovedId("");
+        setAddressesError(json.error || "Failed to load approved addresses");
+        return;
+      }
+
+      setApprovedOptions(json.data ?? []);
+      setAddressApprovedId("");
+    } catch (e) {
+      setApprovedOptions([]);
+      setAddressApprovedId("");
+      setAddressesError(e instanceof Error ? e.message : "Failed to load approved addresses");
+    } finally {
+      setApprovedLoading(false);
+    }
+  }, []);
+
+  const loadAddresses = useCallback(async () => {
+    if (!Number.isFinite(numericUserId)) return;
+
+    try {
+      setAddressesLoading(true);
+      setAddressesError("");
+
+      const res = await fetch(`/api/admin/users/${encodeURIComponent(String(numericUserId))}/addresses`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      const json = (await res.json()) as { data?: ApiAddress[]; error?: string };
+      if (!res.ok) {
+        setAddressesError(json.error || "Failed to load addresses");
+        setAddresses([]);
+        return;
+      }
+
+      setAddresses(json.data ?? []);
+    } catch (e) {
+      setAddressesError(e instanceof Error ? e.message : "Failed to load addresses");
+      setAddresses([]);
+    } finally {
+      setAddressesLoading(false);
+    }
+  }, [numericUserId]);
 
   useEffect(() => {
     if (!open) return;
@@ -98,6 +208,8 @@ export default function EditUserModal({ open, userId, onOpenChange, onSaved }: P
         setMobilePhone(toStringOrEmpty(u.mobile_phone));
         setRoleId(String(u.role_id ?? 4));
         setContactType(u.contact_type === "phone" ? "phone" : "email");
+
+        await loadAddresses();
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to load user");
       } finally {
@@ -107,7 +219,44 @@ export default function EditUserModal({ open, userId, onOpenChange, onSaved }: P
 
     void load();
     return () => controller.abort();
-  }, [open, numericUserId]);
+  }, [open, numericUserId, loadAddresses]);
+
+  const saveAddress = async (): Promise<void> => {
+    if (!Number.isFinite(numericUserId)) return;
+
+    setAddressesError("");
+
+    const approvedIdNum = addressApprovedId ? Number(addressApprovedId) : NaN;
+    if (!Number.isFinite(approvedIdNum)) {
+      setAddressesError("Select an approved address.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/users/${encodeURIComponent(String(numericUserId))}/addresses`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          approvedAddressId: approvedIdNum,
+          isDefault: addressIsDefault,
+        }),
+      });
+
+      const json = (await res.json()) as { data?: { id: number }; error?: string };
+      if (!res.ok) {
+        setAddressesError(json.error || "Failed to create address");
+        return;
+      }
+
+      setAddressApprovedId("");
+      setAddressIsDefault(false);
+      setAddressCascade({ islandGroup: "", regionId: null, municipalityId: null, barangayId: null });
+      setApprovedOptions([]);
+      await loadAddresses();
+    } catch (e) {
+      setAddressesError(e instanceof Error ? e.message : "Failed to create address");
+    }
+  };
 
   const save = async (): Promise<void> => {
     if (!Number.isFinite(numericUserId)) return;
@@ -204,6 +353,85 @@ export default function EditUserModal({ open, userId, onOpenChange, onSaved }: P
                 <SelectItem value="phone">Phone</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="border-t pt-4">
+            <div className="mb-2 flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium">Addresses</div>
+                <div className="text-xs text-muted-foreground">Add a delivery address for this user</div>
+              </div>
+              <Button type="button" variant="outline" onClick={() => void loadAddresses()} disabled={addressesLoading}>
+                Refresh
+              </Button>
+            </div>
+
+            {addressesError ? <p className="text-sm text-destructive">{addressesError}</p> : null}
+
+            <div className="space-y-3 rounded-md border bg-card p-3">
+              <AddressCascader
+                value={addressCascade}
+                onChange={(next) => {
+                  setAddressCascade(next);
+                  void loadApprovedAddresses(next.barangayId);
+                }}
+                disabled={addressesLoading}
+              />
+
+              <div className="space-y-2">
+                <label className="block mb-1 text-sm">Approved address</label>
+                <Select
+                  value={addressApprovedId}
+                  onValueChange={setAddressApprovedId}
+                  disabled={addressesLoading || approvedLoading || approvedOptions.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={addressCascade.barangayId ? "Select approved address" : "Select barangay first"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {approvedOptions.map((o) => (
+                      <SelectItem key={o.id} value={String(o.id)}>
+                        {o.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {addressCascade.barangayId && !approvedLoading && approvedOptions.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No approved addresses in this barangay yet.</p>
+                ) : null}
+              </div>
+              <div className="flex items-center gap-3">
+                <Checkbox
+                  id="adminIsDefault"
+                  checked={addressIsDefault}
+                  onCheckedChange={(v) => setAddressIsDefault(Boolean(v))}
+                  disabled={addressesLoading}
+                />
+                <label htmlFor="adminIsDefault" className="text-sm text-muted-foreground">
+                  Set as default
+                </label>
+              </div>
+              <div className="flex justify-end">
+                <Button type="button" onClick={() => void saveAddress()} disabled={addressesLoading}>
+                  Add address
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-3 space-y-2">
+              {addressesLoading ? <div className="text-sm text-muted-foreground">Loading addresses…</div> : null}
+              {!addressesLoading && addresses.length === 0 ? (
+                <div className="text-sm text-muted-foreground">No addresses yet.</div>
+              ) : null}
+              {addresses.map((a) => (
+                <div key={a.id} className="rounded-md border px-3 py-2 text-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="text-foreground">{formatAddress(a) || "(incomplete address)"}</div>
+                    {a.is_default ? <span className="text-xs text-muted-foreground">Default</span> : null}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

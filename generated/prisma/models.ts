@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/address'
+export type * from './models/approved_address'
 export type * from './models/auth_group'
 export type * from './models/auth_group_permissions'
 export type * from './models/auth_permission'

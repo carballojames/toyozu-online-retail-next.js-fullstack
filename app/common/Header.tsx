@@ -159,12 +159,12 @@ export default function Header() {
             <Button
               type="button"
               variant="ghost"
-              size="icon"
+              size="md"
               onClick={() => router.push("/cart")}
               aria-label="Cart"
               className="relative cursor-pointer rounded-full"
             >
-              <ShoppingCart className="w-6 h-6" />
+              <ShoppingCart className="w-10 h-10" />
             </Button>
             <span className="absolute -bottom-1 -right-2 bg-primary text-primary-foreground text-xs font-semibold rounded-full w-4 h-4 flex items-center justify-center">
               {cartCount || 0}
@@ -176,8 +176,8 @@ export default function Header() {
         {auth.isLoggedIn ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="ghost" size="icon" aria-label="User menu" className="rounded-full">
-                <User className="w-7 h-7 " />
+              <Button type="button" variant="ghost" size="md" aria-label="User menu" className="rounded-full">
+                <User className="w-full" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">

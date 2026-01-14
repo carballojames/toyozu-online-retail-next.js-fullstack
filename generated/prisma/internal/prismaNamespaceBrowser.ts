@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   address: 'address',
+  approved_address: 'approved_address',
   auth_group: 'auth_group',
   auth_group_permissions: 'auth_group_permissions',
   auth_permission: 'auth_permission',
@@ -113,11 +114,23 @@ export const AddressScalarFieldEnum = {
   address_id: 'address_id',
   street_house_building_no: 'street_house_building_no',
   barangay_id: 'barangay_id',
+  approved_address_id: 'approved_address_id',
   user_id: 'user_id',
   is_default: 'is_default'
 } as const
 
 export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum]
+
+
+export const Approved_addressScalarFieldEnum = {
+  approved_address_id: 'approved_address_id',
+  street_house_building_no: 'street_house_building_no',
+  barangay_id: 'barangay_id',
+  is_active: 'is_active',
+  created_at: 'created_at'
+} as const
+
+export type Approved_addressScalarFieldEnum = (typeof Approved_addressScalarFieldEnum)[keyof typeof Approved_addressScalarFieldEnum]
 
 
 export const Auth_groupScalarFieldEnum = {

@@ -443,10 +443,6 @@ export type django_admin_logOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
-}
-
 export type django_admin_logCreateNestedManyWithoutDjango_content_typeInput = {
   create?: Prisma.XOR<Prisma.django_admin_logCreateWithoutDjango_content_typeInput, Prisma.django_admin_logUncheckedCreateWithoutDjango_content_typeInput> | Prisma.django_admin_logCreateWithoutDjango_content_typeInput[] | Prisma.django_admin_logUncheckedCreateWithoutDjango_content_typeInput[]
   connectOrCreate?: Prisma.django_admin_logCreateOrConnectWithoutDjango_content_typeInput | Prisma.django_admin_logCreateOrConnectWithoutDjango_content_typeInput[]
