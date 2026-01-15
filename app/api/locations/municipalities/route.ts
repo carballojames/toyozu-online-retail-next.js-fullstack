@@ -32,13 +32,16 @@ export async function GET(request: Request) {
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json({
-      data: municipalities.map((m) => ({
-        id: m.municipality_id,
-        name: m.name,
-        postal_code: m.postal_code,
-      })),
-    });
+    return NextResponse.json(
+      {
+        data: municipalities.map((m) => ({
+          id: m.municipality_id,
+          name: m.name,
+          postal_code: m.postal_code,
+        })),
+      },
+      { headers: { "Cache-Control": "public, max-age=600, stale-while-revalidate=1800" } }
+    );
   } catch {
     return NextResponse.json({ error: "Failed to load municipalities" }, { status: 500 });
   }

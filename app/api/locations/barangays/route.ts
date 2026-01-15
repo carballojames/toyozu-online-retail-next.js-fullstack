@@ -24,9 +24,10 @@ export async function GET(request: Request) {
       orderBy: { name: "asc" },
     });
 
-    return NextResponse.json({
-      data: barangays.map((b) => ({ id: b.barangay_id, name: b.name })),
-    });
+    return NextResponse.json(
+      { data: barangays.map((b) => ({ id: b.barangay_id, name: b.name })) },
+      { headers: { "Cache-Control": "public, max-age=600, stale-while-revalidate=1800" } }
+    );
   } catch {
     return NextResponse.json({ error: "Failed to load barangays" }, { status: 500 });
   }

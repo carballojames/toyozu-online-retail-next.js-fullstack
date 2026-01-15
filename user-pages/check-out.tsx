@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import Header from "../app/common/Header";
 
-import { Badge } from "@/components/ui/badge";
+
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -57,20 +57,7 @@ const CHECKOUT_STORAGE_KEY = "checkoutData";
 const MIN_FEE_WEIGHT_KG = 0.1; // 100 grams
 const MIN_FEE_MAX_WEIGHT_KG = 1; // up to 1kg is min fee
 
-const FALLBACK_ADDRESSES: Address[] = [
-  { id: "addr-1", label: "Demo Address", lines: ["Demo Address"] },
-];
-
-const FALLBACK_COURIERS: Courier[] = [
-  {
-    id: "courier-1",
-    name: "Standard Courier",
-    eta: "",
-    base_rate: 120,
-    rate_per_kg: 30,
-    max_weight: null,
-  },
-];
+// Removed fallback addresses/couriers to surface real DB lookup issues to the user.
 
 function readUserIdFromStorage(): number | null {
   if (typeof window === "undefined") return null;
@@ -139,10 +126,13 @@ export default function CheckoutPage() {
   const router = useRouter();
 
   const [items, setItems] = useState<CheckoutItem[]>([]);
-  const [addresses, setAddresses] = useState<Address[]>(FALLBACK_ADDRESSES);
-  const [couriers, setCouriers] = useState<Courier[]>(FALLBACK_COURIERS);
-  const [selectedAddressId, setSelectedAddressId] = useState<string>(FALLBACK_ADDRESSES[0]?.id ?? "");
-  const [selectedCourierId, setSelectedCourierId] = useState<string>(FALLBACK_COURIERS[0]?.id ?? "");
+  const [userId, setUserId] = useState<number | null>(null);
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [couriers, setCouriers] = useState<Courier[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [selectedCourierId, setSelectedCourierId] = useState<string>("");
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const [lookupLoading, setLookupLoading] = useState<boolean>(false);
   const [weightsKg, setWeightsKg] = useState<Record<string, number>>({});
   const [shippingError, setShippingError] = useState<string | null>(null);
   const [placingOrder, setPlacingOrder] = useState(false);
@@ -150,6 +140,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    setUserId(readUserIdFromStorage());
     const parsed = safeParseJson<unknown>(localStorage.getItem(CHECKOUT_STORAGE_KEY));
     if (!parsed || typeof parsed !== "object") {
       setItems([]);
@@ -162,41 +153,87 @@ export default function CheckoutPage() {
   useEffect(() => {
     let cancelled = false;
 
-    const userId = readUserIdFromStorage();
-
-    (async () => {
+    const fetchLookups = async () => {
+      setLookupLoading(true);
       try {
-        const url = userId ? `/api/checkout/lookups?userId=${userId}` : "/api/checkout/lookups";
+        const nextUserId = readUserIdFromStorage();
+        setUserId(nextUserId);
+        const url = nextUserId ? `/api/checkout/lookups?userId=${nextUserId}` : "/api/checkout/lookups";
         const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error("Failed to load checkout lookups");
+        const json = (await res.json().catch(() => null)) as
+          | { data?: { couriers?: Courier[]; addresses?: Address[] }; error?: string }
+          | null;
+        if (!res.ok) {
+          throw new Error(json?.error || `Failed to load checkout lookups (${res.status})`);
+        }
 
-        const json = (await res.json()) as {
-          data?: { couriers?: Courier[]; addresses?: Address[] };
-        };
-
-        const nextCouriers = json.data?.couriers?.length ? json.data.couriers : FALLBACK_COURIERS;
-        const nextAddresses = userId
-          ? json.data?.addresses?.length
+        const nextCouriers = json?.data?.couriers?.length ? json.data.couriers : [];
+        const nextAddresses = nextUserId
+          ? json?.data?.addresses?.length
             ? json.data.addresses
-            : FALLBACK_ADDRESSES
-          : FALLBACK_ADDRESSES;
+            : []
+          : [];
 
         if (cancelled) return;
         setCouriers(nextCouriers);
         setAddresses(nextAddresses);
         setSelectedCourierId((prev) => prev || nextCouriers[0]?.id || "");
         setSelectedAddressId((prev) => prev || nextAddresses[0]?.id || "");
-      } catch {
+
+        setLookupError(null);
+      } catch (e) {
         if (cancelled) return;
-        setAddresses(FALLBACK_ADDRESSES);
-        setCouriers(FALLBACK_COURIERS);
+        setAddresses([]);
+        setCouriers([]);
+        setLookupError(e instanceof Error ? e.message : "Unable to load checkout lookups.");
+      } finally {
+        if (!cancelled) setLookupLoading(false);
       }
-    })();
+    };
+
+    fetchLookups();
 
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const handleRetryLookups = async () => {
+    setLookupError(null);
+    setLookupLoading(true);
+    try {
+      const nextUserId = readUserIdFromStorage();
+      setUserId(nextUserId);
+      const url = nextUserId ? `/api/checkout/lookups?userId=${nextUserId}` : "/api/checkout/lookups";
+      const res = await fetch(url, { cache: "no-store" });
+      const json = (await res.json().catch(() => null)) as
+        | { data?: { couriers?: Courier[]; addresses?: Address[] }; error?: string }
+        | null;
+      if (!res.ok) {
+        throw new Error(json?.error || `Failed to load checkout lookups (${res.status})`);
+      }
+
+      const nextCouriers = json?.data?.couriers?.length ? json.data.couriers : [];
+      const nextAddresses = nextUserId
+        ? json?.data?.addresses?.length
+          ? json.data.addresses
+          : []
+        : [];
+
+      setCouriers(nextCouriers);
+      setAddresses(nextAddresses);
+      setSelectedCourierId((prev) => prev || nextCouriers[0]?.id || "");
+      setSelectedAddressId((prev) => prev || nextAddresses[0]?.id || "");
+
+      setLookupError(null);
+    } catch (e) {
+      setAddresses([]);
+      setCouriers([]);
+      setLookupError(e instanceof Error ? e.message : "Unable to load checkout lookups.");
+    } finally {
+      setLookupLoading(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -330,6 +367,20 @@ export default function CheckoutPage() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 pb-12 mt-8">
+        {lookupError ? (
+          <div className="mb-4 p-3 rounded-md bg-destructive/10 border border-destructive/30 flex items-center justify-between">
+            <div className="text-sm text-destructive">{lookupError}</div>
+            <div className="flex items-center gap-2">
+              <button
+                className="text-sm underline text-destructive"
+                onClick={handleRetryLookups}
+                disabled={lookupLoading}
+              >
+                {lookupLoading ? "Retrying…" : "Retry"}
+              </button>
+            </div>
+          </div>
+        ) : null}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-3xl font-bold text-secondary">Checkout</h1>
@@ -419,6 +470,15 @@ export default function CheckoutPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {addresses.length === 0 ? (
+                      <div className="text-sm text-muted-foreground mt-2">
+                        {userId
+                          ? lookupError
+                            ? "Unable to load delivery addresses right now."
+                            : "No saved addresses yet. Add one in your account."
+                          : "Sign in to load your delivery addresses."}
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="space-y-2 flex flex-row justify-evenly  lg:gap-6 mt-4 ">
@@ -436,6 +496,11 @@ export default function CheckoutPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                      {couriers.length === 0 ? (
+                        <div className="text-sm text-destructive mt-2">
+                          {lookupError ? "Unable to load couriers right now." : "No couriers available right now."}
+                        </div>
+                      ) : null}
                     </div>  
 
                     <div className="space-y-1 lg:col-span-1 w-full">
@@ -475,7 +540,11 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <Button className="w-full" onClick={handlePlaceOrder} disabled={placingOrder}>
+                <Button
+                  className="w-full"
+                  onClick={handlePlaceOrder}
+                  disabled={placingOrder || couriers.length === 0 || !userId || addresses.length === 0}
+                >
                   {placingOrder ? "Placing…" : "Place Order"}
                 </Button>
 

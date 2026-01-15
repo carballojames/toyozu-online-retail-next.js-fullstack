@@ -45,14 +45,17 @@ export async function GET() {
       }),
     ]);
 
-    return NextResponse.json({
-      data: {
-        suppliers: suppliers.map((s) => s.name),
-        brands: brands.map((b) => b.name),
-        categories: categories.map((c) => c.name),
-        conditions: conditions.map((c) => c.name),
+    return NextResponse.json(
+      {
+        data: {
+          suppliers: suppliers.map((s) => s.name),
+          brands: brands.map((b) => b.name),
+          categories: categories.map((c) => c.name),
+          conditions: conditions.map((c) => c.name),
+        },
       },
-    });
+      { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" } }
+    );
   } catch {
     return NextResponse.json(
       { error: "Failed to fetch lookups" },

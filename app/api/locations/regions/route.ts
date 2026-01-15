@@ -52,9 +52,10 @@ export async function GET(request: Request) {
       ? regions.filter((r) => classifyIslandGroup(r.name) === islandGroup)
       : regions;
 
-    return NextResponse.json({
-      data: filtered.map((r) => ({ id: r.region_id, name: r.name })),
-    });
+    return NextResponse.json(
+      { data: filtered.map((r) => ({ id: r.region_id, name: r.name })) },
+      { headers: { "Cache-Control": "public, max-age=600, stale-while-revalidate=1800" } }
+    );
   } catch {
     return NextResponse.json({ error: "Failed to load regions" }, { status: 500 });
   }

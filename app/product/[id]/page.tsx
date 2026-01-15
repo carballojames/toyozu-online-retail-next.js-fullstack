@@ -72,7 +72,9 @@ export default async function ProductDetailPage({
 
   const images = (p.product_image ?? [])
     .map((img) => {
-      const v = img.image_updated_at ? img.image_updated_at.getTime() : 0;
+      const v = img.image_updated_at
+        ? new Date(img.image_updated_at).getTime()
+        : 0;
       const hasBytes = Boolean(img.image_mime);
       const raw = img.image ?? "";
       const url = hasBytes
@@ -164,7 +166,7 @@ export default async function ProductDetailPage({
 
   const relatedProducts: ProductCard[] = related.map((rp) => {
     const first = rp.product_image?.[0];
-    const v = first?.image_updated_at ? first.image_updated_at.getTime() : 0;
+    const v = first?.image_updated_at ? new Date(first.image_updated_at).getTime() : 0;
     const hasBytes = Boolean(first?.image_mime);
     const raw = first?.image ?? "";
     const url = first

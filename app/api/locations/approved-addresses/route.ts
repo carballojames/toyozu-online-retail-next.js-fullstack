@@ -24,9 +24,10 @@ export async function GET(request: Request) {
       orderBy: { street_house_building_no: "asc" },
     });
 
-    return NextResponse.json({
-      data: rows.map((r) => ({ id: r.approved_address_id, label: r.street_house_building_no })),
-    });
+    return NextResponse.json(
+      { data: rows.map((r) => ({ id: r.approved_address_id, label: r.street_house_building_no })) },
+      { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=900" } }
+    );
   } catch {
     return NextResponse.json({ error: "Failed to load approved addresses" }, { status: 500 });
   }

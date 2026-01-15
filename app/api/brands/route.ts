@@ -43,7 +43,10 @@ export async function GET() {
       productCount: b._count.product,
     }));
 
-    return NextResponse.json({ data: { brands } });
+    return NextResponse.json(
+      { data: { brands } },
+      { headers: { "Cache-Control": "public, max-age=300, stale-while-revalidate=600" } }
+    );
   } catch {
     return NextResponse.json({ error: "Failed to fetch brands" }, { status: 500 });
   }
