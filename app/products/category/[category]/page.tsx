@@ -4,8 +4,10 @@ import ProductGrid from "@/components/user-components/product-components/Product
 import ProductNavigator from "@/components/user-components/ProductNavigator";
 import { prisma } from "@/lib/prisma";
 import type { ProductCard } from "@/app/products/[id]/types";
+import { unstable_cache } from "next/cache";
 
 export const runtime = "nodejs";
+export const revalidate = 60;
 
 function normalizePublicImagePath(raw: string): string {
   const trimmed = raw.trim();
@@ -22,26 +24,33 @@ export default async function CategoryProductsPage({
 }) {
   const { category } = await params;
   const categoryName = decodeURIComponent(category);
-
-  const products = await prisma.product.findMany({
-    where: { category: { name: categoryName } },
-    select: {
-      product_id: true,
-      name: true,
-      description: true,
-      selling_price: true,
-      quantity: true,
-      brand: { select: { name: true } },
-      category: { select: { name: true } },
-      product_image: {
-        select: { id: true, image: true, image_mime: true, image_updated_at: true },
-        orderBy: { id: "asc" },
-        take: 1,
-      },
+  const getCategoryProducts = unstable_cache(
+    async (categoryKey: string) => {
+      return prisma.product.findMany({
+        where: { category: { name: categoryKey } },
+        select: {
+          product_id: true,
+          name: true,
+          description: true,
+          selling_price: true,
+          quantity: true,
+          brand: { select: { name: true } },
+          category: { select: { name: true } },
+          product_image: {
+            select: { id: true, image: true, image_mime: true, image_updated_at: true },
+            orderBy: { id: "asc" },
+            take: 1,
+          },
+        },
+        orderBy: { product_id: "desc" },
+        take: 200,
+      });
     },
-    orderBy: { product_id: "desc" },
-    take: 200,
-  });
+    ["products-category"],
+    { revalidate }
+  );
+
+  const products = await getCategoryProducts(categoryName);
 
   const mapped: ProductCard[] = products.map((p) => {
     const first = p.product_image?.[0];

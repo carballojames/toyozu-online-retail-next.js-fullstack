@@ -406,34 +406,39 @@ export default function CheckoutPage() {
                   <div className="space-y-2 lg:col-span-1">
                     <div className="text-sm font-medium text-foreground">Address</div>
                     <Select value={selectedAddressId} onValueChange={setSelectedAddressId}>
-                      <SelectTrigger>
+                      <SelectTrigger className="max-w-full">
                         <SelectValue placeholder="Select address" />
                       </SelectTrigger>
                       <SelectContent>
                         {addresses.map((a) => (
-                          <SelectItem key={a.id} value={a.id}>
-                            {a.label}
+                          <SelectItem key={a.id} value={a.id} className="max-w-full">
+                            <span className="block break-words whitespace-normal line-clamp-2" title={a.label}>
+                              {a.label}
+                            </span>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="space-y-2 flex flex-row justify-between lg:justify-start lg:gap-6 mt-4">
-                    <div className="text-sm font-medium text-foreground">Courier</div>
-                    <Select value={selectedCourierId} onValueChange={setSelectedCourierId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select courier" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {couriers.map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <div className="space-y-1 lg:col-span-1">
+                  <div className="space-y-2 flex flex-row justify-evenly  lg:gap-6 mt-4 ">
+                    <div className="flex flex-col justify-start space-y-1 lg:col-span-1 w-full">
+                      <div className="text-sm font-medium text-foreground">Courier</div>
+                      <Select value={selectedCourierId} onValueChange={setSelectedCourierId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select courier" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {couriers.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>  
+
+                    <div className="space-y-1 lg:col-span-1 w-full">
                       <div className="text-sm font-medium text-foreground">Payment</div>
                       <div className="text-sm text-muted-foreground">Cash on Delivery</div>
                       <div className="text-xs text-muted-foreground">Total weight: {totalWeightKg.toFixed(2)} kg</div>

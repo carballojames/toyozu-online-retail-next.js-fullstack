@@ -5,10 +5,12 @@ import {
   type ProductDetail,
   type ProductCard,
 } from "./types";
+import { unstable_cache } from "next/cache";
 
 import ProductDetailClient from "./ProductDetailClient";
 
 export const runtime = "nodejs";
+export const revalidate = 60;
 
 function normalizePublicImagePath(raw: string): string {
   const trimmed = raw.trim();
@@ -34,23 +36,31 @@ export default async function ProductDetailPage({
     );
   }
 
-  const p = await prisma.product.findUnique({
-    where: { product_id: productId },
-    select: {
-      product_id: true,
-      name: true,
-      description: true,
-      selling_price: true,
-      quantity: true,
-      brand: { select: { name: true } },
-      category: { select: { name: true } },
-      product_image: {
-        select: { id: true, image: true, image_mime: true, image_updated_at: true },
-        orderBy: { id: "asc" },
-        take: 10,
-      },
+  const getProductById = unstable_cache(
+    async (idValue: number) => {
+      return prisma.product.findUnique({
+        where: { product_id: idValue },
+        select: {
+          product_id: true,
+          name: true,
+          description: true,
+          selling_price: true,
+          quantity: true,
+          brand: { select: { name: true } },
+          category: { select: { name: true } },
+          product_image: {
+            select: { id: true, image: true, image_mime: true, image_updated_at: true },
+            orderBy: { id: "asc" },
+            take: 10,
+          },
+        },
+      });
     },
-  });
+    ["product-detail"],
+    { revalidate }
+  );
+
+  const p = await getProductById(productId);
 
   if (!p) {
     return (
@@ -85,25 +95,33 @@ export default async function ProductDetailPage({
     images: images.length ? images : undefined,
   };
 
-  const compatRows = await prisma.product_car_compatibility.findMany({
-    where: { product_id: productId },
-    select: {
-      id: true,
-      car_models: {
+  const getCompatibility = unstable_cache(
+    async (idValue: number) => {
+      return prisma.product_car_compatibility.findMany({
+        where: { product_id: idValue },
         select: {
-          model_name: true,
-          cars: { select: { make: true } },
+          id: true,
+          car_models: {
+            select: {
+              model_name: true,
+              cars: { select: { make: true } },
+            },
+          },
+          product_years_product_car_compatibility_start_year_idToproduct_years: {
+            select: { year: true },
+          },
+          product_years_product_car_compatibility_end_year_idToproduct_years: {
+            select: { year: true },
+          },
         },
-      },
-      product_years_product_car_compatibility_start_year_idToproduct_years: {
-        select: { year: true },
-      },
-      product_years_product_car_compatibility_end_year_idToproduct_years: {
-        select: { year: true },
-      },
+        orderBy: [{ start_year_id: "asc" }, { end_year_id: "asc" }, { id: "asc" }],
+      });
     },
-    orderBy: [{ start_year_id: "asc" }, { end_year_id: "asc" }, { id: "asc" }],
-  });
+    ["product-compatibility"],
+    { revalidate }
+  );
+
+  const compatRows = await getCompatibility(productId);
 
   const compatibility: CompatibilityRow[] = compatRows.map((r) => ({
     id: r.id,
@@ -117,24 +135,32 @@ export default async function ProductDetailPage({
         ?.year ?? null,
   }));
 
-  const related = await prisma.product.findMany({
-    select: {
-      product_id: true,
-      name: true,
-      description: true,
-      selling_price: true,
-      quantity: true,
-      brand: { select: { name: true } },
-      category: { select: { name: true } },
-      product_image: {
-        select: { id: true, image: true, image_mime: true, image_updated_at: true },
-        orderBy: { id: "asc" },
-        take: 1,
-      },
+  const getRelated = unstable_cache(
+    async () => {
+      return prisma.product.findMany({
+        select: {
+          product_id: true,
+          name: true,
+          description: true,
+          selling_price: true,
+          quantity: true,
+          brand: { select: { name: true } },
+          category: { select: { name: true } },
+          product_image: {
+            select: { id: true, image: true, image_mime: true, image_updated_at: true },
+            orderBy: { id: "asc" },
+            take: 1,
+          },
+        },
+        orderBy: { product_id: "desc" },
+        take: 20,
+      });
     },
-    orderBy: { product_id: "desc" },
-    take: 20,
-  });
+    ["product-related"],
+    { revalidate }
+  );
+
+  const related = await getRelated();
 
   const relatedProducts: ProductCard[] = related.map((rp) => {
     const first = rp.product_image?.[0];

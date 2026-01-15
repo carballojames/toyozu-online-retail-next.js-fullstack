@@ -4,6 +4,7 @@ import ProductNavigator from "@/components/user-components/ProductNavigator";
 import ProductGrid from "@/components/user-components/product-components/ProductGrid";
 import { prisma } from "@/lib/prisma";
 import type { ProductCard } from "@/app/products/[id]/types";
+import { unstable_cache } from "next/cache";
 import {
   Pagination,
   PaginationContent,
@@ -16,6 +17,7 @@ import {
 type Props = { searchParams?: Promise<Record<string, string | string[]>> };
 
 export const runtime = "nodejs";
+export const revalidate = 60;
 
 function normalizePublicImagePath(raw: string): string {
   const trimmed = raw.trim();
@@ -73,7 +75,46 @@ export default async function ProductsPage({ searchParams }: Props) {
     };
   }
 
-  const total = await prisma.product.count({ where });
+  const whereKey = JSON.stringify(where);
+
+  const getProductCount = unstable_cache(
+    async (serializedWhere: string) => {
+      const parsed = JSON.parse(serializedWhere) as typeof where;
+      return prisma.product.count({ where: parsed });
+    },
+    ["products-count"],
+    { revalidate }
+  );
+
+  const getProductsPage = unstable_cache(
+    async (serializedWhere: string, take: number, skip: number) => {
+      const parsed = JSON.parse(serializedWhere) as typeof where;
+      return prisma.product.findMany({
+        where: parsed,
+        select: {
+          product_id: true,
+          name: true,
+          description: true,
+          selling_price: true,
+          quantity: true,
+          brand: { select: { name: true } },
+          category: { select: { name: true } },
+          product_image: {
+            select: { id: true, image: true, image_mime: true, image_updated_at: true },
+            orderBy: { id: "asc" },
+            take: 1,
+          },
+        },
+        orderBy: { product_id: "desc" },
+        take,
+        skip,
+      });
+    },
+    ["products-page"],
+    { revalidate }
+  );
+
+  const total = await getProductCount(whereKey);
   const totalPages = Math.max(1, Math.ceil(total / perPage));
   const safePage = Math.min(Math.max(page, 1), totalPages);
 
@@ -87,22 +128,7 @@ export default async function ProductsPage({ searchParams }: Props) {
     return `/products?${params.toString()}`;
   };
 
-  const products = await prisma.product.findMany({
-    where,
-    select: {
-      product_id: true,
-      name: true,
-      description: true,
-      selling_price: true,
-      quantity: true,
-      brand: { select: { name: true } },
-      category: { select: { name: true } },
-      product_image: { select: { id: true, image: true, image_mime: true, image_updated_at: true }, orderBy: { id: "asc" }, take: 1 },
-    },
-    orderBy: { product_id: "desc" },
-    take: perPage,
-    skip: (safePage - 1) * perPage,
-  });
+  const products = await getProductsPage(whereKey, perPage, (safePage - 1) * perPage);
 
   const mapped: ProductCard[] = products.map((p) => {
     const first = p.product_image?.[0];

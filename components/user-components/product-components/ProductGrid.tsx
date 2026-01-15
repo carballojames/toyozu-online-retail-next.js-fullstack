@@ -1,10 +1,10 @@
 "use client";
 
-import React, { JSX, useEffect, useState } from "react";
+import React, { JSX } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { ProductCard, ProductGridProps, ProductImage, ApiProduct } from "@/app/products/[id]/types";
+import type { ProductCard, ProductGridProps } from "@/app/products/[id]/types";
 
 export default function ProductGrid({
   initialProducts,
@@ -13,80 +13,11 @@ export default function ProductGrid({
   category,
   columns = 5,
 }: ProductGridProps & { category?: string; columns?: number }): JSX.Element {
-  const [products, setProducts] = useState<ProductCard[]>(() => initialProducts ?? []);
-  const [loading, setLoading] = useState<boolean>(() => !(initialProducts && initialProducts.length > 0));
-  const [visibleCount, setVisibleCount] = useState<number>(20); // how many to show initially
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (initialProducts && initialProducts.length > 0) {
-      setProducts(initialProducts);
-      setLoading(false);
-      return;
-    }
-
-    const controller = new AbortController();
-
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch("/api/products", {
-          method: "GET",
-          signal: controller.signal,
-          headers: { Accept: "application/json" },
-        });
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch products (${res.status})`);
-        }
-
-        const json = (await res.json()) as { data?: ApiProduct[] };
-        const apiProducts = json.data ?? [];
-
-        const mapped: ProductCard[] = apiProducts.map((p) => {
-          const firstImage = p.product_image?.[0]?.image;
-          return {
-            product_id: p.product_id,
-            name: p.name,
-            description: p.description ?? undefined,
-            selling_price: Number(p.selling_price ?? 0),
-            quantity: Number(p.quantity ?? 0),
-            rating: 0,
-            reviews: 0,
-            discount: undefined,
-            brand_name: p.brand?.name ?? undefined,
-            category_name: p.category?.name ?? undefined,
-            images: firstImage ? [{ image: firstImage }] : undefined,
-          };
-        });
-
-        setProducts(mapped);
-      } catch (e) {
-        if ((e as { name?: string }).name === "AbortError") return;
-        setError(e instanceof Error ? e.message : "Failed to fetch products");
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-
-    return () => controller.abort();
-  }, [initialProducts]);
-
-  if (loading) {
-    return <div className="text-center py-6">Loading products...</div>;
-  }
+  const products = initialProducts ?? [];
+  const visibleCount = 20;
 
   if (!products.length) {
-    return (
-      <div className="text-center py-6 text-gray-500">
-        {error ?? "No products found"}
-      </div>
-    );
+    return <div className="text-center py-6 text-gray-500">No products found</div>;
   }
 
 

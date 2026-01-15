@@ -182,7 +182,7 @@ export default function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={() => router.push("/user")}>Account</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/unauthorized")}>Purchases</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push("/user/orders")}>Purchases</DropdownMenuItem>
 
               {(auth.roleId === "0" || auth.roleId === "1" || auth.roleId === "2" || auth.roleId === "3") && (
                 <DropdownMenuItem onClick={() => router.push("/admin-dashboard")}>

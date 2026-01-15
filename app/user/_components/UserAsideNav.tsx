@@ -19,7 +19,7 @@ export default function UserAsideNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-surface border-r border-border min-h-[calc(100vh-4rem)] sticky top-16">
+    <aside className="w-64 bg-primary-foreground border-r border-border min-h-[calc(100vh-4rem)] sticky top-16">
       <nav className="p-6">
         <ul className="space-y-3">
           {NAV_ITEMS.map((item) => {

@@ -26,7 +26,7 @@ export default function OrdersTable({
   emptyMessage = "No orders found.",
 }: Props) {
   return (
-    <div className="bg-card border border-border rounded-xl p-4">
+    <div className="bg-surface border border-border rounded-xl p-4">
       <Table>
         <TableHeader>
           <TableRow>

@@ -11,6 +11,7 @@ const userIdSchema = z.coerce.number().int().positive();
 const patchSchema = z.object({
   userId: userIdSchema,
   isDefault: z.coerce.boolean().optional(),
+  street: z.string().trim().min(3).max(255).optional(),
 });
 
 export async function PATCH(request: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -28,7 +29,7 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
     }
 
     const addressId = addressIdParsed.data;
-    const { userId, isDefault } = parsed.data;
+    const { userId, isDefault, street } = parsed.data;
 
     await prisma.$transaction(async (tx) => {
       if (isDefault) {
@@ -37,7 +38,16 @@ export async function PATCH(request: Request, ctx: { params: Promise<{ id: strin
 
       await tx.address.updateMany({
         where: { address_id: addressId, user_id: userId },
-        data: { is_default: isDefault ?? false },
+        data: {
+          is_default: isDefault ?? false,
+          ...(street
+            ? {
+                street_house_building_no: street,
+                approved_address_id: null,
+                barangay_id: null,
+              }
+            : {}),
+        },
       });
     });
 

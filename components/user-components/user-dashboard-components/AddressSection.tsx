@@ -6,6 +6,15 @@ import { GeocodeAddressSearch, type GeocodeAddressOption } from "@/components/co
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 type ApiAddress = {
   id: number;
@@ -45,13 +54,21 @@ function formatAddress(a: ApiAddress): string {
 export default function AddressSection({ userId }: Props) {
   const [addresses, setAddresses] = useState<ApiAddress[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<ApiAddress | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<GeocodeAddressOption | null>(null);
+  const [streetLine, setStreetLine] = useState("");
   const [isDefault, setIsDefault] = useState(false);
+
+  const [editQuery, setEditQuery] = useState("");
+  const [editSelected, setEditSelected] = useState<GeocodeAddressOption | null>(null);
+  const [editStreetLine, setEditStreetLine] = useState("");
+  const [editIsDefault, setEditIsDefault] = useState(false);
 
   const hasDefault = useMemo(() => addresses.some((a) => a.is_default), [addresses]);
 
@@ -89,7 +106,16 @@ export default function AddressSection({ userId }: Props) {
   const resetForm = () => {
     setQuery("");
     setSelected(null);
+    setStreetLine("");
     setIsDefault(false);
+  };
+
+  const resetEditForm = () => {
+    setEditQuery("");
+    setEditSelected(null);
+    setEditStreetLine("");
+    setEditIsDefault(false);
+    setEditingAddress(null);
   };
 
   const handleAddAddress = async (e: React.FormEvent) => {
@@ -103,12 +129,15 @@ export default function AddressSection({ userId }: Props) {
     }
 
     try {
+      const normalizedStreet = streetLine.trim();
+      const baseLabel = selected.label.trim();
+      const streetValue = normalizedStreet ? `${normalizedStreet}, ${baseLabel}` : baseLabel;
       const res = await fetch("/api/me/addresses", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           userId,
-          street: selected.label,
+          street: streetValue,
           isDefault: isDefault || !hasDefault,
         }),
       });
@@ -119,7 +148,7 @@ export default function AddressSection({ userId }: Props) {
         return;
       }
 
-      setShowForm(false);
+      setDialogOpen(false);
       resetForm();
       setMessage("Address saved.");
       await loadAddresses();
@@ -149,6 +178,58 @@ export default function AddressSection({ userId }: Props) {
       await loadAddresses();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to set default address");
+    }
+  };
+
+  const openEditDialog = (address: ApiAddress) => {
+    setEditingAddress(address);
+    const baseLabel = address.street || address.approved_address?.label || formatAddress(address);
+    setEditQuery(baseLabel ?? "");
+    setEditSelected(null);
+    setEditStreetLine("");
+    setEditIsDefault(address.is_default);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    setError(null);
+
+    if (!editingAddress) return;
+
+    const normalizedStreet = editStreetLine.trim();
+    const baseLabel = (editSelected?.label || editQuery).trim();
+    if (!baseLabel) {
+      setError("Please provide an address or select from the search results.");
+      return;
+    }
+
+    const streetValue = normalizedStreet ? `${normalizedStreet}, ${baseLabel}` : baseLabel;
+
+    try {
+      const res = await fetch(`/api/me/addresses/${encodeURIComponent(String(editingAddress.id))}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          userId,
+          street: streetValue,
+          isDefault: editIsDefault,
+        }),
+      });
+
+      const json = (await res.json()) as { data?: { ok: boolean }; error?: string };
+      if (!res.ok) {
+        setError(json.error || "Failed to update address");
+        return;
+      }
+
+      setEditDialogOpen(false);
+      resetEditForm();
+      setMessage("Address updated.");
+      await loadAddresses();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update address");
     }
   };
 
@@ -188,8 +269,121 @@ export default function AddressSection({ userId }: Props) {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">Your saved delivery addresses</div>
-          <Button onClick={() => setShowForm((v) => !v)}>{showForm ? "Cancel" : "+ Add New Address"}</Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>+ Add New Address</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Add new address</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleAddAddress} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Search address</label>
+                  <GeocodeAddressSearch
+                    value={query}
+                    onValueChange={(v) => {
+                      setQuery(v);
+                      setSelected(null);
+                    }}
+                    onSelect={(opt) => {
+                      setSelected(opt);
+                      setQuery(opt.label);
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground">Tip: type at least 3 characters.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Street / building / unit</label>
+                  <Input
+                    value={streetLine}
+                    onChange={(e) => setStreetLine(e.target.value)}
+                    placeholder="Building, street, unit"
+                  />
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Checkbox id="isDefault" checked={isDefault} onCheckedChange={(v) => setIsDefault(Boolean(v))} />
+                  <label htmlFor="isDefault" className="text-sm text-muted-foreground">
+                    Set as default address
+                  </label>
+                </div>
+
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setDialogOpen(false);
+                      resetForm();
+                      setMessage(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">Save Address</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
+
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Edit address</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleEditAddress} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Search address</label>
+                <GeocodeAddressSearch
+                  value={editQuery}
+                  onValueChange={(v) => {
+                    setEditQuery(v);
+                    setEditSelected(null);
+                  }}
+                  onSelect={(opt) => {
+                    setEditSelected(opt);
+                    setEditQuery(opt.label);
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">Tip: type at least 3 characters.</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Street / building / unit</label>
+                <Input
+                  value={editStreetLine}
+                  onChange={(e) => setEditStreetLine(e.target.value)}
+                  placeholder="Building, street, unit"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Checkbox id="editIsDefault" checked={editIsDefault} onCheckedChange={(v) => setEditIsDefault(Boolean(v))} />
+                <label htmlFor="editIsDefault" className="text-sm text-muted-foreground">
+                  Set as default address
+                </label>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setEditDialogOpen(false);
+                    resetEditForm();
+                    setMessage(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit">Update Address</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {message ? (
           <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-foreground">{message}</div>
@@ -199,47 +393,6 @@ export default function AddressSection({ userId }: Props) {
           <div className="rounded-lg border border-destructive/30 bg-card px-4 py-3 text-sm text-destructive">{error}</div>
         ) : null}
 
-        {showForm && (
-          <form onSubmit={handleAddAddress} className="bg-card p-6 rounded-lg border space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Search address</label>
-              <GeocodeAddressSearch
-                value={query}
-                onValueChange={(v) => {
-                  setQuery(v);
-                  setSelected(null);
-                }}
-                onSelect={(opt) => {
-                  setSelected(opt);
-                  setQuery(opt.label);
-                }}
-              />
-              <p className="text-xs text-muted-foreground">Tip: type at least 3 characters.</p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Checkbox id="isDefault" checked={isDefault} onCheckedChange={(v) => setIsDefault(Boolean(v))} />
-              <label htmlFor="isDefault" className="text-sm text-muted-foreground">
-                Set as default address
-              </label>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setShowForm(false)
-                  resetForm()
-                  setMessage(null)
-                }}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">Save Address</Button>
-            </div>
-          </form>
-        )}
 
         {loading ? (
           <div className="text-sm text-muted-foreground">Loading addresses…</div>
@@ -255,10 +408,15 @@ export default function AddressSection({ userId }: Props) {
 
                 <div className="mb-3">
                   <div className="text-lg font-semibold text-foreground">Delivery address</div>
-                  <div className="text-sm text-muted-foreground">{formatAddress(address)}</div>
+                  <div className="text-sm text-muted-foreground break-words line-clamp-2">
+                    {formatAddress(address)}
+                  </div>
                 </div>
 
                 <div className="mt-4 flex gap-2">
+                  <Button type="button" variant="outline" onClick={() => openEditDialog(address)}>
+                    Edit
+                  </Button>
                   <Button type="button" variant="outline" onClick={() => void setDefaultAddress(address.id)}>
                     Set Default
                   </Button>

@@ -22,6 +22,9 @@ type Ctx = {
 
 const UserProfileContext = createContext<Ctx | null>(null);
 
+const USER_PROFILE_CACHE_KEY = "user_profile_cache_v1";
+const USER_PROFILE_CACHE_TTL_MS = 5 * 60 * 1000;
+
 function readUserIdFromStorage(): number {
   if (typeof window === "undefined") return NaN;
   try {
@@ -34,12 +37,24 @@ function readUserIdFromStorage(): number {
 }
 
 export function UserProfileProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [loadingUser, setLoadingUser] = useState(true);
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = sessionStorage.getItem(USER_PROFILE_CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { user: UserProfile; ts: number };
+      if (!parsed?.user || typeof parsed.ts !== "number") return null;
+      if (Date.now() - parsed.ts > USER_PROFILE_CACHE_TTL_MS) return null;
+      return parsed.user;
+    } catch {
+      return null;
+    }
+  });
+  const [loadingUser, setLoadingUser] = useState(() => user === null);
   const [profileError, setProfileError] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
-    setLoadingUser(true);
+  const refresh = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoadingUser(true);
     setProfileError(null);
 
     try {
@@ -64,11 +79,17 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       }
 
       setUser(json.data);
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          USER_PROFILE_CACHE_KEY,
+          JSON.stringify({ user: json.data, ts: Date.now() })
+        );
+      }
     } catch {
       setUser(null);
       setProfileError("Failed to load profile.");
     } finally {
-      setLoadingUser(false);
+      if (!opts?.silent) setLoadingUser(false);
     }
   }, []);
 
@@ -97,8 +118,8 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
   }, [user?.id]);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    void refresh({ silent: user !== null });
+  }, [refresh, user]);
 
   const value = useMemo<Ctx>(
     () => ({ user, loadingUser, profileError, refresh, uploadProfilePicture }),

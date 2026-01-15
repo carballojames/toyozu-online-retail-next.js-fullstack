@@ -14,5 +14,5 @@ export default function OrdersPage() {
     return <p className="text-center text-muted-foreground">{profileError ?? "No user data found."}</p>;
   }
 
-  return <OrderHistorySection userId={user.id} />;
+  return <OrderHistorySection userId={user.id} mode="history" />;
 }
