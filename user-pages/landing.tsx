@@ -404,7 +404,7 @@ export default function Landing({
         <div className="max-w-[1270px] mx-auto px-4">
           <h2 className="text-2xl font-bold text-secondary mb-8">TRUSTED BRANDS</h2>
 
-          <Carousel opts={{ align: "start", loop: true }} className="w-full max-w-5xl mx-auto relative">
+          <Carousel opts={{ align: "start", loop: true }} className="w-full max-w-5xl lg:max-w-7xl mx-auto relative">
             <CarouselContent className="-ml-6">
               {(loadingBrands ? [] : brands).map((brand) => (
                 <CarouselItem

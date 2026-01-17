@@ -1,10 +1,16 @@
 import "./globals.css";
 import React from "react";
 import { Montserrat } from "next/font/google";
+import { Metadata } from "next/dist/lib/metadata/types/metadata-interface";
 
-export const metadata = {
-  title: "Toyozu",
+export const metadata: Metadata = {
+  title: "Toyozu Inc. - Online Retail",
   description: "Toyozu online retail",
+  icons: {
+    icon: "/vercel.svg",
+    shortcut: "/vercel.svg",
+    apple: "/vercel.svg",
+  },
 };
 
 // Load Montserrat with useful weights and a CSS variable we can use in Tailwind

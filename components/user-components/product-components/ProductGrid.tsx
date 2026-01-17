@@ -35,7 +35,7 @@ export default function ProductGrid({
     columns === 4
       ? "lg:grid-cols-4"
       : columns === 5
-        ? "lg:grid-cols-5"
+        ? "lg:grid-cols-6"
         : columns === 6
           ? "lg:grid-cols-6"
           : "lg:grid-cols-6";
