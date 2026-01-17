@@ -4,7 +4,7 @@ import React, { JSX } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { ProductCard, ProductGridProps } from "@/app/products/[id]/types";
+import type { ProductGridProps } from "@/app/products/[name]/types";
 
 export default function ProductGrid({
   initialProducts,
@@ -33,18 +33,18 @@ export default function ProductGrid({
 
   const lgColsClass =
     columns === 4
-      ? "lg:grid-cols-6"
-      : columns === 6
-        ? "lg:grid-cols-6"
+      ? "lg:grid-cols-4"
+      : columns === 5
+        ? "lg:grid-cols-5"
         : columns === 6
           ? "lg:grid-cols-6"
           : "lg:grid-cols-6";
 
   return (
-    <div className="flex flex-col items-center mb-5">
+    <div className="flex flex-col items-center mb-5 w-full">
       {/* Product Grid */}
       <div
-        className={`grid grid-cols-2 sm:grid-cols-3 ${lgColsClass} gap-3 w-full max-w-[1270px]`}
+        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${lgColsClass} gap-3 w-full max-w-[1270px] px-4 sm:px-0`}
       >
         {visibleProducts.map((product) => {
           const firstImage =
@@ -55,15 +55,15 @@ export default function ProductGrid({
           return (
             <Link
               key={product.product_id}
-              href={`/product/${product.product_id}`}
-              className="bg-surface rounded-lg shadow-sm border hover:border-primary transition-shadow block"
+              href={`/products/${encodeURIComponent(product.name)}`}
+              className="bg-surface rounded-lg shadow-sm border hover:border-primary transition-shadow block h-full"
             >
               {/* Image */}
-              <div className="relative justify-center flex bg-transparent rounded-t-lg w-full h-[220px]">
+              <div className="relative justify-center flex bg-transparent rounded-t-lg w-full h-40 sm:h-48 md:h-[220px]">
                 <img
                   src={firstImage}
                   alt={product.name}
-                  className="w-full h-[220px] object-cover rounded-t-lg"
+                  className="w-full h-full object-cover rounded-t-lg"
                 />
                 {product.discount && product.discount > 0 && (
                   <Badge
@@ -120,7 +120,7 @@ export default function ProductGrid({
                 {/* Price */}
                 <div className="mb-2">
                   {product.discount && product.discount > 0 ? (
-                    <div className="flex items-center gap-7">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="primary" className="text-sm font-bold">
                         ₱{(product.selling_price * (1 - product.discount! / 100)).toFixed(2)}
                       </Badge>

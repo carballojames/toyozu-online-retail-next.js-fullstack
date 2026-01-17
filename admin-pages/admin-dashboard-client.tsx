@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Package, ShoppingBag, UserRoundCog, Wrench } from "lucide-react";
+import { Car, Package, ShoppingBag, UserRoundCog, Wrench } from "lucide-react";
 
 import AdminHeader from "./admin-dashboard-components/common/AdminHeader";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import InventoryPage from "./admin-dashboard-components/inventory";
 import OrdersPage from "./admin-dashboard-components/orders";
 import ProductPage from "./admin-dashboard-components/product";
 import UserPage from "./admin-dashboard-components/user";
+import CarCompatibilityPage from "./admin-dashboard-components/car-compatibility";
 import { type AdminUserRow } from "./admin-dashboard-components/tables/UsersTable";
 
 import type {
@@ -74,6 +75,12 @@ const NAV_ITEMS: NavItem[] = [
     permission: "MANAGE_PRODUCTS",
   },
   { id: "inventory", label: "Inventory", icon: <Package />, permission: "MANAGE_INVENTORY" },
+  {
+    id: "car-compatibility",
+    label: "Car Compatibility",
+    icon: <Car />,
+    permission: "MANAGE_PRODUCTS",
+  },
   {
     id: "users",
     label: "Users",
@@ -356,6 +363,8 @@ export default function AdminDashboardClient({
               }}
             />
           ) : null}
+
+          {activeTab === "car-compatibility" ? <CarCompatibilityPage /> : null}
         </main>
       </div>
     </div>

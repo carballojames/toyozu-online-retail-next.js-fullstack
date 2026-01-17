@@ -1,12 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const registerSchema = z
   .object({
@@ -23,10 +25,7 @@ const registerSchema = z
       .trim()
       .optional()
       .or(z.literal(""))
-      .refine(
-        (v) => !v || /^[+0-9()\-\s]{7,}$/.test(v),
-        "Invalid phone number"
-      ),
+      .refine((v) => !v || /^[+0-9()\-\s]{7,}$/.test(v), "Invalid phone number"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirm_password: z.string().min(1, "Please confirm your password"),
   })
@@ -73,17 +72,18 @@ export default function RegisterPage() {
         }),
       });
 
-      const json = (await res.json()) as
-        | {
-            data: {
-              user_id: number;
-              username: string;
-              user_name: string;
-              role_id: number;
-              is_superuser: boolean | null;
-            };
-          }
-        | { error: string };
+      const json =
+        (await res.json()) as
+          | {
+              data: {
+                user_id: number;
+                username: string;
+                user_name: string;
+                role_id: number;
+                is_superuser: boolean | null;
+              };
+            }
+          | { error: string };
 
       if (!res.ok || !("data" in json)) {
         setServerError("error" in json ? json.error : "Registration failed");
@@ -96,7 +96,9 @@ export default function RegisterPage() {
         localStorage.setItem("username", json.data.username);
         localStorage.setItem("role_id", String(json.data.role_id));
         localStorage.setItem("user_id", String(json.data.user_id));
-      } catch {}
+      } catch {
+        // ignore storage errors
+      }
 
       router.push("/");
     } catch {
@@ -105,97 +107,127 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex items-center">
-      <div className="max-w-md w-full mx-auto py-20 px-4">
-        <div className="bg-surface text-surface-foreground rounded-xl shadow p-8">
-          <h2 className="text-2xl font-semibold mb-4">Create account</h2>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {serverError ? <p className="text-sm text-destructive">{serverError}</p> : null}
+    <div className="min-h-screen bg-primary-foreground text-foreground flex items-center justify-center ">
+      <div className="w-full max-w-5xl">
+        <div className="grid grid-cols-1 md:grid-cols-2  items-stretch rounded-2xl shadow-lg bg-surface">
+          {/* Left: description card */}
+          <div className="bg-surface text-surface-foreground  p-8 flex flex-col justify-center border-r border-border">
+            <h1 className="text-2xl font-semibold">Create your account</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Join Toyozu Online Retail to browse parts, manage orders, and checkout faster.
+            </p>
+            <ul className="mt-6 space-y-2 text-sm">
+              <li className="flex gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                <span>Track purchases and order history</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                <span>Save details for faster checkout</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
+                <span>Search by categories and product name</span>
+              </li>
+            </ul>
+          </div>
 
-            <div>
-              <label className="block mb-1 text-sm">Name</label>
-              <Input
-                placeholder="Your name"
-                aria-invalid={errors.user_name ? "true" : "false"}
-                {...register("user_name")}
-              />
-              {errors.user_name?.message && (
-                <p className="mt-1 text-sm text-destructive">{errors.user_name.message}</p>
-              )}
-            </div>
+          {/* Right: form card */}
+          <div className="bg-surface text-surface-foreground p-8 flex flex-col justify-center">
+            <h2 className="text-2xl font-semibold">Create account</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Fill in your details to get started.</p>
 
-            <div>
-              <label className="block mb-1 text-sm">Username</label>
-              <Input
-                placeholder="Username"
-                aria-invalid={errors.username ? "true" : "false"}
-                {...register("username")}
-              />
-              {errors.username?.message && (
-                <p className="mt-1 text-sm text-destructive">{errors.username.message}</p>
-              )}
-            </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+              {serverError ? <p className="text-sm text-destructive">{serverError}</p> : null}
 
-            <div>
-              <label className="block mb-1 text-sm">Email (optional)</label>
-              <Input
-                placeholder="you@example.com"
-                aria-invalid={errors.email ? "true" : "false"}
-                {...register("email")}
-              />
-              {errors.email?.message && <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>}
-            </div>
+              <div>
+                <label className="block mb-1 text-sm">Name</label>
+                <Input
+                  placeholder="Your name"
+                  aria-invalid={errors.user_name ? "true" : "false"}
+                  {...register("user_name")}
+                />
+                {errors.user_name?.message && (
+                  <p className="mt-1 text-sm text-destructive">{errors.user_name.message}</p>
+                )}
+              </div>
 
-            <div>
-              <label className="block mb-1 text-sm">Phone (optional)</label>
-              <Input
-                placeholder="+63..."
-                aria-invalid={errors.mobile_phone ? "true" : "false"}
-                {...register("mobile_phone")}
-              />
-              {errors.mobile_phone?.message && (
-                <p className="mt-1 text-sm text-destructive">{errors.mobile_phone.message}</p>
-              )}
-            </div>
+              <div>
+                <label className="block mb-1 text-sm">Username</label>
+                <Input
+                  placeholder="Username"
+                  aria-invalid={errors.username ? "true" : "false"}
+                  {...register("username")}
+                />
+                {errors.username?.message && (
+                  <p className="mt-1 text-sm text-destructive">{errors.username.message}</p>
+                )}
+              </div>
 
-            <div>
-              <label className="block mb-1 text-sm">Password</label>
-              <Input
-                type="password"
-                placeholder="Password"
-                aria-invalid={errors.password ? "true" : "false"}
-                {...register("password")}
-              />
-              {errors.password?.message && (
-                <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
-              )}
-            </div>
+              <div>
+                <label className="block mb-1 text-sm">Email (optional)</label>
+                <Input
+                  placeholder="you@example.com"
+                  aria-invalid={errors.email ? "true" : "false"}
+                  {...register("email")}
+                />
+                {errors.email?.message && (
+                  <p className="mt-1 text-sm text-destructive">{errors.email.message}</p>
+                )}
+              </div>
 
-            <div>
-              <label className="block mb-1 text-sm">Confirm password</label>
-              <Input
-                type="password"
-                placeholder="Confirm password"
-                aria-invalid={errors.confirm_password ? "true" : "false"}
-                {...register("confirm_password")}
-              />
-              {errors.confirm_password?.message && (
-                <p className="mt-1 text-sm text-destructive">{errors.confirm_password.message}</p>
-              )}
-            </div>
+              <div>
+                <label className="block mb-1 text-sm">Phone (optional)</label>
+                <Input
+                  placeholder="+63..."
+                  aria-invalid={errors.mobile_phone ? "true" : "false"}
+                  {...register("mobile_phone")}
+                />
+                {errors.mobile_phone?.message && (
+                  <p className="mt-1 text-sm text-destructive">{errors.mobile_phone.message}</p>
+                )}
+              </div>
 
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting}>
-                Sign up
-              </Button>
-            </div>
+              <div>
+                <label className="block mb-1 text-sm">Password</label>
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  aria-invalid={errors.password ? "true" : "false"}
+                  {...register("password")}
+                />
+                {errors.password?.message && (
+                  <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
+                )}
+              </div>
 
-            <div className="pt-2">
-              <Button type="button" variant="outline" className="w-full" onClick={() => router.push("/auth/login")}>
-                Already have an account? Sign in
-              </Button>
-            </div>
-          </form>
+              <div>
+                <label className="block mb-1 text-sm">Confirm password</label>
+                <Input
+                  type="password"
+                  placeholder="Confirm password"
+                  aria-invalid={errors.confirm_password ? "true" : "false"}
+                  {...register("confirm_password")}
+                />
+                {errors.confirm_password?.message && (
+                  <p className="mt-1 text-sm text-destructive">{errors.confirm_password.message}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">
+                  Already have an account?{" "}
+                  <Link href="/auth/login" className="text-primary hover:underline">
+                    Sign in
+                  </Link>
+                </p>
+                <Button type="submit" disabled={isSubmitting}>
+                  Sign up
+                </Button>
+              </div>
+
+            </form>
+          </div>
         </div>
       </div>
     </div>

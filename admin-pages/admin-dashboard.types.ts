@@ -17,7 +17,8 @@ export type AdminTabId =
   | "inventory"
   | "employees"
   | "users"
-  | "profile";
+  | "profile"
+  | "car-compatibility";
 
 import type { ReactNode } from "react";
 

@@ -24,6 +24,30 @@ function toInt(value: string | undefined): number {
   return Math.max(0, Math.round(n));
 }
 
+function getPrismaErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  if (!("code" in error)) return undefined;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : undefined;
+}
+
+function isRetryableDatabaseError(error: unknown): boolean {
+  return getPrismaErrorCode(error) === "P1017";
+}
+
+async function delay(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+class HttpError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as ReceiptInput;
@@ -104,6 +128,14 @@ export async function POST(request: Request) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      const existingSupply = await tx.supply.findFirst({
+        where: { receipt_number: receiptNumber },
+        select: { supply_id: true },
+      });
+      if (existingSupply) {
+        throw new HttpError("Receipt number already exists", 409);
+      }
+
       // Supplier
       const supplierExisting = await tx.supplier.findFirst({
         where: { name: supplierName },
@@ -117,7 +149,7 @@ export async function POST(request: Request) {
         product_id: number;
         quantity: number;
         price: number;
-        sub_total: string;
+        sub_total: number;
         condition_id: number | null;
       }> = [];
 
@@ -189,7 +221,7 @@ export async function POST(request: Request) {
           product_id: product.product_id,
           quantity: l.quantity,
           price: l.purchasePrice > 0 ? l.purchasePrice : 0,
-          sub_total: subTotal.toFixed(2),
+          sub_total: subTotal,
           condition_id: conditionId,
         });
       }
@@ -199,7 +231,7 @@ export async function POST(request: Request) {
           supplier: { connect: { supplier_id: supplier.supplier_id } },
           receipt_number: receiptNumber,
           date,
-          total_cost: totalCost.toFixed(2),
+          total_cost: totalCost,
           supply_details: {
             create: supplyDetailsToCreate.map((d) => ({
               product: { connect: { product_id: d.product_id } },
@@ -237,9 +269,36 @@ export async function POST(request: Request) {
         products: result.products,
       },
     });
-  } catch {
+  } catch (e) {
+    if (e instanceof HttpError) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
+
+    // One retry for transient connection drops
+    if (isRetryableDatabaseError(e)) {
+      try {
+        await delay(250);
+        // Re-run request is not possible here because the body stream is consumed.
+        // Return a 503 so the client can retry.
+        return NextResponse.json(
+          { error: "Database connection was interrupted. Please retry." },
+          { status: 503 },
+        );
+      } catch {
+        // fall through
+      }
+    }
+
+    const code = getPrismaErrorCode(e);
+    console.error("/api/supplies POST failed", { code, error: e });
+
     return NextResponse.json(
-      { error: "Failed to create supply receipt" },
+      {
+        error:
+          process.env.NODE_ENV !== "production" && code
+            ? `Failed to create supply receipt (${code})`
+            : "Failed to create supply receipt",
+      },
       { status: 500 },
     );
   }

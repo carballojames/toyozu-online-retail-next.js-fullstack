@@ -1,5 +1,5 @@
 import type { StaticImageData } from "next/image";
-import type { ProductCard } from "@/app/products/[id]/types";
+import type { ProductCard } from "@/app/products/[name]/types";
 
 export interface Category {
   id: number;

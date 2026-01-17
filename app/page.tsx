@@ -5,6 +5,22 @@ import { prisma } from "@/lib/prisma";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function getPrismaErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  if (!("code" in error)) return undefined;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : undefined;
+}
+
+function isRetryableDatabaseError(error: unknown): boolean {
+  const code = getPrismaErrorCode(error);
+  return code === "P1017";
+}
+
+async function delay(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function isLocalDatabaseUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
@@ -20,30 +36,63 @@ export default async function Home() {
     Boolean(databaseUrl) &&
     !(process.env.VERCEL && databaseUrl && isLocalDatabaseUrl(databaseUrl));
 
-  let products: any[] = [];
+  type HomeProduct = {
+    product_id: number;
+    name: string;
+    description: string | null;
+    selling_price: unknown;
+    quantity: unknown;
+    brand: { name: string } | null;
+    product_image: {
+      id: number;
+      image: string | null;
+      image_mime: string | null;
+      image_updated_at: Date | null;
+    }[];
+  };
+
+  let products: HomeProduct[] = [];
   try {
     if (!dbIsUsable) {
       console.warn(
         "DATABASE_URL is missing or points to localhost on Vercel; rendering home page without products.",
       );
     } else {
-      products = await prisma.product.findMany({
-        select: {
-          product_id: true,
-          name: true,
-          description: true,
-          selling_price: true,
-          quantity: true,
-          brand: { select: { name: true } },
-          product_image: {
-            select: { id: true, image: true, image_mime: true, image_updated_at: true },
-            orderBy: { id: "asc" },
-            take: 1,
+      const query = async () => {
+        return prisma.product.findMany({
+          select: {
+            product_id: true,
+            name: true,
+            description: true,
+            selling_price: true,
+            quantity: true,
+            brand: { select: { name: true } },
+            product_image: {
+              select: {
+                id: true,
+                image: true,
+                image_mime: true,
+                image_updated_at: true,
+              },
+              orderBy: { id: "asc" },
+              take: 1,
+            },
           },
-        },
-        orderBy: { product_id: "desc" },
-        take: 100,
-      });
+          orderBy: { product_id: "desc" },
+          take: 100,
+        });
+      };
+
+      try {
+        products = await query();
+      } catch (e) {
+        if (isRetryableDatabaseError(e)) {
+          await delay(250);
+          products = await query();
+        } else {
+          throw e;
+        }
+      }
     }
   } catch (e) {
     // Allows builds (and the page) to render even if the DB isn't reachable yet.

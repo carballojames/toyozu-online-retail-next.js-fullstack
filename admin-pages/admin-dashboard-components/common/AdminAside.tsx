@@ -14,6 +14,8 @@ function routeForTab(id: AdminTabId): string {
       return "/admin-dashboard/product-management";
     case "inventory":
       return "/admin-dashboard/inventory-management";
+    case "car-compatibility":
+      return "/admin-dashboard/car-compatibility-management";
     case "users":
       return "/admin-dashboard/user-management";
     default:
@@ -43,7 +45,13 @@ export default function AdminAside({
         <ul className="space-y-2">
           {items.map((item) => {
             const href = routeForTab(item.id);
-            const isActive = activeTab === item.id || pathname?.startsWith(href);
+            const pathnameNormalized = pathname?.replace(/\/+$/, "") ?? "";
+            const hrefNormalized = href.replace(/\/+$/, "");
+            const isActive =
+              activeTab === item.id ||
+              (hrefNormalized === "/admin-dashboard"
+                ? pathnameNormalized === hrefNormalized
+                : pathnameNormalized.startsWith(hrefNormalized));
             return (
               <li key={item.id}>
                 <Link

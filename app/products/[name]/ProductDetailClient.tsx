@@ -16,11 +16,7 @@ import ProductGrid from "@/components/user-components/product-components/Product
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/app/common/Header";
-import { ProductDetail, CompatibilityRow, ProductImage } from "./types";
-
-import { ProductCard } from "./types";
-
-
+import { ProductDetail, CompatibilityRow, ProductCard } from "./types";
 
 const CART_STORAGE_KEY = "cartItems";
 
@@ -131,12 +127,12 @@ export default function ProductDetailClient({
   };
 
   return (
-    <div className="min-h-screen bg-surface text-foreground">
+    <div className="min-h-screen bg-primary-foreground text-foreground">
       <Header />
       {/* Breadcrumb */}
-      <div className="w-[1300px] mx-auto px-4 mt-20 mb-4">
+      <div className="mx-auto w-full max-w-[1270px] px-4 sm:px-6 mt-4 sm:mt-6 mb-3 sm:mb-4">
         <nav className="text-sm text-foreground" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2">
+          <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <li>
               <span className="text-primary hover:underline cursor-pointer">
                 Home
@@ -162,11 +158,11 @@ export default function ProductDetailClient({
         </nav>
       </div>
 
-      <div className="w-[1300px] mx-auto px-4 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 bg-surface p-6 rounded-lg shadow-sm">
+      <div className="mx-auto w-full max-w-[1270px] px-4 sm:px-6 pb-10 sm:pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-12 bg-surface p-4 sm:p-6 rounded-lg shadow-sm">
           {/* Left: Images */}
           <div className="space-y-4">
-            <div className="relative overflow-hidden rounded-lg flex items-center justify-center w-[500px] h-[400px]">
+            <div className="relative overflow-hidden rounded-lg flex items-center justify-center w-full max-w-[520px] mx-auto aspect-[5/4]">
               {product.images && product.images.length > 0 ? (
                 <img
                   src={product.images[selectedImage].image}
@@ -174,18 +170,18 @@ export default function ProductDetailClient({
                   className="max-w-full max-h-full object-contain"
                 />
               ) : (
-                <div className="w-full h-[400px] bg-gray-200 flex items-center justify-center text-gray-600">
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-600">
                   No Image
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-5 gap-1">
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {(product.images || []).slice(0, 5).map((img, index) => (
                 <button
                   key={img.id ?? index}
                   onClick={() => setSelectedImage(index)}
-                  className={`border-2 rounded-lg overflow-hidden w-[100px] h-[100px] ${
+                  className={`border-2 rounded-lg overflow-hidden w-full aspect-square ${
                     selectedImage === index ? "border-primary" : "border-border"
                   }`}
                 >
@@ -210,7 +206,7 @@ export default function ProductDetailClient({
               </p>
 
               <div className="flex items-center space-x-4 mb-4">
-                <Badge variant="primary">₱{product.selling_price}</Badge>
+                <Badge variant="default" className="text-2xl text-primary">₱{product.selling_price}</Badge>
                 <span className="text-success font-medium">
                   ✓ In Stock ({product.quantity} available)
                 </span>
@@ -264,7 +260,7 @@ export default function ProductDetailClient({
             </div>
 
             {/* Features */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-6 border-t">
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <Truck className="w-5 h-5 text-primary" />
                 <span>Free Shipping</span>
@@ -282,8 +278,8 @@ export default function ProductDetailClient({
         </div>
 
         {/* Tabs: description / specifications */}
-        <div className="mt-16 bg-card p-8 rounded-lg shadow-sm">
-          <nav className="flex space-x-8">
+        <div className="mt-6 bg-surface p-4 sm:p-8 rounded-lg shadow-sm">
+          <nav className="flex gap-6 sm:gap-8 overflow-x-auto">
             {(["description", "specifications"] as const).map((tab) => (
               <button
                 key={tab}
@@ -299,7 +295,7 @@ export default function ProductDetailClient({
             ))}
           </nav>
 
-          <div className="py-8 bg-card rounded-lg">
+          <div className="py-8 bg-surface    rounded-lg">
             {activeTab === "description" && (
               <div className="prose max-w-none">
                 <h3 className="text-xl font-semibold mb-4 text-foreground">
@@ -321,7 +317,7 @@ export default function ProductDetailClient({
                 <h3 className="text-xl font-semibold mb-4 text-foreground">
                   Technical Specifications
                 </h3>
-                <div className="grid grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
                   <div className="space-y-3">
                     <div className="flex justify-between py-2 border-b border-border">
                       <span className="font-medium">Brand:</span>
@@ -375,7 +371,7 @@ export default function ProductDetailClient({
 
         {/* Related / Related products */}
         <section className="">
-          <div className="w-[1300px]">
+          <div className="w-full mt-6">
             <h2 className="text-2xl font-bold text-primary text-justify mb-5">
               Related Products
             </h2>

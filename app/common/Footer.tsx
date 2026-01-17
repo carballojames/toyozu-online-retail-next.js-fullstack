@@ -7,8 +7,8 @@ export default function Footer(): JSX.Element {
   return (
     <footer className="w-full bg-surface-variant text-black mt-auto">
       {/* Main Footer Content */}
-      <div className="px-8 py-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="px-4 sm:px-8 py-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 text-center md:text-left">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
             <h3 className="font-roboto font-bold text-xl mb-4 text-black">Davao Toyozu Inc.</h3>
@@ -16,7 +16,7 @@ export default function Footer(): JSX.Element {
               Your trusted partner in inventory management and database solutions. Streamlining operations
               with precision and reliability.
             </p>
-            <div className="flex flex-col gap-2 text-sm font-roboto text-black">
+            <div className="flex flex-col gap-2 text-sm font-roboto text-black items-center md:items-start">
               <div>📍 Monteverde Street, Davao City, Philippines</div>
               <div>📞 Sun - 09224207115, Globe - 09362616264</div>
               <div>✉️ Toyozu@yahoo.com</div>
@@ -72,10 +72,10 @@ export default function Footer(): JSX.Element {
       </div>
 
       {/* Bottom Bar */}
-      <div className="px-8 py-4">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="px-4 sm:px-8 py-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
           <div className="font-roboto text-sm text-black">© {currentYear} Toyozu Company. All rights reserved.</div>
-          <div className="flex gap-6 font-roboto text-sm">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 font-roboto text-sm">
             <a href="#" className="text-black hover:underline">
               Privacy Policy
             </a>

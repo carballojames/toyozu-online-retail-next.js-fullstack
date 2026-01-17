@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import LandingClient from "../../user-pages/landing";
-import type { ProductCard } from "@/app/products/[id]/types";
+import type { ProductCard } from "@/app/products/[name]/types";
 
 type LandingPageProps = {
   initialProducts?: ProductCard[];

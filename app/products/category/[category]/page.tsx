@@ -1,13 +1,29 @@
 import Header from "@/app/common/Header";
 import Footer from "@/app/common/Footer";
 import ProductGrid from "@/components/user-components/product-components/ProductGrid";
-import ProductNavigator from "@/components/user-components/ProductNavigator";
+
 import { prisma } from "@/lib/prisma";
-import type { ProductCard } from "@/app/products/[id]/types";
-import { unstable_cache } from "next/cache";
+import type { ProductCard } from "@/app/products/[name]/types";
 
 export const runtime = "nodejs";
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+function getPrismaErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  if (!("code" in error)) return undefined;
+  const code = (error as { code?: unknown }).code;
+  return typeof code === "string" ? code : undefined;
+}
+
+function isRetryableDatabaseError(error: unknown): boolean {
+  const code = getPrismaErrorCode(error);
+  return code === "P1017";
+}
+
+async function delay(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function normalizePublicImagePath(raw: string): string {
   const trimmed = raw.trim();
@@ -24,33 +40,63 @@ export default async function CategoryProductsPage({
 }) {
   const { category } = await params;
   const categoryName = decodeURIComponent(category);
-  const getCategoryProducts = unstable_cache(
-    async (categoryKey: string) => {
-      return prisma.product.findMany({
-        where: { category: { name: categoryKey } },
-        select: {
-          product_id: true,
-          name: true,
-          description: true,
-          selling_price: true,
-          quantity: true,
-          brand: { select: { name: true } },
-          category: { select: { name: true } },
-          product_image: {
-            select: { id: true, image: true, image_mime: true, image_updated_at: true },
-            orderBy: { id: "asc" },
-            take: 1,
-          },
-        },
-        orderBy: { product_id: "desc" },
-        take: 200,
-      });
-    },
-    ["products-category"],
-    { revalidate }
-  );
 
-  const products = await getCategoryProducts(categoryName);
+  let products:
+    | {
+        product_id: number;
+        name: string;
+        description: string | null;
+        selling_price: unknown;
+        quantity: number | null;
+        brand: { name: string } | null;
+        category: { name: string } | null;
+        product_image:
+          | {
+              id: number;
+              image: string | null;
+              image_mime: string | null;
+              image_updated_at: Date | null;
+            }[]
+          | null;
+      }[] = [];
+
+  const query = async () => {
+    return prisma.product.findMany({
+      where: { category: { name: categoryName } },
+      select: {
+        product_id: true,
+        name: true,
+        description: true,
+        selling_price: true,
+        quantity: true,
+        brand: { select: { name: true } },
+        category: { select: { name: true } },
+        product_image: {
+          select: { id: true, image: true, image_mime: true, image_updated_at: true },
+          orderBy: { id: "asc" },
+          take: 1,
+        },
+      },
+      orderBy: { product_id: "desc" },
+      take: 200,
+    });
+  };
+
+  try {
+    try {
+      products = await query();
+    } catch (e) {
+      if (isRetryableDatabaseError(e)) {
+        await delay(250);
+        products = await query();
+      } else {
+        throw e;
+      }
+    }
+  } catch (e) {
+    console.error("Category page product query failed:", e);
+    products = [];
+  }
 
   const mapped: ProductCard[] = products.map((p) => {
     const first = p.product_image?.[0];
@@ -83,8 +129,6 @@ export default async function CategoryProductsPage({
 
       <main className="py-8 px-4">
         <div className="mx-auto flex w-full max-w-[1300px] flex-row items-start gap-4">
-          <ProductNavigator />
-
           <div className="flex-1">
             <h1 className="text-2xl font-bold mb-6">{categoryName}</h1>
             <ProductGrid

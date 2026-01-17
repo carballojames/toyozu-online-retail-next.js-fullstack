@@ -3,7 +3,7 @@ import Footer from "@/app/common/Footer";
 import ProductNavigator from "@/components/user-components/ProductNavigator";
 import ProductGrid from "@/components/user-components/product-components/ProductGrid";
 import { prisma } from "@/lib/prisma";
-import type { ProductCard } from "@/app/products/[id]/types";
+import type { ProductCard } from "@/app/products/[name]/types";
 import { unstable_cache } from "next/cache";
 import {
   Pagination,
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/pagination";
 
 type Props = { searchParams?: Promise<Record<string, string | string[]>> };
+
+type ProductWhere = NonNullable<Parameters<typeof prisma.product.findMany>[0]>["where"];
 
 export const runtime = "nodejs";
 export const revalidate = 60;
@@ -32,7 +34,7 @@ export default async function ProductsPage({ searchParams }: Props) {
   const page = Number(sp.page ?? 1) || 1;
   const perPage = Number(sp.perPage ?? 50) || 50;
 
-  const where: any = {};
+  const where: ProductWhere = {};
 
   // Simple filtering: category (comma separated), brand (comma separated), price range
   if (sp.category) {
@@ -132,7 +134,7 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   const mapped: ProductCard[] = products.map((p) => {
     const first = p.product_image?.[0];
-    const v = first?.image_updated_at ? first.image_updated_at.getTime() : 0;
+    const v = first?.image_updated_at ? new Date(first.image_updated_at).getTime() : 0;
     const hasBytes = Boolean(first?.image_mime);
     const raw = first?.image ?? "";
     const imageUrl = first
@@ -161,20 +163,13 @@ export default async function ProductsPage({ searchParams }: Props) {
 
       <main className="py-8 px-4 flex flex-row">
         <div className=" mx-auto flex gap-6">
-          <div>
-            <ProductNavigator />
-          </div>
 
           <div className="flex-1 w-[1300px]">
-            <h1 className="text-2xl font-bold mb-6">Products</h1>
+            <h1 className="text-2xl font-bold mb-6 text-primary italic">All Products</h1>
             <ProductGrid initialProducts={mapped} showMoreButton={false} />
 
-            <div className="flex items-center justify-between mt-8">
-              <div className="text-sm text-muted-foreground">
-                Page {safePage} of {totalPages}
-              </div>
-
-              <Pagination className="justify-end">
+            <div className="flex items-center justify-between mt-8 ">
+              <Pagination className="justify-center items-center">
                 <PaginationContent>
                   <PaginationItem className={safePage <= 1 ? "pointer-events-none opacity-50" : undefined}>
                     <PaginationPrevious href={buildHref(Math.max(1, safePage - 1))} />

@@ -363,10 +363,10 @@ export default function CheckoutPage() {
   const hasItems = items.length > 0;
 
   return (
-    <div className="min-h-screen bg-primary-background">
+    <div className="min-h-screen bg-primary-background ">
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 pb-12 mt-8">
+      <div className=" mx-auto px-4 pb-12 mt-8 max-w-[1500px]">
         {lookupError ? (
           <div className="mb-4 p-3 rounded-md bg-destructive/10 border border-destructive/30 flex items-center justify-between">
             <div className="text-sm text-destructive">{lookupError}</div>
@@ -521,7 +521,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="lg:sticky lg:top-24 lg:h-fit">
+            <div className="lg:sticky lg:top-24 lg:h-fit w-[450px] md:w-full">
               <div className="bg-surface rounded-xl border border-border p-6 space-y-4">
                 <h2 className="text-xl font-semibold text-foreground">Order Summary</h2>
 
