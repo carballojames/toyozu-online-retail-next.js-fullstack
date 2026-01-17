@@ -135,7 +135,7 @@ export default async function CategoryProductsPage({
               initialProducts={mapped}
               showMoreButton={false}
               category={categoryName}
-              columns={4}
+              columns={6}
             />
           </div>
         </div>

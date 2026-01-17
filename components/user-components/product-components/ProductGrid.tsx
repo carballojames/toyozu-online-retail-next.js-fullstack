@@ -63,7 +63,7 @@ export default function ProductGrid({
                 <img
                   src={firstImage}
                   alt={product.name}
-                  className="w-full h-full object-cover rounded-t-lg"
+                  className="w-full  object-cover rounded-t-lg"
                 />
                 {product.discount && product.discount > 0 && (
                   <Badge

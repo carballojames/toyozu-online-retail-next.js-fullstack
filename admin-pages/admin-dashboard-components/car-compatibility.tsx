@@ -19,24 +19,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+type ProductOption = { id: number; name: string };
 
 type LookupCar = { car_id: number; make: string };
-type LookupModel = { model_id: number; model_name: string; car_id: number };
-type LookupYear = { year_id: number; year: number };
 
-type Lookups = {
-  cars: LookupCar[];
-  models: LookupModel[];
-  years: LookupYear[];
-};
-
-type CompatibilityEntry = {
+type CompatibilityRow = {
   id: number;
-  car_id: number | null;
   make: string;
-  model_id: number;
-  base_model: string;
-  variant: string;
+  model_name: string;
   start_year: number | null;
   end_year: number | null;
 };
@@ -45,8 +44,8 @@ function normalizeName(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
 
-function parseYear(raw: string): number | null {
-  const trimmed = raw.trim();
+function parseYear(value: string): number | null {
+  const trimmed = value.trim();
   if (!trimmed) return null;
   const parsed = Number.parseInt(trimmed, 10);
   if (!Number.isFinite(parsed)) return null;
@@ -55,195 +54,373 @@ function parseYear(raw: string): number | null {
 }
 
 export default function CarCompatibilityPage() {
-  const [lookups, setLookups] = useState<Lookups>({ cars: [], models: [], years: [] });
-  const [entries, setEntries] = useState<CompatibilityEntry[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [products, setProducts] = useState<ProductOption[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [rows, setRows] = useState<CompatibilityRow[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState<boolean>(false);
+  const [loadingRows, setLoadingRows] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
-  const [selectedCarId, setSelectedCarId] = useState<string>("");
-  const [makeInput, setMakeInput] = useState<string>("");
-  const [baseModelInput, setBaseModelInput] = useState<string>("");
-  const [variantInput, setVariantInput] = useState<string>("");
+  const [cars, setCars] = useState<LookupCar[]>([]);
+  const [loadingLookups, setLoadingLookups] = useState<boolean>(false);
+  const [success, setSuccess] = useState<string>("");
 
-  const [selectedStartYearId, setSelectedStartYearId] = useState<string>("");
-  const [selectedEndYearId, setSelectedEndYearId] = useState<string>("");
-  const [typedStartYear, setTypedStartYear] = useState<string>("");
-  const [typedEndYear, setTypedEndYear] = useState<string>("");
+  const [brandMake, setBrandMake] = useState<string>("");
+  const [modelCarId, setModelCarId] = useState<string>("");
+  const [modelBaseModel, setModelBaseModel] = useState<string>("");
+  const [modelVariant, setModelVariant] = useState<string>("");
 
-  const [saving, setSaving] = useState<boolean>(false);
+  const [variantCarId, setVariantCarId] = useState<string>("");
+  const [variantBaseModel, setVariantBaseModel] = useState<string>("");
+  const [variantVariant, setVariantVariant] = useState<string>("");
 
-  const loadEntries = async () => {
-    setLoading(true);
-    setError("");
+  const [yearInput, setYearInput] = useState<string>("");
+  const [savingCatalog, setSavingCatalog] = useState<boolean>(false);
+
+  const loadLookups = async () => {
+    setLoadingLookups(true);
     try {
-      const res = await fetch("/api/admin/car-compatibility/entries", {
+      const res = await fetch("/api/admin/car-compatibility/lookups", {
         method: "GET",
         headers: { Accept: "application/json" },
         cache: "no-store",
       });
-      const json = (await res.json()) as { data?: CompatibilityEntry[]; error?: string };
-      if (!res.ok || !Array.isArray(json.data)) {
-        setError(json.error || "Failed to load compatibility entries");
-        setEntries([]);
+
+      const json = (await res.json()) as {
+        data?: { cars?: LookupCar[] };
+        error?: string;
+      };
+
+      if (!res.ok || !json.data?.cars || !Array.isArray(json.data.cars)) {
         return;
       }
-      setEntries(json.data);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load compatibility entries");
-      setEntries([]);
+
+      setCars(json.data.cars);
+      if (!modelCarId && json.data.cars.length > 0) setModelCarId(String(json.data.cars[0].car_id));
+      if (!variantCarId && json.data.cars.length > 0)
+        setVariantCarId(String(json.data.cars[0].car_id));
     } finally {
-      setLoading(false);
+      setLoadingLookups(false);
     }
   };
 
-  const loadLookups = async (carId?: string) => {
-    try {
-      const q = new URLSearchParams();
-      if (carId) q.set("carId", carId);
-      const res = await fetch(`/api/admin/car-compatibility/lookups?${q.toString()}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
-      const json = (await res.json()) as { data?: Lookups; error?: string };
-      if (!res.ok || !json.data) return;
-      setLookups(json.data);
-    } catch {
-      // ignore
-    }
-  };
-
-  useEffect(() => {
-    void loadLookups();
-    void loadEntries();
-  }, []);
-
-  useEffect(() => {
-    if (!selectedCarId) {
-      setLookups((prev) => ({ ...prev, models: [] }));
-      return;
-    }
-    void loadLookups(selectedCarId);
-  }, [selectedCarId]);
-
-  const rows = useMemo(() => {
-    const unique = new Map<string, CompatibilityEntry>();
-    for (const e of entries) {
-      const key = [e.make, e.model_id, e.start_year ?? "", e.end_year ?? ""].join("|");
-      if (!unique.has(key)) unique.set(key, e);
-    }
-    return [...unique.values()].sort((a, b) => {
-      const makeCompare = a.make.localeCompare(b.make);
-      if (makeCompare !== 0) return makeCompare;
-      const baseCompare = a.base_model.localeCompare(b.base_model);
-      if (baseCompare !== 0) return baseCompare;
-      return a.variant.localeCompare(b.variant);
-    });
-  }, [entries]);
-
-  const modelsForSelectedCar = useMemo(() => {
-    const id = Number(selectedCarId);
-    if (!Number.isFinite(id)) return [];
-    return lookups.models.filter((m) => m.car_id === id);
-  }, [lookups.models, selectedCarId]);
-
-  const baseModelsForSelectedCar = useMemo(() => {
-    const set = new Set<string>();
-    for (const m of modelsForSelectedCar) {
-      const [base] = m.model_name.split("-").map((s) => s.trim());
-      if (base) set.add(base);
-    }
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [modelsForSelectedCar]);
-
-  const startYear = useMemo(() => {
-    if (typedStartYear.trim()) return parseYear(typedStartYear);
-    const selectedId = Number.parseInt(selectedStartYearId, 10);
-    if (!Number.isFinite(selectedId)) return null;
-    return lookups.years.find((y) => y.year_id === selectedId)?.year ?? null;
-  }, [lookups.years, selectedStartYearId, typedStartYear]);
-
-  const endYear = useMemo(() => {
-    if (typedEndYear.trim()) return parseYear(typedEndYear);
-    const selectedId = Number.parseInt(selectedEndYearId, 10);
-    if (!Number.isFinite(selectedId)) return null;
-    return lookups.years.find((y) => y.year_id === selectedId)?.year ?? null;
-  }, [lookups.years, selectedEndYearId, typedEndYear]);
-
-  const canSave = useMemo(() => {
-    const make = normalizeName(makeInput);
-    const base = normalizeName(baseModelInput);
-    if (!make || !base) return false;
-    if (startYear === null || endYear === null) return false;
-    return startYear <= endYear;
-  }, [baseModelInput, endYear, makeInput, startYear]);
-
-  const handleCreate = async () => {
-    if (!canSave) return;
-    setSaving(true);
+  const postCatalog = async (payload: unknown) => {
+    setSavingCatalog(true);
     setError("");
+    setSuccess("");
     try {
-      const payload = {
-        make: normalizeName(makeInput),
-        baseModel: normalizeName(baseModelInput),
-        variant: normalizeName(variantInput),
-        startYear,
-        endYear,
-      };
-      const res = await fetch("/api/admin/car-compatibility/entries", {
+      const res = await fetch("/api/admin/car-compatibility/catalog", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
       });
-      const json = (await res.json()) as { data?: unknown; error?: string };
+      const json = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(json.error || "Failed to add fitment");
-        return;
+        setError(json.error || "Failed to save");
+        return false;
       }
-      setVariantInput("");
-      setTypedStartYear("");
-      setTypedEndYear("");
-      setSelectedStartYearId("");
-      setSelectedEndYearId("");
-      await loadLookups(selectedCarId || undefined);
-      await loadEntries();
+      setSuccess("Saved.");
+      await loadLookups();
+      return true;
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to add fitment");
+      setError(e instanceof Error ? e.message : "Failed to save");
+      return false;
     } finally {
-      setSaving(false);
+      setSavingCatalog(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const loadProducts = async () => {
+    setLoadingProducts(true);
     setError("");
     try {
-      const res = await fetch(`/api/admin/car-compatibility/entries/${id}`, {
-        method: "DELETE",
+      const res = await fetch("/api/products", {
+        method: "GET",
         headers: { Accept: "application/json" },
+        cache: "no-store",
       });
-      if (!res.ok) {
-        const json = (await res.json()) as { error?: string };
-        setError(json.error || "Failed to delete fitment");
+
+      const json = (await res.json()) as {
+        data?: Array<{ product_id: number; name: string }>;
+        error?: string;
+      };
+
+      if (!res.ok || !Array.isArray(json.data)) {
+        setProducts([]);
+        setError(json.error || "Failed to load products");
         return;
       }
-      await loadEntries();
+
+      const mapped = json.data
+        .filter((p) => Number.isFinite(p.product_id) && Boolean(p.name))
+        .map((p) => ({ id: p.product_id, name: p.name }));
+
+      mapped.sort((a, b) => a.name.localeCompare(b.name));
+      setProducts(mapped);
+
+      if (!selectedProductId && mapped.length > 0) {
+        setSelectedProductId(String(mapped[0].id));
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to delete fitment");
+      setProducts([]);
+      setError(e instanceof Error ? e.message : "Failed to load products");
+    } finally {
+      setLoadingProducts(false);
     }
   };
+
+  const loadProductCompatibility = async (productId: string) => {
+    const parsed = Number(productId);
+    if (!Number.isFinite(parsed)) {
+      setRows([]);
+      return;
+    }
+
+    setLoadingRows(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/products/${encodeURIComponent(String(parsed))}/compatibility`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      const json = (await res.json()) as {
+        data?: CompatibilityRow[];
+        error?: string;
+      };
+
+      if (!res.ok || !Array.isArray(json.data)) {
+        setRows([]);
+        setError(json.error || "Failed to load product compatibility");
+        return;
+      }
+
+      setRows(
+        json.data.map((r) => ({
+          id: r.id,
+          make: r.make ?? "",
+          model_name: r.model_name ?? "",
+          start_year: r.start_year ?? null,
+          end_year: r.end_year ?? null,
+        })),
+      );
+    } catch (e) {
+      setRows([]);
+      setError(e instanceof Error ? e.message : "Failed to load product compatibility");
+    } finally {
+      setLoadingRows(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadProducts();
+    void loadLookups();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedProductId) {
+      setRows([]);
+      return;
+    }
+    void loadProductCompatibility(selectedProductId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProductId]);
+
+  const sortedRows = useMemo(() => {
+    const next = [...rows];
+    next.sort((a, b) => a.make.localeCompare(b.make) || a.model_name.localeCompare(b.model_name));
+    return next;
+  }, [rows]);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Car Compatibility</h2>
+          <h2 className="text-2xl font-bold text-foreground">Product Compatibility</h2>
           <p className="text-sm text-muted-foreground">
-            Staff-managed vehicle fitments (product linking will be added later).
+            List the cars compatible with a selected product.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={loadEntries} disabled={loading}>
-            {loading ? "Refreshing…" : "Refresh"}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" disabled={savingCatalog}>
+                Add Car Brand
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Car Brand</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Make</div>
+                <Input value={brandMake} onChange={(e) => setBrandMake(e.target.value)} placeholder="e.g. Toyota" />
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() => void postCatalog({ kind: "brand", make: normalizeName(brandMake) })}
+                  disabled={savingCatalog || !normalizeName(brandMake)}
+                >
+                  {savingCatalog ? "Saving…" : "Save"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" disabled={savingCatalog || loadingLookups}>
+                Add Car Model
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Car Model</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-3">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Brand</div>
+                  <Select value={modelCarId} onValueChange={setModelCarId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={loadingLookups ? "Loading…" : "Select brand"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cars.map((c) => (
+                        <SelectItem key={c.car_id} value={String(c.car_id)}>
+                          {c.make}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Base Model</div>
+                  <Input value={modelBaseModel} onChange={(e) => setModelBaseModel(e.target.value)} placeholder="e.g. Hilux" />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Variant (optional)</div>
+                  <Input value={modelVariant} onChange={(e) => setModelVariant(e.target.value)} placeholder="e.g. GRS 4x4" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() =>
+                    void postCatalog({
+                      kind: "model",
+                      car_id: Number(modelCarId),
+                      baseModel: normalizeName(modelBaseModel),
+                      variant: normalizeName(modelVariant) || undefined,
+                    })
+                  }
+                  disabled={
+                    savingCatalog ||
+                    !Number.isFinite(Number(modelCarId)) ||
+                    !normalizeName(modelBaseModel)
+                  }
+                >
+                  {savingCatalog ? "Saving…" : "Save"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" disabled={savingCatalog || loadingLookups}>
+                Add Car Variant
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Car Variant</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-3">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Brand</div>
+                  <Select value={variantCarId} onValueChange={setVariantCarId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={loadingLookups ? "Loading…" : "Select brand"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cars.map((c) => (
+                        <SelectItem key={c.car_id} value={String(c.car_id)}>
+                          {c.make}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Base Model</div>
+                  <Input value={variantBaseModel} onChange={(e) => setVariantBaseModel(e.target.value)} placeholder="e.g. Hilux" />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Variant</div>
+                  <Input value={variantVariant} onChange={(e) => setVariantVariant(e.target.value)} placeholder="e.g. GRS 4x4" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() =>
+                    void postCatalog({
+                      kind: "variant",
+                      car_id: Number(variantCarId),
+                      baseModel: normalizeName(variantBaseModel),
+                      variant: normalizeName(variantVariant),
+                    })
+                  }
+                  disabled={
+                    savingCatalog ||
+                    !Number.isFinite(Number(variantCarId)) ||
+                    !normalizeName(variantBaseModel) ||
+                    !normalizeName(variantVariant)
+                  }
+                >
+                  {savingCatalog ? "Saving…" : "Save"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" disabled={savingCatalog}>
+                Add Year
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Year</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Year</div>
+                <Input value={yearInput} onChange={(e) => setYearInput(e.target.value)} inputMode="numeric" placeholder="e.g. 2026" />
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    const year = parseYear(yearInput);
+                    if (year === null) {
+                      setError("Year must be between 1900 and 2100");
+                      return;
+                    }
+                    void postCatalog({ kind: "year", year });
+                  }}
+                  disabled={savingCatalog || parseYear(yearInput) === null}
+                >
+                  {savingCatalog ? "Saving…" : "Save"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Button variant="outline" onClick={() => void loadProducts()} disabled={loadingProducts}>
+            {loadingProducts ? "Refreshing…" : "Refresh Products"}
           </Button>
         </div>
       </div>
@@ -254,194 +431,72 @@ export default function CarCompatibilityPage() {
         </div>
       ) : null}
 
-      <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
-        <div className="text-lg font-semibold text-foreground">Add Fitment</div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Existing Make (optional)</div>
-            <Select
-              value={selectedCarId}
-              onValueChange={(v) => {
-                setSelectedCarId(v);
-                const car = lookups.cars.find((c) => String(c.car_id) === v);
-                setMakeInput(car?.make ?? "");
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select make" />
-              </SelectTrigger>
-              <SelectContent>
-                {lookups.cars.map((c) => (
-                  <SelectItem key={c.car_id} value={String(c.car_id)}>
-                    {c.make}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Make</div>
-            <Input
-              value={makeInput}
-              onChange={(e) => setMakeInput(e.target.value)}
-              placeholder="e.g. Toyota"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Existing Base Model (optional)</div>
-            <Select value={baseModelInput} onValueChange={setBaseModelInput} disabled={!selectedCarId}>
-              <SelectTrigger>
-                <SelectValue placeholder={selectedCarId ? "Select base model" : "Select make first"} />
-              </SelectTrigger>
-              <SelectContent>
-                {baseModelsForSelectedCar.map((b) => (
-                  <SelectItem key={b} value={b}>
-                    {b}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Base Model</div>
-            <Input
-              value={baseModelInput}
-              onChange={(e) => setBaseModelInput(e.target.value)}
-              placeholder="e.g. Hilux"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Variant (optional)</div>
-            <Input
-              value={variantInput}
-              onChange={(e) => setVariantInput(e.target.value)}
-              placeholder="e.g. GRS 4x4"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Start Year</div>
-            <Select
-              value={selectedStartYearId}
-              onValueChange={(v) => {
-                setSelectedStartYearId(v);
-                setTypedStartYear("");
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select year" />
-              </SelectTrigger>
-              <SelectContent>
-                {lookups.years
-                  .slice()
-                  .sort((a, b) => b.year - a.year)
-                  .map((y) => (
-                    <SelectItem key={y.year_id} value={String(y.year_id)}>
-                      {y.year}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-            <Input
-              value={typedStartYear}
-              onChange={(e) => {
-                setTypedStartYear(e.target.value);
-                if (e.target.value.trim()) setSelectedStartYearId("");
-              }}
-              inputMode="numeric"
-              placeholder="Or type a new year (e.g. 2026)"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="text-sm font-medium">End Year</div>
-            <Select
-              value={selectedEndYearId}
-              onValueChange={(v) => {
-                setSelectedEndYearId(v);
-                setTypedEndYear("");
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select year" />
-              </SelectTrigger>
-              <SelectContent>
-                {lookups.years
-                  .slice()
-                  .sort((a, b) => b.year - a.year)
-                  .map((y) => (
-                    <SelectItem key={y.year_id} value={String(y.year_id)}>
-                      {y.year}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-            <Input
-              value={typedEndYear}
-              onChange={(e) => {
-                setTypedEndYear(e.target.value);
-                if (e.target.value.trim()) setSelectedEndYearId("");
-              }}
-              inputMode="numeric"
-              placeholder="Or type a new year (e.g. 2026)"
-            />
-          </div>
+      {success ? (
+        <div className="text-sm text-emerald-700 border border-emerald-700/30 bg-emerald-700/10 rounded-md p-3">
+          {success}
         </div>
+      ) : null}
 
-        <div className="flex justify-end gap-2">
-          <Button onClick={handleCreate} disabled={!canSave || saving}>
-            {saving ? "Saving…" : "Add Fitment"}
+      <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="text-sm font-medium text-foreground">Product</div>
+            <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+              <SelectTrigger className="w-[360px]">
+                <SelectValue placeholder={loadingProducts ? "Loading products…" : "Select product"} />
+              </SelectTrigger>
+              <SelectContent>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            variant="outline"
+            onClick={() => selectedProductId && void loadProductCompatibility(selectedProductId)}
+            disabled={!selectedProductId || loadingRows}
+          >
+            {loadingRows ? "Refreshing…" : "Refresh"}
           </Button>
         </div>
-      </div>
 
-      <div className="bg-surface border border-border rounded-xl p-5 space-y-4">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Make</TableHead>
-                <TableHead>Base Model</TableHead>
-                <TableHead>Variant</TableHead>
+                <TableHead>Model</TableHead>
                 <TableHead>Years</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.length === 0 ? (
+              {sortedRows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-10">
-                    {loading ? "Loading…" : "No fitments yet."}
+                  <TableCell colSpan={3} className="text-center text-muted-foreground py-10">
+                    {loadingRows ? "Loading…" : "No compatibility rows."}
                   </TableCell>
                 </TableRow>
               ) : (
-                rows.map((r) => (
+                sortedRows.map((r) => (
                   <TableRow key={String(r.id)}>
                     <TableCell className="font-medium">{r.make || "—"}</TableCell>
-                    <TableCell>{r.base_model || "—"}</TableCell>
-                    <TableCell>{r.variant || "—"}</TableCell>
+                    <TableCell>{r.model_name || "—"}</TableCell>
                     <TableCell>
-                      {r.start_year && r.end_year ? `${r.start_year} - ${r.end_year}` : "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(r.id)}
-                      >
-                        Delete
-                      </Button>
+                      {(r.start_year ?? "?") + " - " + (r.end_year ?? "?")}
                     </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
           </Table>
+        </div>
+
+        <div className="text-xs text-muted-foreground">
+          Manage compatibility in Product Edit → Car Compatibility.
         </div>
       </div>
     </div>

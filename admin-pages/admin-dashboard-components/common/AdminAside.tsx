@@ -9,7 +9,7 @@ import type { AdminTabId, NavItem } from "../../admin-dashboard.types";
 function routeForTab(id: AdminTabId): string {
   switch (id) {
     case "orders":
-      return "/admin-dashboard";
+      return "/admin-dashboard/orders-management";
     case "products":
       return "/admin-dashboard/product-management";
     case "inventory":
@@ -18,6 +18,8 @@ function routeForTab(id: AdminTabId): string {
       return "/admin-dashboard/car-compatibility-management";
     case "users":
       return "/admin-dashboard/user-management";
+    case "overview":
+      return "/admin-dashboard/overview-management";
     default:
       return "/admin-dashboard";
   }

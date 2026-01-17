@@ -138,6 +138,20 @@ export default function Header() {
       localStorage.clear();
       sessionStorage.clear();
     }
+    // Update local UI state immediately so the header reflects logout
+    setAuth({ isLoggedIn: false, roleId: null });
+    setUsername(null);
+    setCartCount(0);
+
+    // Notify other listeners (other tabs) if any rely on storage events
+    try {
+      // Some browsers allow constructing a StorageEvent; this is best-effort
+      const ev = new StorageEvent("storage", { key: "access_token", oldValue: null, newValue: null });
+      window.dispatchEvent(ev);
+    } catch {
+      // ignore if not supported
+    }
+
     router.push("/");
   };
 
@@ -313,9 +327,9 @@ export default function Header() {
 
         {/* Mobile/tablet search overlay (keeps header single-row) */}
         {mobileSearchOpen && (
-          <div className="lg:hidden absolute left-0 right-0 top-full border-b border-border bg-surface shadow-sm">
+          <div className="lg:hidden absolute right-1 top-full border-b border-border bg-surface shadow-sm w-[400px]">
             <div className="mx-auto w-full max-w-[1270px] px-4 sm:px-6 py-2">
-              <form onSubmit={onSearchSubmit} className="relative w-full">
+              <form onSubmit={onSearchSubmit} className="relative ">
                 <Input
                   ref={mobileSearchInputRef}
                   value={searchValue}

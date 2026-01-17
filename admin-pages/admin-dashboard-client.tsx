@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Package, ShoppingBag, UserRoundCog, Wrench } from "lucide-react";
+import { BarChart3, Car, Package, ShoppingBag, UserRoundCog, Wrench } from "lucide-react";
 
 import AdminHeader from "./admin-dashboard-components/common/AdminHeader";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import OrdersPage from "./admin-dashboard-components/orders";
 import ProductPage from "./admin-dashboard-components/product";
 import UserPage from "./admin-dashboard-components/user";
 import CarCompatibilityPage from "./admin-dashboard-components/car-compatibility";
+import OverviewPage from "./admin-dashboard-components/overview";
 import { type AdminUserRow } from "./admin-dashboard-components/tables/UsersTable";
 
 import type {
@@ -63,6 +64,12 @@ function hasPermission(roleId: RoleId, permission: Permission): boolean {
 
 const NAV_ITEMS: NavItem[] = [
   {
+    id: "overview",
+    label: "Dashboard",
+    icon: <BarChart3 />,
+    permission: "VIEW_ANALYTICS",
+  },
+  {
     id: "orders",
     label: "Orders",
     icon: <ShoppingBag />,
@@ -90,7 +97,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function AdminDashboardClient({
-  initialTab = "products",
+  initialTab = "overview",
 }: {
   initialTab?: AdminTabId;
 }) {
@@ -318,6 +325,8 @@ export default function AdminDashboardClient({
       />
 
         <main className="flex-1 p-8 space-y-6">
+          {activeTab === "overview" ? <OverviewPage /> : null}
+
           {activeTab === "orders" ? <OrdersPage /> : null}
 
           {activeTab === "products" ? (

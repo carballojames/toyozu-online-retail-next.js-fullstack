@@ -9,6 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import ToyozuLogo from "@/assets/toyozu-logo.png";
+import {Label } from "@/components/ui/label";
 
 const registerSchema = z
   .object({
@@ -111,23 +113,24 @@ export default function RegisterPage() {
       <div className="w-full max-w-5xl">
         <div className="grid grid-cols-1 md:grid-cols-2  items-stretch rounded-2xl shadow-lg bg-surface">
           {/* Left: description card */}
-          <div className="bg-surface text-surface-foreground  p-8 flex flex-col justify-center border-r border-border">
+          <div className="bg-surface text-surface-foreground  p-8 flex flex-col justify-center items-center">
+            <img src={ToyozuLogo.src} alt="Toyozu Logo" className="h-12 w-12 mb-4" />
             <h1 className="text-2xl font-semibold">Create your account</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <Label className="mt-2 text-sm text-muted-foreground">
               Join Toyozu Online Retail to browse parts, manage orders, and checkout faster.
-            </p>
-            <ul className="mt-6 space-y-2 text-sm">
+            </Label>
+            <ul className="mt-6 space-y-2 text-sm gap-6 ">
               <li className="flex gap-2">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
-                <span>Track purchases and order history</span>
+                <Label>Track purchases and order history</Label>
               </li>
               <li className="flex gap-2">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
-                <span>Save details for faster checkout</span>
+                <Label>Save details for faster checkout</Label>
               </li>
               <li className="flex gap-2">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
-                <span>Search by categories and product name</span>
+                <Label>Search by categories and product name</Label>
               </li>
             </ul>
           </div>
