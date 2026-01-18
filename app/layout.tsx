@@ -3,6 +3,7 @@ import React from "react";
 import { Montserrat } from "next/font/google";
 import { Metadata } from "next/dist/lib/metadata/types/metadata-interface";
 
+
 export const metadata: Metadata = {
   title: "Toyozu Inc. - Online Retail",
   description: "Toyozu online retail",

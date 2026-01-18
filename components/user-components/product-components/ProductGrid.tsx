@@ -29,22 +29,28 @@ export default function ProductGrid({
       )
     : products;
 
-  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const visibleProducts = showMoreButton
+    ? filteredProducts.slice(0, visibleCount)
+    : filteredProducts;
 
   const lgColsClass =
-    columns === 4
+    columns === 1
+      ? "lg:grid-cols-1"
+      : columns === 2
+      ? "lg:grid-cols-2"
+      : columns === 3
+      ? "lg:grid-cols-3"
+      : columns === 4
       ? "lg:grid-cols-4"
       : columns === 5
-        ? "lg:grid-cols-6"
-        : columns === 6
-          ? "lg:grid-cols-6"
-          : "lg:grid-cols-6";
+      ? "lg:grid-cols-5"
+      : "lg:grid-cols-6";
 
   return (
     <div className="flex flex-col items-center mb-5 w-full">
       {/* Product Grid */}
       <div
-        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${lgColsClass} gap-3 w-full max-w-[1270px] px-4 sm:px-0`}
+        className={`grid grid-cols-2 md:grid-cols-3 sm:grid-cols-2 ${lgColsClass} gap-3 w-full max-w-[1270px] px-4 sm:px-0`}
       >
         {visibleProducts.map((product) => {
           const firstImage =
@@ -141,7 +147,7 @@ export default function ProductGrid({
       </div>
 
       {/* More Button: only show if not filtered and only on landing */}
-      {showMoreButton && !category && visibleCount < products.length && (
+      {showMoreButton && !category && visibleCount < filteredProducts.length && (
         <div className="mt-6">
           <Button asChild variant="outline" className="px-8 py-2 rounded-full font-semibold max-w-[120px]">
             <Link href={moreHref}>More</Link>

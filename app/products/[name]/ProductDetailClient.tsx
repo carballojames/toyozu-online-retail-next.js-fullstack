@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/app/common/Header";
 import { ProductDetail, CompatibilityRow, ProductCard } from "./types";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const CART_STORAGE_KEY = "cartItems";
 
@@ -38,6 +40,7 @@ export default function ProductDetailClient({
   compatibility: CompatibilityRow[];
   relatedProducts: ProductCard[];
 }): JSX.Element {
+  const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<number>(0);
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<"description" | "specifications">(
@@ -52,7 +55,7 @@ export default function ProductDetailClient({
     if (quantity > 1) setQuantity((q) => q - 1);
   };
 
-  const handleAddToCart = async (): Promise<void> => {
+  const handleAddToCart = async (): Promise<boolean> => {
     const rawUserId =
       typeof window !== "undefined" ? localStorage.getItem("user_id") : null;
     const userId = rawUserId ? Number(rawUserId) : NaN;
@@ -76,15 +79,17 @@ export default function ProductDetailClient({
         const json = (await res.json()) as { error?: string };
         if (!res.ok) {
           alert(json.error || "Failed to add to cart");
-          return;
+          return false;
         }
 
         window.dispatchEvent(new Event("cart:updated"));
-        alert(`Added ${quantity} × ${product.name} to cart`);
-        return;
+        toast.success("Added to shopping cart successfully — enjoy shopping.", {
+          duration: 3000,
+        });
+        return true;
       } catch {
         alert("Failed to add to cart");
-        return;
+        return false;
       }
     }
 
@@ -104,7 +109,7 @@ export default function ProductDetailClient({
       } else {
         if (items.length >= 30) {
           alert("Cart limit reached (30 items). Remove an item to add more.");
-          return;
+          return false;
         }
         items.push({
           product: String(product.product_id),
@@ -120,10 +125,20 @@ export default function ProductDetailClient({
 
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
       window.dispatchEvent(new Event("cart:updated"));
-      alert(`Added ${quantity} × ${product.name} to cart`);
+      toast.success("Added to shopping cart successfully — enjoy shopping.", {
+        duration: 3000,
+      });
+      return true;
     } catch {
       alert("Failed to add to cart");
+      return false;
     }
+  };
+
+  const handleBuyNow = async (): Promise<void> => {
+    const ok = await handleAddToCart();
+    if (!ok) return;
+    router.push(`/cart?select=${encodeURIComponent(String(product.product_id))}`);
   };
 
   return (
@@ -241,19 +256,28 @@ export default function ProductDetailClient({
             </div>
 
             {/* Action buttons */}
-            <div className="space-y-3">
-              <div className="flex flex-col gap-3">
+            <div className="w-full">
+              <div className="flex w-full flex-row gap-3">
                 <Button
                   variant="default"
                   size="lg"
-                  onClick={handleAddToCart}
-                  className="w-full"
+                  onClick={async () => {
+                    void handleAddToCart();
+                  }}
+                  className="flex-1"
                 >
-                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  <ShoppingCart className="w-5 h-5" />
                   Add to Cart
                 </Button>
 
-                <Button variant="secondary" size="lg" className="w-full">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="flex-1"
+                  onClick={() => {
+                    void handleBuyNow();
+                  }}
+                >
                   Buy Now
                 </Button>
               </div>

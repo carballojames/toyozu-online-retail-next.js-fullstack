@@ -295,7 +295,7 @@ export default function EditUserModal({ open, userId, onOpenChange, onSaved }: P
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="  max-h-[800px] overflow-auto">
         <DialogHeader>
           <DialogTitle>Edit user</DialogTitle>
           <DialogDescription>
@@ -359,7 +359,7 @@ export default function EditUserModal({ open, userId, onOpenChange, onSaved }: P
             <div className="mb-2 flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium">Addresses</div>
-                <div className="text-xs text-muted-foreground">Add a delivery address for this user</div>
+
               </div>
               <Button type="button" variant="outline" onClick={() => void loadAddresses()} disabled={addressesLoading}>
                 Refresh
@@ -368,55 +368,6 @@ export default function EditUserModal({ open, userId, onOpenChange, onSaved }: P
 
             {addressesError ? <p className="text-sm text-destructive">{addressesError}</p> : null}
 
-            <div className="space-y-3 rounded-md border bg-card p-3">
-              <AddressCascader
-                value={addressCascade}
-                onChange={(next) => {
-                  setAddressCascade(next);
-                  void loadApprovedAddresses(next.barangayId);
-                }}
-                disabled={addressesLoading}
-              />
-
-              <div className="space-y-2">
-                <label className="block mb-1 text-sm">Approved address</label>
-                <Select
-                  value={addressApprovedId}
-                  onValueChange={setAddressApprovedId}
-                  disabled={addressesLoading || approvedLoading || approvedOptions.length === 0}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={addressCascade.barangayId ? "Select approved address" : "Select barangay first"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {approvedOptions.map((o) => (
-                      <SelectItem key={o.id} value={String(o.id)}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {addressCascade.barangayId && !approvedLoading && approvedOptions.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">No approved addresses in this barangay yet.</p>
-                ) : null}
-              </div>
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  id="adminIsDefault"
-                  checked={addressIsDefault}
-                  onCheckedChange={(v) => setAddressIsDefault(Boolean(v))}
-                  disabled={addressesLoading}
-                />
-                <label htmlFor="adminIsDefault" className="text-sm text-muted-foreground">
-                  Set as default
-                </label>
-              </div>
-              <div className="flex justify-end">
-                <Button type="button" onClick={() => void saveAddress()} disabled={addressesLoading}>
-                  Add address
-                </Button>
-              </div>
-            </div>
 
             <div className="mt-3 space-y-2">
               {addressesLoading ? <div className="text-sm text-muted-foreground">Loading addresses…</div> : null}

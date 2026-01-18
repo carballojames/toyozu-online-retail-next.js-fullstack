@@ -18,6 +18,8 @@ import ProductPage from "./admin-dashboard-components/product";
 import UserPage from "./admin-dashboard-components/user";
 import CarCompatibilityPage from "./admin-dashboard-components/car-compatibility";
 import OverviewPage from "./admin-dashboard-components/overview";
+import SalesTrackerPage from "./admin-dashboard-components/sales-tracker";
+import SupplyTrackerPage from "./admin-dashboard-components/supply-tracker";
 import { type AdminUserRow } from "./admin-dashboard-components/tables/UsersTable";
 
 import type {
@@ -76,7 +78,7 @@ const NAV_ITEMS: NavItem[] = [
     permission: "VIEW_ORDERS",
   },
   {
-    id: "products",
+    id: "stocks",
     label: "Product ",
     icon: <Wrench /> ,
     permission: "MANAGE_PRODUCTS",
@@ -93,6 +95,18 @@ const NAV_ITEMS: NavItem[] = [
     label: "Users",
     icon: <UserRoundCog />,
     permission: "MANAGE_USERS",
+  },
+  {
+    id: "sales-tracker",
+    label: "Sales Tracker",
+    icon: <BarChart3 />,
+    permission: "VIEW_ANALYTICS",
+  },
+  {
+    id: "supply-tracker",
+    label: "Supply Tracker",
+    icon: <Package />,
+    permission: "MANAGE_INVENTORY",
   },
 ];
 
@@ -329,7 +343,7 @@ export default function AdminDashboardClient({
 
           {activeTab === "orders" ? <OrdersPage /> : null}
 
-          {activeTab === "products" ? (
+          {activeTab === "stocks" ? (
             <ProductPage
               productQuery={productQuery}
               onProductQueryChange={setProductQuery}
@@ -374,6 +388,10 @@ export default function AdminDashboardClient({
           ) : null}
 
           {activeTab === "car-compatibility" ? <CarCompatibilityPage /> : null}
+
+          {activeTab === "sales-tracker" ? <SalesTrackerPage /> : null}
+
+          {activeTab === "supply-tracker" ? <SupplyTrackerPage /> : null}
         </main>
       </div>
     </div>

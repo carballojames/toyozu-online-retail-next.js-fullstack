@@ -4,7 +4,6 @@ import ProductNavigator from "@/components/user-components/ProductNavigator";
 import ProductGrid from "@/components/user-components/product-components/ProductGrid";
 import { prisma } from "@/lib/prisma";
 import type { ProductCard } from "@/app/products/[name]/types";
-import { unstable_cache } from "next/cache";
 import {
   Pagination,
   PaginationContent,
@@ -32,7 +31,7 @@ function normalizePublicImagePath(raw: string): string {
 export default async function ProductsPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
   const page = Number(sp.page ?? 1) || 1;
-  const perPage = Number(sp.perPage ?? 50) || 50;
+  const perPage = Number(sp.perPage ?? 20) || 20;
 
   const where: ProductWhere = {};
 
@@ -79,46 +78,58 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   const whereKey = JSON.stringify(where);
 
-  const getProductCount = unstable_cache(
-    async (serializedWhere: string) => {
-      const parsed = JSON.parse(serializedWhere) as typeof where;
-      return prisma.product.count({ where: parsed });
-    },
-    ["products-count"],
-    { revalidate }
-  );
+  async function getProductCount(serializedWhere: string) {
+    const parsed = JSON.parse(serializedWhere) as typeof where;
+    return prisma.product.count({ where: parsed });
+  }
 
-  const getProductsPage = unstable_cache(
-    async (serializedWhere: string, take: number, skip: number) => {
-      const parsed = JSON.parse(serializedWhere) as typeof where;
-      return prisma.product.findMany({
-        where: parsed,
-        select: {
-          product_id: true,
-          name: true,
-          description: true,
-          selling_price: true,
-          quantity: true,
-          brand: { select: { name: true } },
-          category: { select: { name: true } },
-          product_image: {
-            select: { id: true, image: true, image_mime: true, image_updated_at: true },
-            orderBy: { id: "asc" },
-            take: 1,
-          },
+  async function getProductsPage(serializedWhere: string, take: number, skip: number) {
+    const parsed = JSON.parse(serializedWhere) as typeof where;
+    return prisma.product.findMany({
+      where: parsed,
+      select: {
+        product_id: true,
+        name: true,
+        description: true,
+        selling_price: true,
+        quantity: true,
+        brand: { select: { name: true } },
+        category: { select: { name: true } },
+        product_image: {
+          select: { id: true, image: true, image_mime: true, image_updated_at: true },
+          orderBy: { id: "asc" },
+          take: 1,
         },
-        orderBy: { product_id: "desc" },
-        take,
-        skip,
-      });
-    },
-    ["products-page"],
-    { revalidate }
-  );
+      },
+      orderBy: { product_id: "desc" },
+      take,
+      skip,
+    });
+  }
 
   const total = await getProductCount(whereKey);
   const totalPages = Math.max(1, Math.ceil(total / perPage));
   const safePage = Math.min(Math.max(page, 1), totalPages);
+
+  const getVisiblePages = () => {
+    const windowSize = 5;
+    if (totalPages <= windowSize) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    let start = Math.max(1, safePage - Math.floor(windowSize / 2));
+    let end = start + windowSize - 1;
+    if (end > totalPages) {
+      end = totalPages;
+      start = Math.max(1, end - windowSize + 1);
+    }
+
+    const pages: number[] = [];
+    for (let p = start; p <= end; p++) pages.push(p);
+    return pages;
+  };
+
+  const visiblePages = getVisiblePages();
 
   const buildHref = (nextPage: number) => {
     const params = new URLSearchParams();
@@ -175,11 +186,13 @@ export default async function ProductsPage({ searchParams }: Props) {
                     <PaginationPrevious href={buildHref(Math.max(1, safePage - 1))} />
                   </PaginationItem>
 
-                  <PaginationItem>
-                    <PaginationLink href={buildHref(safePage)} isActive>
-                      {safePage}
-                    </PaginationLink>
-                  </PaginationItem>
+                  {visiblePages.map((p) => (
+                    <PaginationItem key={p}>
+                      <PaginationLink href={buildHref(p)} isActive={p === safePage}>
+                        {p}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
 
                   <PaginationItem className={safePage >= totalPages ? "pointer-events-none opacity-50" : undefined}>
                     <PaginationNext href={buildHref(Math.min(totalPages, safePage + 1))} />

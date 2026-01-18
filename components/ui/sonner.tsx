@@ -1,4 +1,6 @@
-"use client"
+"use client";
+
+import * as React from "react";
 
 import {
   CircleCheckIcon,
@@ -6,16 +8,34 @@ import {
   Loader2Icon,
   OctagonXIcon,
   TriangleAlertIcon,
-} from "lucide-react"
-import { useTheme } from "next-themes"
-import { Toaster as Sonner, type ToasterProps } from "sonner"
+} from "lucide-react";
+import { Toaster as Sonner, type ToasterProps } from "sonner";
+
+function getThemeFromDocument(): ToasterProps["theme"] {
+  if (typeof document === "undefined") return "system";
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+  const [theme, setTheme] = React.useState<ToasterProps["theme"]>("system");
+
+  React.useEffect(() => {
+    setTheme(getThemeFromDocument());
+    if (typeof document === "undefined") return;
+
+    const observer = new MutationObserver(() => {
+      setTheme(getThemeFromDocument());
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={theme}
       className="toaster group"
       icons={{
         success: <CircleCheckIcon className="size-4" />,
@@ -34,7 +54,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }
       {...props}
     />
-  )
-}
+  );
+};
 
-export { Toaster }
+export { Toaster };

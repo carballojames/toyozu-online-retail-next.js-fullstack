@@ -13,8 +13,10 @@ export type RoleId = 0 | 1 | 2 | 3 | 4;
 export type AdminTabId =
   | "overview"
   | "orders"
-  | "products"
+  | "stocks"
   | "inventory"
+  | "sales-tracker"
+  | "supply-tracker"
   | "employees"
   | "users"
   | "profile"

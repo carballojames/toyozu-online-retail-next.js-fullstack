@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "../app/common/Header";
 import { Button } from "@/components/ui/button";
 import { Trash2 }from "lucide-react"
@@ -92,6 +92,8 @@ function readUserIdFromStorage(): number {
 
 export default function ShoppingCart() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedFromQuery = searchParams.get("select");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<SelectedMap>({});
   const [quantities, setQuantities] = useState<QuantityMap>({});
@@ -108,7 +110,7 @@ export default function ShoppingCart() {
       const initSelected: SelectedMap = {};
       const initQuantities: QuantityMap = {};
       for (const item of items) {
-        initSelected[item.product] = true;
+        initSelected[item.product] = false;
         initQuantities[item.product] = item.quantity;
       }
       setSelectedItems(initSelected);
@@ -146,6 +148,17 @@ export default function ShoppingCart() {
     load();
     return () => controller.abort();
   }, []);
+
+  // If Buy Now (or deep link) selects a specific product, select only that item.
+  useEffect(() => {
+    const productId = (selectedFromQuery ?? "").trim();
+    if (!productId) return;
+    if (!cartItems.some((it) => String(it.product) === productId)) return;
+
+    const nextSelected: SelectedMap = {};
+    for (const item of cartItems) nextSelected[item.product] = String(item.product) === productId;
+    setSelectedItems(nextSelected);
+  }, [cartItems, selectedFromQuery]);
 
   const toggleSelection = (productId: ProductId) =>
     setSelectedItems((prev) => ({ ...prev, [productId]: !prev[productId] }));
@@ -267,7 +280,7 @@ export default function ShoppingCart() {
     <div className="min-h-screen bg-primary-background">
       <Header />
 
-      <div className="max-w-[1500px] mx-auto px-4 pb-12 mt-8">
+      <div className="max-w-[1500px] mx-auto px-4 pb-28 mt-8">
         {cartError && (
           <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
             {cartError}
@@ -276,10 +289,7 @@ export default function ShoppingCart() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <h1 className="text-3xl font-bold text-secondary">
-            Products{" "}
-            <span className="text-primary">
-              ({cartItems.length > 0 ? cartItems.length : 0})
-            </span>
+            <span>Shopping Cart</span>
           </h1>
 
           <div className="mt-3 sm:mt-0 w-full sm:w-[220px]">
@@ -300,8 +310,8 @@ export default function ShoppingCart() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_auto]">
           {/* Left Column */}
           <div className="bg-surface text-surface-foreground rounded-xl shadow-sm border border-border">
-            {/* Desktop Table */}
-            <div className="hidden sm:block">
+            {/* Desktop Table (desktop only; hide on tablet/mobile) */}
+            <div className="hidden lg:block">
               <Table>
                 <TableHeader>
                   <TableRow className="text-muted-foreground uppercase tracking-wide text-xs">
@@ -352,16 +362,16 @@ export default function ShoppingCart() {
                           <div className="flex items-center justify-end gap-2">
                             <Button
                               onClick={() => updateQuantity(item.product, -1)}
-                              variant="outline"
+                              variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              className="h-8 w-8 border border-border"
                             >
                               −
                             </Button>
                             <span className="w-8 text-center font-medium">{quantity}</span>
                             <Button
                               onClick={() => updateQuantity(item.product, 1)}
-                              variant="outline"
+                              variant="default"
                               size="icon"
                               className="h-8 w-8"
                             >
@@ -380,7 +390,7 @@ export default function ShoppingCart() {
                             className="text-destructive"
                             aria-label="Remove item"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-8 w-8" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -390,56 +400,29 @@ export default function ShoppingCart() {
               </Table>
             </div>
 
-            {/* Mobile List */}
-            <div className="divide-y sm:hidden">
+            {/* Mobile/Tablet List */}
+            <div className="divide-y lg:hidden">
               {cartItems.map((item) => {
                 const imageSrc = item.product_image || "/placeholder.svg";
                 const quantity = quantities[item.product] ?? item.quantity ?? 1;
                 const subtotal = (Number(item.selling_price) * quantity).toFixed(2);
 
                 return (
-                  <div key={item.product} className="p-4 hover:bg-muted/50 transition">
-                    <div className="flex items-start gap-4">
-                      <input
-                        type="checkbox"
-                        checked={!!selectedItems[item.product]}
-                        onChange={() => toggleSelection(item.product)}
-                        className="mt-1 w-4 h-4"
-                      />
-                      <img
-                        src={imageSrc}
-                        alt={item.product_name || "Product image"}
-                        className="w-20 h-20 object-cover rounded-md border border-border"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium text-foreground line-clamp-1">{item.product_name}</div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          {item.category_name || "Category"} › {item.brand_name || "Brand"}
-                        </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <div className="text-foreground font-medium">₱{Number(item.selling_price).toFixed(2)}</div>
-                          <div className="text-right font-semibold text-primary">₱{subtotal}</div>
-                        </div>
-                        <div className="mt-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Button
-                              onClick={() => updateQuantity(item.product, -1)}
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
-                              −
-                            </Button>
-                            <span className="w-8 text-center font-medium">{quantity}</span>
-                            <Button
-                              onClick={() => updateQuantity(item.product, 1)}
-                              variant="outline"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
-                              +
-                            </Button>
-                          </div>
+                  <div key={item.product} className="p-3 hover:bg-muted/50 transition">
+                    <div className="flex items-start gap-3">
+                      {/* Checkbox outside the main card */}
+                      <div className="flex-shrink-0 pt-1 flex items-center justify-center my-auto">
+                        <input
+                          type="checkbox"
+                          checked={!!selectedItems[item.product]}
+                          onChange={() => toggleSelection(item.product)}
+                          className="w-5 h-5"
+                        />
+                      </div>
+
+                      <div className="flex-1 relative bg-transparent">
+                        {/* Trash button top-right */}
+                        <div className="absolute top-2 right-2">
                           <Button
                             onClick={() => handleDelete(item.product)}
                             variant="ghost"
@@ -449,6 +432,45 @@ export default function ShoppingCart() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={imageSrc}
+                            alt={item.product_name || "Product image"}
+                            className="w-20 max-h-20 object-cover   flex-shrink-0"
+                          />
+
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-foreground text-sm line-clamp-2 break-words">{item.product_name}</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {item.category_name || "Category"} › {item.brand_name || "Brand"}
+                            </div>
+
+                            <div className="mt-3 flex items-center justify-between">
+                              <div className="text-left font-semibold text-primary">₱{subtotal}</div>
+
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  onClick={() => updateQuantity(item.product, -1)}
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 border border-border"
+                                >
+                                  −
+                                </Button>
+                                <span className="w-8 text-center font-medium text-sm">{quantity}</span>
+                                <Button
+                                  onClick={() => updateQuantity(item.product, 1)}
+                                  variant="default"
+                                  size="icon"
+                                  className="h-6 w-6"
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -483,8 +505,8 @@ export default function ShoppingCart() {
             </div>
           </div>
 
-          {/* Right Column - Order Summary */}
-          <div className="h-fit w-fit lg:sticky lg:top-6">
+          {/* Right Column - Order Summary (desktop only) */}
+          <div className="hidden lg:block h-fit w-fit lg:sticky lg:top-6">
             <div className="bg-surface text-surface-foreground rounded-xl shadow-sm border border-border p-6">
               <h3 className="text-lg font-semibold mb-4 text-foreground">
                 Order Summary
@@ -512,6 +534,25 @@ export default function ShoppingCart() {
               >
                 PROCEED TO CHECKOUT
               </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile/Tablet fixed bottom summary (visible only below lg) */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 p-3">
+          <div className="max-w-[1500px] mx-auto px-4">
+            <div className="bg-surface border-t border-border rounded-t-xl shadow-lg p-3 flex items-center gap-3">
+              <div className="flex-1">
+                <div className="text-sm text-muted-foreground">
+                  Subtotal ({Object.values(selectedItems).filter(Boolean).length} items)
+                </div>
+                <div className="font-semibold text-foreground">₱{selectedTotal.toFixed(2)}</div>
+              </div>
+              <div className="w-[160px]">
+                <Button onClick={handleProceedToCheckout} className="w-full">
+                  Checkout
+                </Button>
+              </div>
             </div>
           </div>
         </div>
