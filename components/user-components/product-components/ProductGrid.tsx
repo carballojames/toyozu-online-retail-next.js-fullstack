@@ -50,7 +50,7 @@ export default function ProductGrid({
     <div className="flex flex-col items-center mb-5 w-full">
       {/* Product Grid */}
       <div
-        className={`grid grid-cols-2 md:grid-cols-3 sm:grid-cols-2 ${lgColsClass} gap-3 w-full max-w-[1270px] px-4 sm:px-0`}
+        className={`grid grid-cols-2 md:grid-cols-3 ${lgColsClass} gap-3 sm:gap-4 w-full max-w-[1270px] px-4 sm:px-0`}
       >
         {visibleProducts.map((product) => {
           const firstImage =

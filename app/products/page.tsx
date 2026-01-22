@@ -178,34 +178,31 @@ export default async function ProductsPage({ searchParams }: Props) {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="py-8 px-4 flex flex-row">
-        <div className=" mx-auto flex gap-6">
+      <main className="py-8">
+        <div className="mx-auto w-full max-w-[1270px] px-4 sm:px-6">
+          <h1 className="text-2xl font-bold mb-6 text-primary italic">All Products</h1>
+          <ProductGrid initialProducts={mapped} showMoreButton={false} />
 
-          <div className="flex-1 w-[1300px]">
-            <h1 className="text-2xl font-bold mb-6 text-primary italic">All Products</h1>
-            <ProductGrid initialProducts={mapped} showMoreButton={false} />
+          <div className="mt-8 flex justify-center">
+            <Pagination className="justify-center items-center">
+              <PaginationContent>
+                <PaginationItem className={safePage <= 1 ? "pointer-events-none opacity-50" : undefined}>
+                  <PaginationPrevious href={buildHref(Math.max(1, safePage - 1))} />
+                </PaginationItem>
 
-            <div className="flex items-center justify-between mt-8 ">
-              <Pagination className="justify-center items-center">
-                <PaginationContent>
-                  <PaginationItem className={safePage <= 1 ? "pointer-events-none opacity-50" : undefined}>
-                    <PaginationPrevious href={buildHref(Math.max(1, safePage - 1))} />
+                {visiblePages.map((p) => (
+                  <PaginationItem key={p}>
+                    <PaginationLink href={buildHref(p)} isActive={p === safePage}>
+                      {p}
+                    </PaginationLink>
                   </PaginationItem>
+                ))}
 
-                  {visiblePages.map((p) => (
-                    <PaginationItem key={p}>
-                      <PaginationLink href={buildHref(p)} isActive={p === safePage}>
-                        {p}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
-
-                  <PaginationItem className={safePage >= totalPages ? "pointer-events-none opacity-50" : undefined}>
-                    <PaginationNext href={buildHref(Math.min(totalPages, safePage + 1))} />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
+                <PaginationItem className={safePage >= totalPages ? "pointer-events-none opacity-50" : undefined}>
+                  <PaginationNext href={buildHref(Math.min(totalPages, safePage + 1))} />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         </div>
       </main>
