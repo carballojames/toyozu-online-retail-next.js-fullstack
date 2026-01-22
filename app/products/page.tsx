@@ -35,6 +35,12 @@ export default async function ProductsPage({ searchParams }: Props) {
 
   const where: ProductWhere = {};
 
+  // Name search (from header): match by product name
+  if (sp.name) {
+    const q = String(sp.name).trim();
+    if (q) where.name = { contains: q, mode: "insensitive" };
+  }
+
   // Simple filtering: category (comma separated), brand (comma separated), price range
   if (sp.category) {
     const cats = String(sp.category).split(",").map((s) => s.trim()).filter(Boolean);
