@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
-import type { StaticImageData } from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-import ToyozuGIF from "../assets/New.jpg";
-import Header from "../app/common/Header";
-import Footer from "../app/common/Footer";
+import ToyozuGIF from "@/assets/New.jpg";
+import Header from "@/app/common/Header";
+import Footer from "@/app/common/Footer";
 import ProductGrid from "@/components/user-components/product-components/ProductGrid";
 import { ShieldUser, Truck, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Carousel,
   CarouselContent,
@@ -27,13 +28,13 @@ import {
 } from "@/components/ui/select";
 import {
   AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 import type { LandingClientProps } from "@/app/landing/types";
@@ -71,7 +72,7 @@ const features = [
   },
 ];
 
-export default function Landing({
+export default function LandingClient({
   initialProducts,
   categories,
   carMakes,
@@ -90,8 +91,6 @@ export default function Landing({
   const [selectedModelId, setSelectedModelId] = useState<string>("");
   const [selectedYear, setSelectedYear] = useState<string>("");
   const [showLoginDialog, setShowLoginDialog] = useState<boolean>(false);
-
-
 
   useEffect(() => {
     let cancelled = false;
@@ -145,10 +144,6 @@ export default function Landing({
     return () => window.removeEventListener("resize", computeCategoryPageSize);
   }, []);
 
-
-
-
-
   const handleSearch = async (): Promise<void> => {
     const isLoggedIn = typeof window !== "undefined" && !!localStorage.getItem("access_token");
     if (!isLoggedIn) {
@@ -163,8 +158,7 @@ export default function Landing({
   };
 
   const handleBrandClick = (brandName: string) => {
-    const isLoggedIn =
-      typeof window !== "undefined" && !!localStorage.getItem("access_token");
+    const isLoggedIn = typeof window !== "undefined" && !!localStorage.getItem("access_token");
     if (!isLoggedIn) {
       setShowLoginDialog(true);
       return;
@@ -229,7 +223,7 @@ export default function Landing({
       (m) =>
         m.car_id === String(selectedMake) &&
         m.base === selectedBaseModel &&
-        (m.variant || "") === (selectedVariant || "")
+        (m.variant || "") === (selectedVariant || ""),
     );
     setSelectedModelId(chosen?.model_id ?? "");
   }, [parsedModels, selectedMake, selectedBaseModel, selectedVariant]);
@@ -240,9 +234,12 @@ export default function Landing({
     <div className="min-h-screen bg-primary-foreground  mx-auto">
       <Header />
       <section className="relative w-full h-screen overflow-hidden">
-        <img
-          src={(ToyozuGIF as StaticImageData).src}
-          alt="Toyozu Promo GIF"
+        <Image
+          src={ToyozuGIF}
+          alt="Toyozu Promo"
+          width={1920}
+          height={500}
+          priority
           className="absolute inset-0 w-full h-80 md:h-[500px] object-cover z-0 blur-sm"
         />
 
@@ -363,7 +360,12 @@ export default function Landing({
                     className="px-8 py-3 rounded-lg font-semibold hover:scale-105 transition-all shadow-lg flex items-center space-x-2 bg-primary text-primary-foreground"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
                     </svg>
                     <span>Find Compatible Parts</span>
                   </Button>
@@ -372,12 +374,13 @@ export default function Landing({
 
               <div className="flex flex-col justify-center text-center rounded-lg w-full text-muted-foreground bg-muted/10">
                 <p className="text-sm leading-relaxed ">
-                  Quick Tip: Select your vehicle’s brand, model, and year to instantly find parts compatible with your car.
-                </p> 
+                  Quick Tip: Select your vehicle’s brand, model, and year to instantly find parts
+                  compatible with your car.
+                </p>
               </div>
             </div>
           </div>
-            <section className="py-12 px-4 bg-transparent max-w-[1270px] mx-auto">
+          <section className="py-12 px-4 bg-transparent max-w-[1270px] mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
               {features.map(({ icon: Icon, title, description }) => (
                 <div
@@ -393,10 +396,9 @@ export default function Landing({
           </section>
         </div>
       </section>
-   
 
       <section className="py-12 px-4">
-          <div className="max-w-[1270px] mx-auto px-4">
+        <div className="max-w-[1270px] mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-secondary">CATEGORIES</h2>
           </div>
@@ -409,7 +411,6 @@ export default function Landing({
                   href={`/products/category/${encodeURIComponent(category.name)}`}
                   className="w-full px-4 py-3 rounded-2xl flex items-center justify-center space-x-2 font-semibold  hover:scale-105 transition-all duration-200 hover:shadow-lg transform bg-surface text-primary-container-foreground"
                 >
-       
                   <span className="text-md text-center italic text-muted-foreground">{category.name}</span>
                 </Link>
               );
@@ -431,19 +432,23 @@ export default function Landing({
         <div className="max-w-[1270px] mx-auto px-4">
           <h2 className="text-2xl font-bold text-secondary mb-8">TRUSTED BRANDS</h2>
 
-          <Carousel opts={{ align: "start", loop: true }} className="w-full max-w-5xl lg:max-w-7xl mx-auto relative">
+          <Carousel
+            opts={{ align: "start", loop: true }}
+            className="w-full max-w-5xl lg:max-w-7xl mx-auto relative"
+          >
             <CarouselContent className="-ml-6">
               {(loadingBrands ? [] : brands).map((brand) => (
-                <CarouselItem
-                  key={brand.name}
-                  className="pl-6 basis-full md:basis-1/2 lg:basis-1/3"
-                >
+                <CarouselItem key={brand.name} className="pl-6 basis-full md:basis-1/2 lg:basis-1/3">
                   <div
                     onClick={() => handleBrandClick(brand.name)}
                     className="cursor-pointer p-6 rounded-2xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center bg-surface text-surface-foreground"
                   >
                     <div className="text-center">
-                      <div className={`text-2xl font-semibold italic tracking-wide ${getBrandWeightClass(brand.productCount)}`}>{brand.name}</div>
+                      <div
+                        className={`text-2xl font-semibold italic tracking-wide ${getBrandWeightClass(brand.productCount)}`}
+                      >
+                        {brand.name}
+                      </div>
                       <div className="text-xs text-muted-foreground mt-1">{brand.productCount} products</div>
                     </div>
                   </div>
@@ -451,8 +456,8 @@ export default function Landing({
               ))}
               {loadingBrands && (
                 <CarouselItem className="pl-6 basis-full md:basis-1/2 lg:basis-1/3">
-                  <div className="p-6 rounded-lg bg-surface text-surface-foreground border">
-                    <div className="text-center text-sm text-muted-foreground">Loading brands…</div>
+                  <div className="p-6 rounded-lg bg-surface text-surface-foreground border flex justify-center items-center min-h-[140px]">
+                    <Spinner className="w-8 h-8 text-primary" />
                   </div>
                 </CarouselItem>
               )}
@@ -476,7 +481,7 @@ export default function Landing({
           <div className="w-full h-12 bg-surface rounded-lg shadow-md mb-4 border-b-2 border-border flex justify-center items-center">
             <h2 className="text-2xl font-bold italic text-secondary text-center ">Explore </h2>
           </div>
-          
+
           <ProductGrid initialProducts={initialProducts} showMoreButton={true} columns={5} />
         </div>
       </section>
@@ -493,9 +498,7 @@ export default function Landing({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => router.push("/auth/login")}>
-              Login
-            </AlertDialogAction>
+            <AlertDialogAction onClick={() => router.push("/auth/login")}>Login</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

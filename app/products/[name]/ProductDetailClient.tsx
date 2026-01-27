@@ -1,6 +1,7 @@
 "use client";
 
 import React, { JSX, useState } from "react";
+import Image from "next/image";
 
 import {
   ShoppingCart,
@@ -46,6 +47,24 @@ export default function ProductDetailClient({
   const [activeTab, setActiveTab] = useState<"description" | "specifications">(
     "description",
   );
+
+  const normalizeImageSrc = (src: unknown): string => {
+    const s = typeof src === "string" ? src.trim() : "";
+    return s ? s : "/placeholder.svg";
+  };
+
+  const handleMoreProducts = (): void => {
+    const params = new URLSearchParams();
+
+    const brand = product.brand_name?.trim();
+    const category = product.category_name?.trim();
+
+    if (brand) params.set("brand", brand);
+    if (category) params.set("category", category);
+
+    const qs = params.toString();
+    router.push(qs ? `/products?${qs}` : "/products");
+  };
 
   const incrementQuantity = (): void => {
     if (quantity < product.quantity) setQuantity((q) => q + 1);
@@ -177,13 +196,23 @@ export default function ProductDetailClient({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-12 bg-surface p-4 sm:p-6 rounded-lg shadow-sm">
           {/* Left: Images */}
           <div className="space-y-4">
-            <div className="relative overflow-hidden rounded-lg flex items-center justify-center w-full max-w-[520px] mx-auto aspect-[5/4]">
+            <div className="relative overflow-hidden rounded-lg flex items-center justify-center w-full max-w-[520px] mx-auto aspect-5/4">
               {product.images && product.images.length > 0 ? (
-                <img
-                  src={product.images[selectedImage].image}
+                (() => {
+                  const raw = product.images?.[selectedImage]?.image;
+                  const src = normalizeImageSrc(raw);
+                  const isExternal = /^https?:\/\//i.test(src);
+                  return (
+                <Image
+                  src={src}
                   alt={product.name}
-                  className="max-w-full max-h-full object-contain"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 520px"
+                  className="object-contain"
+                  unoptimized={isExternal}
                 />
+                  );
+                })()
               ) : (
                 <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-600">
                   No Image
@@ -200,11 +229,16 @@ export default function ProductDetailClient({
                     selectedImage === index ? "border-primary" : "border-border"
                   }`}
                 >
-                  <img
-                    src={img.image}
-                    alt={`${product.name} ${index}`}
-                    className="w-full h-full object-cover"
-                  />
+                  <span className="relative block w-full h-full">
+                    <Image
+                      src={normalizeImageSrc(img.image)}
+                      alt={`${product.name} ${index}`}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                      unoptimized={/^https?:\/\//i.test(normalizeImageSrc(img.image))}
+                    />
+                  </span>
                 </button>
               ))}
             </div>
@@ -400,6 +434,12 @@ export default function ProductDetailClient({
               Related Products
             </h2>
             <ProductGrid initialProducts={relatedProducts} />
+
+            <div className="mt-4 flex justify-end">
+              <Button variant="outline" onClick={handleMoreProducts}>
+                More products
+              </Button>
+            </div>
           </div>
         </section>
       </div>

@@ -1,10 +1,23 @@
 "use client";
 
-import React, { JSX } from "react";
+import React, { JSX, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 import type { ProductGridProps } from "@/app/products/[name]/types";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 export default function ProductGrid({
   initialProducts,
@@ -12,26 +25,25 @@ export default function ProductGrid({
   moreHref = "/products",
   category,
   columns = 5,
-}: ProductGridProps & { category?: string; columns?: number }): JSX.Element {
+  loading = false,
+}: ProductGridProps & {
+  category?: string;
+  columns?: number;
+  loading?: boolean;
+}): JSX.Element {
+  const router = useRouter();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const products = initialProducts ?? [];
   const visibleCount = 20;
 
-  if (!products.length) {
-    return <div className="text-center py-6 text-gray-500">No products found</div>;
-  }
-
-
-  // If category is provided, filter products by category_name (case-insensitive)
-  const filteredProducts = category
-    ? products.filter(
-        (p) =>
-          (p.category_name ?? "").toLowerCase() === category.toLowerCase(),
-      )
-    : products;
-
-  const visibleProducts = showMoreButton
-    ? filteredProducts.slice(0, visibleCount)
-    : filteredProducts;
+  const handleProductClick = (e: React.MouseEvent) => {
+    const isLoggedIn =
+      typeof window !== "undefined" && !!localStorage.getItem("access_token");
+    if (!isLoggedIn) {
+      e.preventDefault();
+      setShowLoginDialog(true);
+    }
+  };
 
   const lgColsClass =
     columns === 1
@@ -46,6 +58,36 @@ export default function ProductGrid({
       ? "lg:grid-cols-5"
       : "lg:grid-cols-6";
 
+  const normalizeImageSrc = (src: unknown): string => {
+    const s = typeof src === "string" ? src.trim() : "";
+    return s ? s : "/placeholder.svg";
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] w-full">
+        <Spinner className="w-12 h-12 text-primary" />
+      </div>
+    );
+  }
+
+  if (!products.length) {
+    return (
+      <div className="text-center py-6 text-gray-500">No products found</div>
+    );
+  }
+
+  // If category is provided, filter products by category_name (case-insensitive)
+  const filteredProducts = category
+    ? products.filter(
+        (p) => (p.category_name ?? "").toLowerCase() === category.toLowerCase(),
+      )
+    : products;
+
+  const visibleProducts = showMoreButton
+    ? filteredProducts.slice(0, visibleCount)
+    : filteredProducts;
+
   return (
     <div className="flex flex-col items-center mb-5 w-full">
       {/* Product Grid */}
@@ -53,23 +95,28 @@ export default function ProductGrid({
         className={`grid grid-cols-2 md:grid-cols-3 ${lgColsClass} gap-3 sm:gap-4 w-full max-w-[1270px] px-4 sm:px-0`}
       >
         {visibleProducts.map((product) => {
-          const firstImage =
-            product.images?.[0]?.image ||
-            product.images?.[0]?.url ||
-            "/placeholder.svg";
+          const firstImage = normalizeImageSrc(
+            product.images?.[0]?.image ?? product.images?.[0]?.url,
+          );
+
+          const isExternalImage = /^https?:\/\//i.test(firstImage);
 
           return (
             <Link
               key={product.product_id}
               href={`/products/${encodeURIComponent(product.name)}`}
+              onClick={handleProductClick}
               className="bg-surface rounded-lg shadow-sm border hover:border-primary transition-shadow block h-full"
             >
               {/* Image */}
               <div className="relative justify-center flex bg-transparent rounded-t-lg w-full h-40 sm:h-48 md:h-[220px]">
-                <img
+                <Image
                   src={firstImage}
                   alt={product.name}
-                  className="w-full  object-cover rounded-t-lg"
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                  className="object-cover rounded-t-lg"
+                  unoptimized={isExternalImage}
                 />
                 {product.discount && product.discount > 0 && (
                   <Badge
@@ -154,6 +201,24 @@ export default function ProductGrid({
           </Button>
         </div>
       )}
+
+      <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Login Required</AlertDialogTitle>
+            <AlertDialogDescription>
+              You need to be logged in to view product details. Please log in to
+              continue.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => router.push("/auth/login")}>
+              Login
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

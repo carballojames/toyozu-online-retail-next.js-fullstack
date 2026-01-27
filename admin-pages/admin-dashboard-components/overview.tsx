@@ -22,6 +22,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { statusVariant } from "../admin-dashboard.utils";
+
 type DashboardRange = "today" | "7d" | "30d" | "all";
 const DASHBOARD_RANGES = ["today", "7d", "30d", "all"] as const;
 
@@ -51,6 +53,22 @@ type DashboardResponse = {
 function formatPhp(value: number): string {
   return `₱${Number(value ?? 0).toLocaleString()}`;
 }
+
+type OrderDetail = {
+  saleId: number | null;
+  deliveryId: number;
+  date: string;
+  paymentType: string;
+  status: string;
+  trackingNumber: string | null;
+  courier: { id: number; name: string } | null;
+  address: { id: number; text: string } | null;
+  customer: { id: number; name: string } | null;
+  totals: { shipping: number; total: number };
+  items: Array<{ name: string; quantity: number; subtotal: number; productId?: number }>;
+  history: Array<{ id: string; at: string | null; status: string; sequence: number; location: string | null }>;
+  statusOptions: Array<{ status_name: string; sequence_order: number }>;
+};
 
 export default function OverviewPage() {
   const [range, setRange] = useState<DashboardRange>("7d");
@@ -117,7 +135,7 @@ export default function OverviewPage() {
               if (isDashboardRange(v)) setRange(v);
             }}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-40">
               <SelectValue placeholder="Range" />
             </SelectTrigger>
             <SelectContent>
@@ -134,7 +152,7 @@ export default function OverviewPage() {
               type="date"
               value={deliveredDay}
               onChange={(e) => setDeliveredDay(e.target.value)}
-              className="w-[160px]"
+              className="w-40"
             />
           </div>
 
@@ -256,7 +274,9 @@ export default function OverviewPage() {
                   <TableRow key={o.id}>
                     <TableCell>{o.date || "—"}</TableCell>
                     <TableCell>{o.customerName || "—"}</TableCell>
-                    <TableCell>{o.status}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(o.status as any)}>{o.status}</Badge>
+                    </TableCell>
                     <TableCell className="text-right">{formatPhp(o.total)}</TableCell>
                   </TableRow>
                 ))}

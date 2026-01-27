@@ -1,16 +1,18 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+
 import ToyozuLogo from "@/assets/toyozu-logo.png";
 
-import {Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -19,7 +21,7 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+export default function LoginClient() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -60,7 +62,9 @@ export default function LoginPage() {
         const roleId = Number(json.data.role_id);
         localStorage.setItem("role_id", String(Number.isFinite(roleId) ? roleId : 4));
         localStorage.setItem("user_id", String(json.data.user_id));
-      } catch {}
+      } catch {
+        // ignore storage errors
+      }
 
       router.push("/");
     } catch {
@@ -73,9 +77,10 @@ export default function LoginPage() {
       localStorage.setItem("access_token", "mock-access-token");
       localStorage.setItem("refresh_token", "mock-refresh-token");
       localStorage.setItem("username", "demo-superuser");
-      // Demo superuser: allow access to all areas (admin + user).
       localStorage.setItem("role_id", "0");
-    } catch {}
+    } catch {
+      // ignore
+    }
     router.push("/");
   };
 
@@ -84,19 +89,19 @@ export default function LoginPage() {
       <div className="w-full max-w-4xl rounded-2xl shadow-lg bg-surface">
         <div className="grid grid-cols-1 md:grid-cols-2 items-stretch rounded-2xl shadow-lg bg-surface">
           {/* Left: mini description card */}
-          <div className="bg-surface text-surface-foreground p-8 flex flex-col  items-center  ">
-            <img src={ToyozuLogo.src} alt="Toyozu Logo" className="h-12 w-12 mb-4" />
+          <div className="bg-surface text-surface-foreground p-8 flex flex-col items-center">
+            <Image src={ToyozuLogo} alt="Toyozu Logo" width={48} height={48} className="h-12 w-12 mb-4" priority />
             <h1 className="text-2xl font-semibold">Toyozu Online Retail</h1>
             <div className="mt-6 text-sm text-muted-foreground text-center gap-4 items-center flex flex-col">
-              <Label>
-                Genuine parts, trusted brands, and fast ordering for your vehicle.
-              </Label>
-              <Label className="">📍 Monteverde Street, Davao City, Philippines</Label>
+              <Label>Genuine parts, trusted brands, and fast ordering for your vehicle.</Label>
+              <Label>📍 Monteverde Street, Davao City, Philippines</Label>
               <Label>📞 Sun - 09224207115, Globe - 09362616264</Label>
               <Label>✉️ Toyozu@yahoo.com</Label>
             </div>
-           
 
+            <Button type="button" variant="outline" className="mt-6" onClick={signInAsDemoSuperuser}>
+              Demo Admin Login
+            </Button>
           </div>
 
           {/* Right: login form card */}
@@ -106,28 +111,17 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
               {serverError ? <p className="text-sm text-destructive">{serverError}</p> : null}
+
               <div>
                 <Label className="block mb-1 text-sm">Username</Label>
-                <Input
-                  placeholder="Username"
-                  aria-invalid={errors.username ? "true" : "false"}
-                  {...register("username")}
-                />
-                {errors.username?.message && (
-                  <p className="mt-1 text-sm text-destructive">{errors.username.message}</p>
-                )}
+                <Input placeholder="Username" aria-invalid={errors.username ? "true" : "false"} {...register("username")} />
+                {errors.username?.message ? <p className="mt-1 text-sm text-destructive">{errors.username.message}</p> : null}
               </div>
+
               <div>
                 <Label className="block mb-1 text-sm">Password</Label>
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  aria-invalid={errors.password ? "true" : "false"}
-                  {...register("password")}
-                />
-                {errors.password?.message && (
-                  <p className="mt-1 text-sm text-destructive">{errors.password.message}</p>
-                )}
+                <Input type="password" placeholder="Password" aria-invalid={errors.password ? "true" : "false"} {...register("password")} />
+                {errors.password?.message ? <p className="mt-1 text-sm text-destructive">{errors.password.message}</p> : null}
               </div>
 
               <div className="flex items-center justify-between gap-3">

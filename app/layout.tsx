@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${montserrat.className} root `}>
       <body className="bg-primary-foreground text-foreground min-h-screen flex flex-col">
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-20 lg:pb-0">{children}</main>
       </body>
     </html>
   );

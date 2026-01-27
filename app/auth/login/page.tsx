@@ -1,2 +1,1 @@
-
-export { default } from "@/user-pages/login";
+export { default } from "./LoginClient";

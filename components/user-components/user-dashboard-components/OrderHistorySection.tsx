@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -272,7 +273,9 @@ export default function OrderHistorySection({ userId, mode = "all" }: Props) {
           {error ? (
             <div className="py-10 text-center text-sm text-destructive">{error}</div>
           ) : isLoading ? (
-            <div className="py-10 text-center text-sm text-muted-foreground">Loading orders…</div>
+            <div className="py-10 flex justify-center items-center">
+              <Spinner className="w-8 h-8 text-primary" />
+            </div>
           ) : sortedOrders.length === 0 ? (
             <div className="py-10 text-center text-sm text-muted-foreground">No orders found.</div>
           ) : (
@@ -347,7 +350,7 @@ export default function OrderHistorySection({ userId, mode = "all" }: Props) {
               <div>
                 <div className="font-semibold text-foreground mb-2">Products Ordered</div>
                 {!selectedDetail ? (
-                  <div className="text-sm text-muted-foreground">Loading details…</div>
+                  <div className="flex justify-center p-4"><Spinner className="w-6 h-6 text-primary" /></div>
                 ) : selectedDetail.items.length === 0 ? (
                   <div className="text-sm text-muted-foreground">No items found.</div>
                 ) : (

@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   generateEtags: true,
   images: {
     formats: ["image/avif", "image/webp"],
+    localPatterns: [
+      {
+        pathname: "/api/**",
+      },
+    ],
   },
   experimental: {
     optimizePackageImports: ["lucide-react"],

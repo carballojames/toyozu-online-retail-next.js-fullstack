@@ -1,18 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import Header from "../app/common/Header";
+import { useEffect, useMemo, useState } from "react";
+
+import Header from "@/app/common/Header";
+
 import { Button } from "@/components/ui/button";
-import { Trash2 }from "lucide-react"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -20,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+import { Trash2 } from "lucide-react";
 
 type ProductId = string;
 
@@ -69,8 +66,7 @@ function readCartFromStorage(): CartItem[] {
         category_name: item.category_name ? String(item.category_name) : undefined,
         selling_price: sellingPrice,
         quantity: Math.max(1, quantity),
-        price_at_addition:
-          item.price_at_addition !== undefined ? Number(item.price_at_addition) : undefined,
+        price_at_addition: item.price_at_addition !== undefined ? Number(item.price_at_addition) : undefined,
       };
       return normalized;
     })
@@ -90,7 +86,20 @@ function readUserIdFromStorage(): number {
   return Number.isFinite(n) && n > 0 ? n : NaN;
 }
 
-export default function ShoppingCart() {
+function normalizeImageSrc(src: string | undefined): string {
+  const trimmed = (src ?? "").trim();
+  if (!trimmed) return "/placeholder.svg";
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  if (trimmed.startsWith("/")) return trimmed;
+  return "/placeholder.svg";
+}
+
+function isRemoteImageSrc(src: string): boolean {
+  return src.startsWith("http://") || src.startsWith("https://");
+}
+
+export default function CartClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedFromQuery = searchParams.get("select");
@@ -171,9 +180,7 @@ export default function ShoppingCart() {
 
       // Update UI immediately.
       setCartItems((prevItems) => {
-        const nextItems = prevItems.map((it) =>
-          it.product === productId ? { ...it, quantity: nextQty } : it,
-        );
+        const nextItems = prevItems.map((it) => (it.product === productId ? { ...it, quantity: nextQty } : it));
         if (!Number.isFinite(userId)) writeCartToStorage(nextItems);
         return nextItems;
       });
@@ -244,7 +251,10 @@ export default function ShoppingCart() {
   const selectedTotal = useMemo(() => {
     return cartItems
       .filter((item) => selectedItems[item.product])
-      .reduce((sum, item) => sum + item.selling_price * (quantities[item.product] ?? item.quantity ?? 1), 0);
+      .reduce(
+        (sum, item) => sum + item.selling_price * (quantities[item.product] ?? item.quantity ?? 1),
+        0,
+      );
   }, [cartItems, quantities, selectedItems]);
 
   const handleProceedToCheckout = () => {
@@ -275,6 +285,19 @@ export default function ShoppingCart() {
     localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(checkoutData));
     router.push("/checkout");
   };
+
+  const sortedCartItems = useMemo(() => {
+    if (sort === "name") {
+      return [...cartItems].sort((a, b) => a.product_name.localeCompare(b.product_name));
+    }
+    if (sort === "priceLowHigh") {
+      return [...cartItems].sort((a, b) => a.selling_price - b.selling_price);
+    }
+    if (sort === "priceHighLow") {
+      return [...cartItems].sort((a, b) => b.selling_price - a.selling_price);
+    }
+    return cartItems;
+  }, [cartItems, sort]);
 
   return (
     <div className="min-h-screen bg-primary-background">
@@ -324,8 +347,8 @@ export default function ShoppingCart() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {cartItems.map((item) => {
-                    const imageSrc = item.product_image || "/placeholder.svg";
+                  {sortedCartItems.map((item) => {
+                    const imageSrc = normalizeImageSrc(item.product_image);
                     const quantity = quantities[item.product] ?? item.quantity ?? 1;
                     const subtotal = (Number(item.selling_price) * quantity).toFixed(2);
 
@@ -339,10 +362,13 @@ export default function ShoppingCart() {
                               onChange={() => toggleSelection(item.product)}
                               className="w-4 h-4"
                             />
-                            <img
+                            <Image
                               src={imageSrc}
                               alt={item.product_name || "Product image"}
-                              className="w-20 h-20 object-cover "
+                              width={80}
+                              height={80}
+                              className="w-20 h-20 object-cover"
+                              unoptimized={isRemoteImageSrc(imageSrc)}
                             />
                             <div>
                               <div className="font-medium text-foreground line-clamp-1">{item.product_name}</div>
@@ -402,8 +428,8 @@ export default function ShoppingCart() {
 
             {/* Mobile/Tablet List */}
             <div className="divide-y lg:hidden">
-              {cartItems.map((item) => {
-                const imageSrc = item.product_image || "/placeholder.svg";
+              {sortedCartItems.map((item) => {
+                const imageSrc = normalizeImageSrc(item.product_image);
                 const quantity = quantities[item.product] ?? item.quantity ?? 1;
                 const subtotal = (Number(item.selling_price) * quantity).toFixed(2);
 
@@ -435,14 +461,19 @@ export default function ShoppingCart() {
                         </div>
 
                         <div className="flex items-start gap-3">
-                          <img
+                          <Image
                             src={imageSrc}
                             alt={item.product_name || "Product image"}
+                            width={80}
+                            height={80}
                             className="w-20 max-h-20 object-cover shrink-0"
+                            unoptimized={isRemoteImageSrc(imageSrc)}
                           />
 
                           <div className="min-w-0 flex-1">
-                            <div className="font-medium text-foreground text-sm line-clamp-2 wrap-break-word">{item.product_name}</div>
+                            <div className="font-medium text-foreground text-sm line-clamp-2 wrap-break-word">
+                              {item.product_name}
+                            </div>
                             <div className="text-xs text-muted-foreground mt-1">
                               {item.category_name || "Category"} › {item.brand_name || "Brand"}
                             </div>
@@ -483,10 +514,7 @@ export default function ShoppingCart() {
             <div className="flex items-center gap-3 px-6 py-4 border-t border-border bg-muted/30 rounded-b-xl">
               <input
                 type="checkbox"
-                checked={
-                  cartItems.length > 0 &&
-                  cartItems.every((item) => selectedItems[item.product])
-                }
+                checked={cartItems.length > 0 && cartItems.every((item) => selectedItems[item.product])}
                 onChange={toggleSelectAll}
                 className="w-5 h-5"
               />
@@ -494,9 +522,7 @@ export default function ShoppingCart() {
 
               <Button
                 onClick={handleDeleteSelected}
-                disabled={
-                  Object.values(selectedItems).filter(Boolean).length === 0
-                }
+                disabled={Object.values(selectedItems).filter(Boolean).length === 0}
                 variant="destructive"
                 className="ml-2"
               >
@@ -508,30 +534,22 @@ export default function ShoppingCart() {
           {/* Right Column - Order Summary (desktop only) */}
           <div className="hidden lg:block h-fit w-fit lg:sticky lg:top-6">
             <div className="bg-surface text-surface-foreground rounded-xl shadow-sm border border-border p-6">
-              <h3 className="text-lg font-semibold mb-4 text-foreground">
-                Order Summary
-              </h3>
+              <h3 className="text-lg font-semibold mb-4 text-foreground">Order Summary</h3>
 
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>
-                    Subtotal ({Object.values(selectedItems).filter(Boolean).length}{" "}
-                    items)
+                    Subtotal ({Object.values(selectedItems).filter(Boolean).length} items)
                   </span>
                   <span>₱{selectedTotal.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-border pt-3 flex justify-between font-bold text-foreground">
                   <span>Total Payable</span>
-                  <span className="text-primary">
-                    ₱{selectedTotal.toFixed(2)}
-                  </span>
+                  <span className="text-primary">₱{selectedTotal.toFixed(2)}</span>
                 </div>
               </div>
 
-              <Button
-                onClick={handleProceedToCheckout}
-                className="w-full" variant="default"
-              >
+              <Button onClick={handleProceedToCheckout} className="w-full" variant="default">
                 PROCEED TO CHECKOUT
               </Button>
             </div>

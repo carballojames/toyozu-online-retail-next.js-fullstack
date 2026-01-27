@@ -103,6 +103,7 @@ export async function GET(
                 quantity: true,
                 selling_price: true,
                 sub_total: true,
+                product_id: true,
                 product: { select: { name: true } },
               },
               orderBy: { sale_detail_id: "asc" },
@@ -162,6 +163,7 @@ export async function GET(
           name: li.product?.name ?? "",
           quantity: Number(li.quantity ?? 0),
           subtotal: Number(li.sub_total ?? (li.selling_price ?? 0) * (li.quantity ?? 0)),
+          productId: li.product_id ?? undefined,
         })),
         history: delivery.delivery_history.map((h) => ({
           id: String(h.history_id),
@@ -257,6 +259,37 @@ export async function PATCH(
           },
           select: { history_id: true },
         });
+
+        // Deduct inventory when status changes to "Pickup by courier"
+        if (statusName === "Pickup by courier") {
+          const saleWithDetails = await tx.sale.findUnique({
+            where: { sale_id: saleId },
+            select: {
+              sale_details: {
+                select: {
+                  product_id: true,
+                  quantity: true,
+                },
+              },
+            },
+          });
+
+          if (saleWithDetails?.sale_details) {
+            for (const detail of saleWithDetails.sale_details) {
+              if (detail.product_id && detail.quantity) {
+                // Deduct the quantity from product inventory
+                await tx.product.update({
+                  where: { product_id: detail.product_id },
+                  data: {
+                    quantity: {
+                      decrement: detail.quantity,
+                    },
+                  },
+                });
+              }
+            }
+          }
+        }
       }
 
       return updatedDelivery;

@@ -1,2 +1,1 @@
-
-export { default } from "@/user-pages/register";
+export { default } from "./RegisterClient";

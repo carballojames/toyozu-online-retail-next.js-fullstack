@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Menu, Search, ShoppingCart, User } from "lucide-react";
+import { Home, Search, ShoppingCart, User, Package } from "lucide-react";
 import Logo from "@/assets/toyozu-logo.png";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,35 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const CART_STORAGE_KEY = "cartItems";
+
+const HEADER_CACHE_TTL_MS = 30_000;
+
+type HeaderCacheEntry<T> = { value: T; ts: number };
+
+function readSessionCache<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as HeaderCacheEntry<T>;
+    if (!parsed || typeof parsed !== "object") return null;
+    if (typeof parsed.ts !== "number") return null;
+    if (Date.now() - parsed.ts > HEADER_CACHE_TTL_MS) return null;
+    return parsed.value;
+  } catch {
+    return null;
+  }
+}
+
+function writeSessionCache<T>(key: string, value: T): void {
+  if (typeof window === "undefined") return;
+  try {
+    const entry: HeaderCacheEntry<T> = { value, ts: Date.now() };
+    sessionStorage.setItem(key, JSON.stringify(entry));
+  } catch {
+    // ignore
+  }
+}
 
 function getCartCountFromStorage(): number {
   if (typeof window === "undefined") return 0;
@@ -69,49 +98,66 @@ export default function Header() {
   useEffect(() => {
     const sync = async () => {
       const userId = readUserIdFromStorage();
-      if (Number.isFinite(userId)) {
-        try {
-          const res = await fetch(`/api/cart?userId=${encodeURIComponent(String(userId))}`, {
-            method: "GET",
-            headers: { Accept: "application/json" },
-            cache: "no-store",
-          });
-          const json = (await res.json()) as { data?: { items?: unknown[] } };
-          if (res.ok && json.data && Array.isArray(json.data.items)) {
-            setCartCount(json.data.items.length);
-            return;
-          }
-        } catch {
-          // fall back below
-        }
-      }
-
-      setCartCount(getCartCountFromStorage());
-    };
-
-    const syncUsername = async () => {
-      const userId = readUserIdFromStorage();
       if (!Number.isFinite(userId)) {
         setUsername(null);
+        setCartCount(getCartCountFromStorage());
         return;
       }
 
-      try {
-        const res = await fetch(`/api/me?userId=${encodeURIComponent(String(userId))}`, {
-          method: "GET",
-          headers: { Accept: "application/json" },
-          cache: "no-store",
-        });
-        const json = (await res.json()) as { data?: { username?: string | null } };
-        const nextUsername = json?.data?.username;
-        setUsername(typeof nextUsername === "string" && nextUsername.trim() ? nextUsername : null);
-      } catch {
-        setUsername(null);
+      const cartCacheKey = `header:cartCount:${userId}`;
+      const usernameCacheKey = `header:username:${userId}`;
+
+      const cachedCart = readSessionCache<number>(cartCacheKey);
+      const cachedUsername = readSessionCache<string | null>(usernameCacheKey);
+
+      if (cachedCart !== null) setCartCount(cachedCart);
+      if (cachedUsername !== null) setUsername(cachedUsername);
+
+      const cartReq = fetch(`/api/cart?userId=${encodeURIComponent(String(userId))}`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      const meReq = fetch(`/api/me?userId=${encodeURIComponent(String(userId))}`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      const [cartRes, meRes] = await Promise.allSettled([cartReq, meReq]);
+
+      if (cartRes.status === "fulfilled") {
+        try {
+          const res = cartRes.value;
+          const json = (await res.json()) as { data?: { items?: unknown[] } };
+          if (res.ok && json.data && Array.isArray(json.data.items)) {
+            const nextCount = json.data.items.length;
+            setCartCount(nextCount);
+            writeSessionCache(cartCacheKey, nextCount);
+          } else {
+            const fallback = getCartCountFromStorage();
+            setCartCount(fallback);
+          }
+        } catch {
+          setCartCount(getCartCountFromStorage());
+        }
+      }
+
+      if (meRes.status === "fulfilled") {
+        try {
+          const res = meRes.value;
+          const json = (await res.json()) as { data?: { username?: string | null } };
+          const nextUsername = json?.data?.username;
+          const normalized = typeof nextUsername === "string" && nextUsername.trim() ? nextUsername : null;
+          setUsername(normalized);
+          writeSessionCache(usernameCacheKey, normalized);
+        } catch {
+          setUsername(null);
+        }
       }
     };
 
     void sync();
-    void syncUsername();
 
     // Important for SSR hydration: read localStorage only after mount.
     const authTimer = window.setTimeout(() => syncAuthFromStorage(), 0);
@@ -119,15 +165,16 @@ export default function Header() {
     const onStorage = (e: StorageEvent) => {
       if (e.key === CART_STORAGE_KEY || e.key === "user_id") void sync();
       if (e.key === "access_token" || e.key === "role_id") syncAuthFromStorage();
-      if (e.key === "user_id") void syncUsername();
     };
 
+    const onCartUpdated = () => void sync();
+
     window.addEventListener("storage", onStorage);
-    window.addEventListener("cart:updated", (() => void sync()) as EventListener);
+    window.addEventListener("cart:updated", onCartUpdated);
     return () => {
       window.clearTimeout(authTimer);
       window.removeEventListener("storage", onStorage);
-      window.removeEventListener("cart:updated", (() => void sync()) as EventListener);
+      window.removeEventListener("cart:updated", onCartUpdated);
     };
   }, []);
 
@@ -221,7 +268,7 @@ export default function Header() {
           </form>
         </div>
 
-        {/* Right: mobile/tablet actions (search icon + sandwich menu) */}
+        {/* Right: mobile/tablet actions (search icon only) */}
         <div className="flex items-center gap-2 lg:hidden">
           <Button
             type="button"
@@ -232,41 +279,6 @@ export default function Header() {
           >
             <Search className="h-5 w-5" />
           </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button type="button" variant="ghost" size="icon" aria-label="Menu">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {auth.isLoggedIn ? (
-                <>
-                  <DropdownMenuItem onClick={() => router.push("/cart")}>
-                    Cart ({cartCount || 0})
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push(accountBasePath)}>Account</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push(`${accountBasePath}/orders`)}>Purchases</DropdownMenuItem>
-
-                  {(auth.roleId === "0" || auth.roleId === "1" || auth.roleId === "2" || auth.roleId === "3") && (
-                    <DropdownMenuItem onClick={() => router.push("/admin-dashboard/product-management")}>
-                      Admin Dashboard
-                    </DropdownMenuItem>
-                  )}
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                    Logout
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <>
-                  <DropdownMenuItem onClick={() => router.push("/auth/login")}>Sign In</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push("/auth/register")}>Sign Up</DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         {/* Desktop right side (icons) */}
@@ -351,6 +363,66 @@ export default function Header() {
           </div>
         )}
       </div>
+
+      {/* Mobile bottom navigation (sticky) */}
+      <nav className="lg:hidden fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface/95 backdrop-blur supports-backdrop-filter:bg-surface/80">
+        <div className="mx-auto w-full max-w-[1270px] px-3">
+          <div className="grid grid-cols-4 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-auto flex flex-col items-center gap-1 py-2"
+              onClick={() => router.push("/")}
+            >
+              <Home className="h-5 w-5" />
+              <span className="text-[11px]">Home</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-auto flex flex-col items-center gap-1 py-2"
+              onClick={() => router.push("/products")}
+            >
+              <Package className="h-5 w-5" />
+              <span className="text-[11px]">Products</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-auto flex flex-col items-center gap-1 py-2"
+              onClick={() => router.push(auth.isLoggedIn ? "/cart" : "/auth/login")}
+            >
+              <span className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                {auth.isLoggedIn ? (
+                  <span className="absolute -top-2 -right-3 bg-primary text-primary-foreground text-[10px] font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
+                    {cartCount || 0}
+                  </span>
+                ) : null}
+              </span>
+              <span className="text-[11px]">Cart</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-auto flex flex-col items-center gap-1 py-2"
+              onClick={() => {
+                if (!auth.isLoggedIn) {
+                  router.push("/auth/login");
+                  return;
+                }
+                router.push(accountBasePath);
+              }}
+            >
+              <User className="h-5 w-5" />
+              <span className="text-[11px]">Account</span>
+            </Button>
+          </div>
+        </div>
+      </nav>
     </header>
   );
 }

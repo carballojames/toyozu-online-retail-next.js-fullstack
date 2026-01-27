@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import LandingClient from "../../user-pages/landing";
+import LandingClient from "./LandingClient";
 import type { ProductCard } from "@/app/products/[name]/types";
 
 type LandingPageProps = {

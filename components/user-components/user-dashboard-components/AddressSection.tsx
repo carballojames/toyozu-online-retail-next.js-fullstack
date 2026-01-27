@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { GeocodeAddressSearch, type GeocodeAddressOption } from "@/components/common/geocode-address-search";
+import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -395,7 +396,7 @@ export default function AddressSection({ userId }: Props) {
 
 
         {loading ? (
-          <div className="text-sm text-muted-foreground">Loading addresses…</div>
+          <div className="flex justify-center items-center py-10"><Spinner className="w-8 h-8 text-primary" /></div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {addresses.map((address) => (

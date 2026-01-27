@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 
 import { useUserProfile } from "../_components/UserProfileContext";
 
@@ -28,7 +29,11 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   if (loadingUser) {
-    return <p className="text-center text-muted-foreground">Loading account...</p>;
+    return (
+      <div className="flex justify-center p-10">
+        <Spinner className="w-8 h-8 text-primary" />
+      </div>
+    );
   }
 
   if (!user) {
