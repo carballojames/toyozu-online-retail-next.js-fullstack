@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import type { ProductGridProps } from "@/app/products/[name]/types";
 import {
@@ -92,7 +91,7 @@ export default function ProductGrid({
     <div className="flex flex-col items-center mb-5 w-full">
       {/* Product Grid */}
       <div
-        className={`grid grid-cols-2 md:grid-cols-3 ${lgColsClass} gap-3 sm:gap-4 w-full max-w-[1270px] px-4 sm:px-0`}
+        className={`grid grid-cols-2 md:grid-cols-3 ${lgColsClass} gap-4 sm:gap-6 w-full max-w-[1270px] px-4 sm:px-0`}
       >
         {visibleProducts.map((product) => {
           const firstImage = normalizeImageSrc(
@@ -106,29 +105,26 @@ export default function ProductGrid({
               key={product.product_id}
               href={`/products/${encodeURIComponent(product.name)}`}
               onClick={handleProductClick}
-              className="bg-surface rounded-lg shadow-sm border hover:border-primary transition-shadow block h-full"
+              className="group flex flex-col bg-surface rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-border overflow-hidden h-full"
             >
               {/* Image */}
-              <div className="relative justify-center flex bg-transparent rounded-t-lg w-full h-40 sm:h-48 md:h-[220px]">
+              <div className="relative w-full aspect-square overflow-hidden bg-muted/50">
                 <Image
                   src={firstImage}
                   alt={product.name}
                   fill
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                  className="object-cover rounded-t-lg"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                   unoptimized={isExternalImage}
                 />
                 {product.discount && product.discount > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="absolute top-2 right-2 text-xs font-bold"
-                  >
+                  <div className="absolute top-3 left-3 bg-linear-to-r from-primary to-secondary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-md">
                     -{product.discount}%
-                  </Badge>
+                  </div>
                 )}
                 {typeof product.quantity === "number" && product.quantity <= 0 && (
-                  <div className="absolute inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center rounded-t-lg">
-                    <span className="bg-white text-gray-900 px-3 py-1 rounded font-semibold text-xs">
+                  <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center">
+                    <span className="bg-background/90 text-foreground px-4 py-1.5 rounded-full font-semibold text-xs shadow-sm">
                       Out of Stock
                     </span>
                   </div>
@@ -136,27 +132,27 @@ export default function ProductGrid({
               </div>
 
               {/* Product Info */}
-              <div className="p-3">
-                <div className="text-xs text-gray-500 mb-1">
+              <div className="p-4 flex flex-col grow gap-1.5">
+                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                   {product.brand_name}
                 </div>
                 <h3
-                  className="font-semibold text-gray-900 mb-1 text-sm line-clamp-2 h-[50px]"
+                  className="font-semibold text-foreground text-sm line-clamp-2 leading-snug group-hover:text-primary transition-colors h-10"
                   title={product.name}
                 >
                   {product.name}
                 </h3>
 
                 {/* Rating */}
-                <div className="flex items-center gap-1 mb-2">
+                <div className="flex items-center gap-1 mt-1">
                   <div className="flex items-center">
                     {[...Array(5)].map((_, i) => (
                       <svg
                         key={i}
-                        className={`w-4 h-4 ${
+                        className={`w-3.5 h-3.5 ${
                           i < Math.floor(product.rating || 0)
-                            ? "text-yellow-400"
-                            : "text-gray-300"
+                            ? "text-amber-400"
+                            : "text-muted-foreground/30"
                         }`}
                         fill="currentColor"
                         viewBox="0 0 20 20"
@@ -165,22 +161,24 @@ export default function ProductGrid({
                       </svg>
                     ))}
                   </div>
-                  <span className="text-xs text-gray-600">
+                  <span className="text-xs font-medium text-muted-foreground ml-1">
                     {product.rating || 0} ({product.reviews || 0})
                   </span>
                 </div>
 
                 {/* Price */}
-                <div className="mb-2">
+                <div className="mt-auto pt-2 flex items-baseline gap-2 flex-wrap">
                   {product.discount && product.discount > 0 ? (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="primary" className="text-sm font-bold">
+                    <>
+                      <span className="text-lg font-extrabold text-foreground">
                         ₱{(product.selling_price * (1 - product.discount! / 100)).toFixed(2)}
-                      </Badge>
-                      <span className="text-xs text-muted line-through">₱{Number(product.selling_price).toFixed(2)}</span>
-                    </div>
+                      </span>
+                      <span className="text-sm text-muted-foreground line-through decoration-muted-foreground/50 font-medium">
+                        ₱{Number(product.selling_price).toFixed(2)}
+                      </span>
+                    </>
                   ) : (
-                    <span className="text-sm font-bold text-primary">
+                    <span className="text-lg font-extrabold text-foreground">
                       ₱{Number(product.selling_price).toFixed(2)}
                     </span>
                   )}

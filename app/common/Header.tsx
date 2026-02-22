@@ -81,7 +81,6 @@ export default function Header() {
     isLoggedIn: false,
     roleId: null,
   });
-  const [username, setUsername] = useState<string | null>(null);
 
   const syncAuthFromStorage = () => {
     if (typeof window === "undefined") return;
@@ -99,61 +98,32 @@ export default function Header() {
     const sync = async () => {
       const userId = readUserIdFromStorage();
       if (!Number.isFinite(userId)) {
-        setUsername(null);
         setCartCount(getCartCountFromStorage());
         return;
       }
 
       const cartCacheKey = `header:cartCount:${userId}`;
-      const usernameCacheKey = `header:username:${userId}`;
 
       const cachedCart = readSessionCache<number>(cartCacheKey);
-      const cachedUsername = readSessionCache<string | null>(usernameCacheKey);
 
       if (cachedCart !== null) setCartCount(cachedCart);
-      if (cachedUsername !== null) setUsername(cachedUsername);
 
-      const cartReq = fetch(`/api/cart?userId=${encodeURIComponent(String(userId))}`, {
+      const cartReq = await fetch(`/api/cart?userId=${encodeURIComponent(String(userId))}`, {
         method: "GET",
         headers: { Accept: "application/json" },
         cache: "no-store",
       });
-      const meReq = fetch(`/api/me?userId=${encodeURIComponent(String(userId))}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
-
-      const [cartRes, meRes] = await Promise.allSettled([cartReq, meReq]);
-
-      if (cartRes.status === "fulfilled") {
-        try {
-          const res = cartRes.value;
-          const json = (await res.json()) as { data?: { items?: unknown[] } };
-          if (res.ok && json.data && Array.isArray(json.data.items)) {
-            const nextCount = json.data.items.length;
-            setCartCount(nextCount);
-            writeSessionCache(cartCacheKey, nextCount);
-          } else {
-            const fallback = getCartCountFromStorage();
-            setCartCount(fallback);
-          }
-        } catch {
+      try {
+        const json = (await cartReq.json()) as { data?: { items?: unknown[] } };
+        if (cartReq.ok && json.data && Array.isArray(json.data.items)) {
+          const nextCount = json.data.items.length;
+          setCartCount(nextCount);
+          writeSessionCache(cartCacheKey, nextCount);
+        } else {
           setCartCount(getCartCountFromStorage());
         }
-      }
-
-      if (meRes.status === "fulfilled") {
-        try {
-          const res = meRes.value;
-          const json = (await res.json()) as { data?: { username?: string | null } };
-          const nextUsername = json?.data?.username;
-          const normalized = typeof nextUsername === "string" && nextUsername.trim() ? nextUsername : null;
-          setUsername(normalized);
-          writeSessionCache(usernameCacheKey, normalized);
-        } catch {
-          setUsername(null);
-        }
+      } catch {
+        setCartCount(getCartCountFromStorage());
       }
     };
 
@@ -178,7 +148,7 @@ export default function Header() {
     };
   }, []);
 
-  const accountBasePath = username ? `/user/${encodeURIComponent(username)}` : "/user";
+  const accountBasePath = "/user";
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
@@ -187,7 +157,6 @@ export default function Header() {
     }
     // Update local UI state immediately so the header reflects logout
     setAuth({ isLoggedIn: false, roleId: null });
-    setUsername(null);
     setCartCount(0);
 
     // Notify other listeners (other tabs) if any rely on storage events

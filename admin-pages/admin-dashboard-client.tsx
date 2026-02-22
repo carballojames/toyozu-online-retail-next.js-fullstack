@@ -1,26 +1,29 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart3, Car, Package, ShoppingBag, UserRoundCog, Wrench } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
-import AdminHeader from "./admin-dashboard-components/common/AdminHeader";
+import AdminHeader from "../components/admin-components/common/AdminHeader";
 import { Button } from "@/components/ui/button";
 
-import AddProductModal from "./admin-dashboard-components/modals/AddProductModal";
-import AdminAside from "./admin-dashboard-components/common/AdminAside";
-import EditProductModal from "./admin-dashboard-components/modals/EditProductModal";
-import EditUserModal from "./admin-dashboard-components/modals/EditUserModal";
+import AddProductModal from "../components/admin-components/modals/AddProductDialog";
+import AdminAside from "../components/admin-components/common/AdminAside";
+import EditProductModal from "../components/admin-components/modals/EditProductDialog";
+import EditUserModal from "../components/admin-components/modals/EditUserDialog";
 
-import InventoryPage from "./admin-dashboard-components/inventory";
-import OrdersPage from "./admin-dashboard-components/orders";
-import ProductPage from "./admin-dashboard-components/product";
-import UserPage from "./admin-dashboard-components/user";
-import CarCompatibilityPage from "./admin-dashboard-components/car-compatibility";
-import OverviewPage from "./admin-dashboard-components/overview";
-import SalesTrackerPage from "./admin-dashboard-components/sales-tracker";
-import SupplyTrackerPage from "./admin-dashboard-components/supply-tracker";
-import { type AdminUserRow } from "./admin-dashboard-components/tables/UsersTable";
+import InventoryPage from "../components/admin-components/AdminInventoryManagement";
+import OrdersPage from "../components/admin-components/AdminOrdersManagement";
+import ProductPage from "../components/admin-components/AdminProductManagement";
+import UserPage from "../components/admin-components/AdminUserManagement";
+import CarCompatibilityPage from "../components/admin-components/AdminCarCompatibilityManagement";
+import OverviewPage from "../components/admin-components/AdminOverviewManagement";
+import SalesTrackerPage from "../components/admin-components/AdminSalesTrackerManagement";
+import SupplyTrackerPage from "../components/admin-components/AdminSupplyTrackerManagement";
+import { ADMIN_PRODUCTS_QUERY_KEY, useAdminProductsQuery } from "@/hooks/admin/use-admin-products-query";
+import { useAdminRole } from "@/hooks/admin/use-admin-role";
+import { ADMIN_USERS_QUERY_KEY, useAdminUsersQuery } from "@/hooks/admin/use-admin-users-query";
 
 import type {
   AdminProduct,
@@ -116,9 +119,10 @@ export default function AdminDashboardClient({
   initialTab?: AdminTabId;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const userSearchInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [roleId, setRoleId] = useState<RoleId | null>(null);
+  const roleId = useAdminRole();
   const [activeTab, setActiveTab] = useState<AdminTabId>(initialTab);
   const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const [isEditProductOpen, setIsEditProductOpen] = useState(false);
@@ -126,126 +130,18 @@ export default function AdminDashboardClient({
   const [productQuery, setProductQuery] = useState<string>("");
 
   const [userQuery, setUserQuery] = useState<string>("");
-  const [users, setUsers] = useState<AdminUserRow[]>([]);
-  const [usersError, setUsersError] = useState<string>("");
-  const [isUsersLoading, setIsUsersLoading] = useState<boolean>(false);
+  const [appliedUserQuery, setAppliedUserQuery] = useState<string>("");
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
 
-  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const canManageUsers = roleId !== null && hasPermission(roleId, "MANAGE_USERS");
+  const productsQuery = useAdminProductsQuery();
+  const usersQuery = useAdminUsersQuery(appliedUserQuery, canManageUsers);
 
-  const loadUsers = async (q?: string): Promise<void> => {
-    try {
-      setIsUsersLoading(true);
-      setUsersError("");
-
-      const params = new URLSearchParams();
-      if (q && q.trim()) params.set("q", q.trim());
-
-      const res = await fetch(`/api/admin/users?${params.toString()}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
-
-      const json = (await res.json()) as { data?: AdminUserRow[]; error?: string };
-      if (!res.ok || !Array.isArray(json.data)) {
-        setUsersError(json.error || "Failed to fetch users");
-        return;
-      }
-
-      setUsers(json.data);
-    } catch (e) {
-      setUsersError(e instanceof Error ? e.message : "Failed to fetch users");
-    } finally {
-      setIsUsersLoading(false);
-    }
-  };
-
-  const refreshProducts = async (signal?: AbortSignal): Promise<void> => {
-    const res = await fetch("/api/products", {
-      signal,
-      cache: "no-store",
-    });
-    if (!res.ok) return;
-    const json = (await res.json()) as {
-      data?: Array<{
-        product_id: number;
-        name: string;
-        selling_price: number | null;
-        quantity: number | null;
-        brand?: { name: string } | null;
-        category?: { name: string } | null;
-      }>;
-    };
-
-    const mapped: AdminProduct[] = (json.data ?? []).map((p) => ({
-      id: String(p.product_id),
-      name: p.name,
-      brand: p.brand?.name ?? "",
-      category: p.category?.name ?? "",
-      price: p.selling_price ?? 0,
-      stock: p.quantity ?? 0,
-    }));
-
-    setProducts(mapped);
-  };
-
-  useEffect(() => {
-    const raw = typeof window !== "undefined" ? localStorage.getItem("role_id") : null;
-    const parsed = raw ? Number(raw) : NaN;
-    const normalized: RoleId =
-      parsed === 0 || parsed === 1 || parsed === 2 || parsed === 3 || parsed === 4
-        ? (parsed as RoleId)
-        : 4;
-    setRoleId(normalized);
-  }, []);
-
-  useEffect(() => {
-    if (roleId === null) return;
-    if (!hasPermission(roleId, "MANAGE_USERS")) return;
-    void loadUsers();
-  }, [roleId]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadProducts() {
-      try {
-        const res = await fetch("/api/products", {
-          signal: controller.signal,
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-        const json = (await res.json()) as {
-          data?: Array<{
-            product_id: number;
-            name: string;
-            selling_price: number | null;
-            quantity: number | null;
-            brand?: { name: string } | null;
-            category?: { name: string } | null;
-          }>;
-        };
-
-        const mapped: AdminProduct[] = (json.data ?? []).map((p) => ({
-          id: String(p.product_id),
-          name: p.name,
-          brand: p.brand?.name ?? "",
-          category: p.category?.name ?? "",
-          price: p.selling_price ?? 0,
-          stock: p.quantity ?? 0,
-        }));
-
-        setProducts(mapped);
-      } catch {
-        // ignore
-      }
-    }
-
-    loadProducts();
-    return () => controller.abort();
-  }, []);
+  const products = productsQuery.data ?? [];
+  const users = usersQuery.data ?? [];
+  const usersError = usersQuery.error instanceof Error ? usersQuery.error.message : "";
+  const isUsersLoading = usersQuery.isLoading || usersQuery.isFetching;
 
   // TODO: Gate this route with real auth/authorization.
   const allowed = true;
@@ -309,8 +205,16 @@ export default function AdminDashboardClient({
       <AddProductModal
         open={isAddProductOpen}
         onOpenChange={setIsAddProductOpen}
-        onConfirm={() => {
-          void refreshProducts();
+        onConfirm={(createdProducts) => {
+          queryClient.setQueryData<AdminProduct[]>(ADMIN_PRODUCTS_QUERY_KEY, (previous) => {
+            const current = previous ?? [];
+            const byId = new Map(current.map((product) => [product.id, product]));
+            for (const product of createdProducts) {
+              byId.set(product.id, product);
+            }
+            return Array.from(byId.values());
+          });
+          void queryClient.invalidateQueries({ queryKey: ADMIN_PRODUCTS_QUERY_KEY });
         }}
       />
 
@@ -322,7 +226,7 @@ export default function AdminDashboardClient({
           if (!nextOpen) setEditingProductId(null);
         }}
         onSaved={() => {
-          void refreshProducts();
+          void queryClient.invalidateQueries({ queryKey: ADMIN_PRODUCTS_QUERY_KEY });
         }}
       />
 
@@ -334,7 +238,7 @@ export default function AdminDashboardClient({
           if (!nextOpen) setEditingUserId(null);
         }}
         onSaved={() => {
-          void loadUsers(userQuery);
+          void queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY });
         }}
       />
 
@@ -360,7 +264,7 @@ export default function AdminDashboardClient({
             <InventoryPage
               products={products}
               onRestock={() => {
-                void refreshProducts();
+                void queryClient.invalidateQueries({ queryKey: ADMIN_PRODUCTS_QUERY_KEY });
               }}
             />
           ) : null}
@@ -374,11 +278,13 @@ export default function AdminDashboardClient({
               usersError={usersError}
               users={users}
               onSearch={() => {
-                void loadUsers(userQuery);
+                setAppliedUserQuery(userQuery);
+                void queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY });
               }}
               onReset={() => {
                 setUserQuery("");
-                void loadUsers();
+                setAppliedUserQuery("");
+                void queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY });
               }}
               onRowClick={(userId) => {
                 setEditingUserId(userId);

@@ -2,6 +2,7 @@ import "./globals.css";
 import React from "react";
 import { Montserrat } from "next/font/google";
 import { Metadata } from "next/dist/lib/metadata/types/metadata-interface";
+import QueryProvider from "./common/QueryProvider";
 
 
 export const metadata: Metadata = {
@@ -26,7 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${montserrat.className} root `}>
       <body className="bg-primary-foreground text-foreground min-h-screen flex flex-col">
-        <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+        <QueryProvider>
+          <main className="flex-1 pb-20 lg:pb-0">{children}</main>
+        </QueryProvider>
       </body>
     </html>
   );

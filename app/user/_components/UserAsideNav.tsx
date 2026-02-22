@@ -16,19 +16,6 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 function getUserBasePath(pathname: string | null): string {
-  if (!pathname) return "/user";
-
-  // If we're already under /user/<username>/..., keep that base for navigation.
-  // Example: /user/john/profile -> base /user/john
-  const m = pathname.match(/^\/user\/([^/]+)(?:\/|$)/);
-  const firstSegment = m?.[1];
-
-  // Important: /user/profile, /user/orders, etc. are *not* username routes.
-  const dashboardSegments = new Set(["profile", "tracking", "addresses", "orders", "vouchers"]);
-  if (firstSegment && !dashboardSegments.has(firstSegment)) {
-    return `/user/${firstSegment}`;
-  }
-
   return "/user";
 }
 

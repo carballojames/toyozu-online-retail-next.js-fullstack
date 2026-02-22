@@ -1,6 +1,6 @@
 "use client";
 
-import OrderHistorySection from "@/components/user-components/user-dashboard-components/OrderHistorySection";
+import OrderHistorySection from "@/components/user-components/user-dashboard-components/UserOrderHistorySection";
 import { Spinner } from "@/components/ui/spinner";
 
 import { useUserProfile } from "../_components/UserProfileContext";

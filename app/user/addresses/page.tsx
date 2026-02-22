@@ -1,6 +1,6 @@
 "use client";
 
-import AddressSection from "@/components/user-components/user-dashboard-components/AddressSection";
+import AddressSection from "@/components/user-components/user-dashboard-components/UserAddressSection";
 import { Spinner } from "@/components/ui/spinner";
 import { useUserProfile } from "../_components/UserProfileContext";
 

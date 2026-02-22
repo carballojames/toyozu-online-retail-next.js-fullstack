@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 export type UserProfile = {
   id: number;
@@ -37,6 +37,7 @@ function readUserIdFromStorage(): number {
 }
 
 export function UserProfileProvider({ children }: { children: React.ReactNode }) {
+  const initialUserRef = useRef<UserProfile | null>(null);
   const [user, setUser] = useState<UserProfile | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -45,6 +46,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
       const parsed = JSON.parse(raw) as { user: UserProfile; ts: number };
       if (!parsed?.user || typeof parsed.ts !== "number") return null;
       if (Date.now() - parsed.ts > USER_PROFILE_CACHE_TTL_MS) return null;
+      initialUserRef.current = parsed.user;
       return parsed.user;
     } catch {
       return null;
@@ -118,8 +120,8 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
   }, [user?.id]);
 
   useEffect(() => {
-    void refresh({ silent: user !== null });
-  }, [refresh, user]);
+    void refresh({ silent: initialUserRef.current !== null });
+  }, [refresh]);
 
   const value = useMemo<Ctx>(
     () => ({ user, loadingUser, profileError, refresh, uploadProfilePicture }),
