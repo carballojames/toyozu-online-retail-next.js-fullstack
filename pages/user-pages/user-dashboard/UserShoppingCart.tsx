@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import Header from "@/app/common/Header";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -55,7 +56,7 @@ function isRemoteImageSrc(src: string): boolean {
 export default function ShoppingCart() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const selectedFromQuery = searchParams.get("select");
+  const selectedFromQuery = searchParams?.get("select");
 
   const { data: cartItems = EMPTY_CART_ITEMS, error: cartQueryError } = useCartQuery();
   const updateQuantityMutation = useUpdateCartQuantityMutation();
@@ -64,6 +65,7 @@ export default function ShoppingCart() {
   const [selectedItems, setSelectedItems] = useState<SelectedMap>({});
   const [quantities, setQuantities] = useState<QuantityMap>({});
   const [sort, setSort] = useState("default");
+  const [search, setSearch] = useState("");
 
   const cartError = cartQueryError instanceof Error ? cartQueryError.message : null;
 
@@ -216,17 +218,27 @@ export default function ShoppingCart() {
   };
 
   const sortedCartItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const filtered = q
+      ? cartItems.filter(
+          (item) =>
+            item.product_name.toLowerCase().includes(q) ||
+            (item.brand_name ?? "").toLowerCase().includes(q) ||
+            (item.category_name ?? "").toLowerCase().includes(q),
+        )
+      : cartItems;
+
     if (sort === "name") {
-      return [...cartItems].sort((a, b) => a.product_name.localeCompare(b.product_name));
+      return [...filtered].sort((a, b) => a.product_name.localeCompare(b.product_name));
     }
     if (sort === "priceLowHigh") {
-      return [...cartItems].sort((a, b) => a.selling_price - b.selling_price);
+      return [...filtered].sort((a, b) => a.selling_price - b.selling_price);
     }
     if (sort === "priceHighLow") {
-      return [...cartItems].sort((a, b) => b.selling_price - a.selling_price);
+      return [...filtered].sort((a, b) => b.selling_price - a.selling_price);
     }
-    return cartItems;
-  }, [cartItems, sort]);
+    return filtered;
+  }, [cartItems, sort, search]);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -244,18 +256,37 @@ export default function ShoppingCart() {
             <span>Shopping Cart</span>
           </h1>
 
-          <div className="mt-3 sm:mt-0 w-full sm:w-[220px]">
-            <Select value={sort} onValueChange={setSort}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">Sort by</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="priceLowHigh">Price: Low → High</SelectItem>
-                <SelectItem value="priceHighLow">Price: High → Low</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="mt-3 sm:mt-0 flex items-center gap-2 flex-wrap">
+            <div className="relative w-full sm:w-60">
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search products..."
+                className="pr-8"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-sm"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <div className="w-full sm:w-[180px]">
+              <Select value={sort} onValueChange={setSort}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Sort by</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="priceLowHigh">Price: Low → High</SelectItem>
+                  <SelectItem value="priceHighLow">Price: High → Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 

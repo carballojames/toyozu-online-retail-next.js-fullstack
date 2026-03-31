@@ -193,7 +193,7 @@ export type Mode_paymentGroupByOutputType = {
   _max: Mode_paymentMaxAggregateOutputType | null
 }
 
-type GetMode_paymentGroupByPayload<T extends mode_paymentGroupByArgs> = Prisma.PrismaPromise<
+export type GetMode_paymentGroupByPayload<T extends mode_paymentGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Mode_paymentGroupByOutputType, T['by']> &
       {
@@ -1250,6 +1250,11 @@ export type mode_paymentFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Skip the first `n` mode_payments.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of mode_payments.
+   */
   distinct?: Prisma.Mode_paymentScalarFieldEnum | Prisma.Mode_paymentScalarFieldEnum[]
 }
 

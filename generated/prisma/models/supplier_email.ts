@@ -182,7 +182,7 @@ export type Supplier_emailGroupByOutputType = {
   _max: Supplier_emailMaxAggregateOutputType | null
 }
 
-type GetSupplier_emailGroupByPayload<T extends supplier_emailGroupByArgs> = Prisma.PrismaPromise<
+export type GetSupplier_emailGroupByPayload<T extends supplier_emailGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Supplier_emailGroupByOutputType, T['by']> &
       {
@@ -1097,6 +1097,11 @@ export type supplier_emailFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Skip the first `n` supplier_emails.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of supplier_emails.
+   */
   distinct?: Prisma.Supplier_emailScalarFieldEnum | Prisma.Supplier_emailScalarFieldEnum[]
 }
 

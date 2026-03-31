@@ -230,7 +230,7 @@ export type Supply_detailsGroupByOutputType = {
   _max: Supply_detailsMaxAggregateOutputType | null
 }
 
-type GetSupply_detailsGroupByPayload<T extends supply_detailsGroupByArgs> = Prisma.PrismaPromise<
+export type GetSupply_detailsGroupByPayload<T extends supply_detailsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Supply_detailsGroupByOutputType, T['by']> &
       {
@@ -1527,6 +1527,11 @@ export type supply_detailsFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Skip the first `n` supply_details.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of supply_details.
+   */
   distinct?: Prisma.Supply_detailsScalarFieldEnum | Prisma.Supply_detailsScalarFieldEnum[]
 }
 

@@ -189,7 +189,7 @@ export type Delivery_statusesGroupByOutputType = {
   _max: Delivery_statusesMaxAggregateOutputType | null
 }
 
-type GetDelivery_statusesGroupByPayload<T extends delivery_statusesGroupByArgs> = Prisma.PrismaPromise<
+export type GetDelivery_statusesGroupByPayload<T extends delivery_statusesGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Delivery_statusesGroupByOutputType, T['by']> &
       {
@@ -1192,6 +1192,11 @@ export type delivery_statusesFindManyArgs<ExtArgs extends runtime.Types.Extensio
    * Skip the first `n` delivery_statuses.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of delivery_statuses.
+   */
   distinct?: Prisma.Delivery_statusesScalarFieldEnum | Prisma.Delivery_statusesScalarFieldEnum[]
 }
 

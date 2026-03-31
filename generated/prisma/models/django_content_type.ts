@@ -178,7 +178,7 @@ export type Django_content_typeGroupByOutputType = {
   _max: Django_content_typeMaxAggregateOutputType | null
 }
 
-type GetDjango_content_typeGroupByPayload<T extends django_content_typeGroupByArgs> = Prisma.PrismaPromise<
+export type GetDjango_content_typeGroupByPayload<T extends django_content_typeGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Django_content_typeGroupByOutputType, T['by']> &
       {
@@ -1156,6 +1156,11 @@ export type django_content_typeFindManyArgs<ExtArgs extends runtime.Types.Extens
    * Skip the first `n` django_content_types.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of django_content_types.
+   */
   distinct?: Prisma.Django_content_typeScalarFieldEnum | Prisma.Django_content_typeScalarFieldEnum[]
 }
 

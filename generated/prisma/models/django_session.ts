@@ -144,7 +144,7 @@ export type Django_sessionGroupByOutputType = {
   _max: Django_sessionMaxAggregateOutputType | null
 }
 
-type GetDjango_sessionGroupByPayload<T extends django_sessionGroupByArgs> = Prisma.PrismaPromise<
+export type GetDjango_sessionGroupByPayload<T extends django_sessionGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Django_sessionGroupByOutputType, T['by']> &
       {
@@ -898,6 +898,11 @@ export type django_sessionFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Skip the first `n` django_sessions.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of django_sessions.
+   */
   distinct?: Prisma.Django_sessionScalarFieldEnum | Prisma.Django_sessionScalarFieldEnum[]
 }
 

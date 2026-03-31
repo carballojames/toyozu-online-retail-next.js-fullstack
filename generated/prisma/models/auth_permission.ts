@@ -189,7 +189,7 @@ export type Auth_permissionGroupByOutputType = {
   _max: Auth_permissionMaxAggregateOutputType | null
 }
 
-type GetAuth_permissionGroupByPayload<T extends auth_permissionGroupByArgs> = Prisma.PrismaPromise<
+export type GetAuth_permissionGroupByPayload<T extends auth_permissionGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Auth_permissionGroupByOutputType, T['by']> &
       {
@@ -1245,6 +1245,11 @@ export type auth_permissionFindManyArgs<ExtArgs extends runtime.Types.Extensions
    * Skip the first `n` auth_permissions.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of auth_permissions.
+   */
   distinct?: Prisma.Auth_permissionScalarFieldEnum | Prisma.Auth_permissionScalarFieldEnum[]
 }
 

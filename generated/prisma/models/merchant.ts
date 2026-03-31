@@ -171,7 +171,7 @@ export type MerchantGroupByOutputType = {
   _max: MerchantMaxAggregateOutputType | null
 }
 
-type GetMerchantGroupByPayload<T extends merchantGroupByArgs> = Prisma.PrismaPromise<
+export type GetMerchantGroupByPayload<T extends merchantGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<MerchantGroupByOutputType, T['by']> &
       {
@@ -1033,6 +1033,11 @@ export type merchantFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Skip the first `n` merchants.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of merchants.
+   */
   distinct?: Prisma.MerchantScalarFieldEnum | Prisma.MerchantScalarFieldEnum[]
 }
 

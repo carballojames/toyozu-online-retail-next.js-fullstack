@@ -211,7 +211,7 @@ export type CourierGroupByOutputType = {
   _max: CourierMaxAggregateOutputType | null
 }
 
-type GetCourierGroupByPayload<T extends courierGroupByArgs> = Prisma.PrismaPromise<
+export type GetCourierGroupByPayload<T extends courierGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<CourierGroupByOutputType, T['by']> &
       {
@@ -1187,6 +1187,11 @@ export type courierFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Skip the first `n` couriers.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of couriers.
+   */
   distinct?: Prisma.CourierScalarFieldEnum | Prisma.CourierScalarFieldEnum[]
 }
 

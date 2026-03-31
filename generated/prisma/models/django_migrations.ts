@@ -185,7 +185,7 @@ export type Django_migrationsGroupByOutputType = {
   _max: Django_migrationsMaxAggregateOutputType | null
 }
 
-type GetDjango_migrationsGroupByPayload<T extends django_migrationsGroupByArgs> = Prisma.PrismaPromise<
+export type GetDjango_migrationsGroupByPayload<T extends django_migrationsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Django_migrationsGroupByOutputType, T['by']> &
       {
@@ -970,6 +970,11 @@ export type django_migrationsFindManyArgs<ExtArgs extends runtime.Types.Extensio
    * Skip the first `n` django_migrations.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of django_migrations.
+   */
   distinct?: Prisma.Django_migrationsScalarFieldEnum | Prisma.Django_migrationsScalarFieldEnum[]
 }
 

@@ -196,7 +196,7 @@ export type Approved_addressGroupByOutputType = {
   _max: Approved_addressMaxAggregateOutputType | null
 }
 
-type GetApproved_addressGroupByPayload<T extends approved_addressGroupByArgs> = Prisma.PrismaPromise<
+export type GetApproved_addressGroupByPayload<T extends approved_addressGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Approved_addressGroupByOutputType, T['by']> &
       {
@@ -1298,6 +1298,11 @@ export type approved_addressFindManyArgs<ExtArgs extends runtime.Types.Extension
    * Skip the first `n` approved_addresses.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of approved_addresses.
+   */
   distinct?: Prisma.Approved_addressScalarFieldEnum | Prisma.Approved_addressScalarFieldEnum[]
 }
 

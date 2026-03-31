@@ -171,7 +171,7 @@ export type Condition_itemGroupByOutputType = {
   _max: Condition_itemMaxAggregateOutputType | null
 }
 
-type GetCondition_itemGroupByPayload<T extends condition_itemGroupByArgs> = Prisma.PrismaPromise<
+export type GetCondition_itemGroupByPayload<T extends condition_itemGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Condition_itemGroupByOutputType, T['by']> &
       {
@@ -1033,6 +1033,11 @@ export type condition_itemFindManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Skip the first `n` condition_items.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of condition_items.
+   */
   distinct?: Prisma.Condition_itemScalarFieldEnum | Prisma.Condition_itemScalarFieldEnum[]
 }
 

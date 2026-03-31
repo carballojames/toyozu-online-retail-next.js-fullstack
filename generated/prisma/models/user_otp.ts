@@ -217,7 +217,7 @@ export type User_otpGroupByOutputType = {
   _max: User_otpMaxAggregateOutputType | null
 }
 
-type GetUser_otpGroupByPayload<T extends user_otpGroupByArgs> = Prisma.PrismaPromise<
+export type GetUser_otpGroupByPayload<T extends user_otpGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<User_otpGroupByOutputType, T['by']> &
       {
@@ -1085,6 +1085,11 @@ export type user_otpFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Skip the first `n` user_otps.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of user_otps.
+   */
   distinct?: Prisma.User_otpScalarFieldEnum | Prisma.User_otpScalarFieldEnum[]
 }
 

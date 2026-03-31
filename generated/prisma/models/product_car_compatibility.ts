@@ -208,7 +208,7 @@ export type Product_car_compatibilityGroupByOutputType = {
   _max: Product_car_compatibilityMaxAggregateOutputType | null
 }
 
-type GetProduct_car_compatibilityGroupByPayload<T extends product_car_compatibilityGroupByArgs> = Prisma.PrismaPromise<
+export type GetProduct_car_compatibilityGroupByPayload<T extends product_car_compatibilityGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Product_car_compatibilityGroupByOutputType, T['by']> &
       {
@@ -1540,6 +1540,11 @@ export type product_car_compatibilityFindManyArgs<ExtArgs extends runtime.Types.
    * Skip the first `n` product_car_compatibilities.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of product_car_compatibilities.
+   */
   distinct?: Prisma.Product_car_compatibilityScalarFieldEnum | Prisma.Product_car_compatibilityScalarFieldEnum[]
 }
 

@@ -175,7 +175,7 @@ export type Product_yearsGroupByOutputType = {
   _max: Product_yearsMaxAggregateOutputType | null
 }
 
-type GetProduct_yearsGroupByPayload<T extends product_yearsGroupByArgs> = Prisma.PrismaPromise<
+export type GetProduct_yearsGroupByPayload<T extends product_yearsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Product_yearsGroupByOutputType, T['by']> &
       {
@@ -1113,6 +1113,11 @@ export type product_yearsFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` product_years.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of product_years.
+   */
   distinct?: Prisma.Product_yearsScalarFieldEnum | Prisma.Product_yearsScalarFieldEnum[]
 }
 

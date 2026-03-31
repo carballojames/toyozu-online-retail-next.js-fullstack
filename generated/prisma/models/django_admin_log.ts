@@ -226,7 +226,7 @@ export type Django_admin_logGroupByOutputType = {
   _max: Django_admin_logMaxAggregateOutputType | null
 }
 
-type GetDjango_admin_logGroupByPayload<T extends django_admin_logGroupByArgs> = Prisma.PrismaPromise<
+export type GetDjango_admin_logGroupByPayload<T extends django_admin_logGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Django_admin_logGroupByOutputType, T['by']> &
       {
@@ -1285,6 +1285,11 @@ export type django_admin_logFindManyArgs<ExtArgs extends runtime.Types.Extension
    * Skip the first `n` django_admin_logs.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of django_admin_logs.
+   */
   distinct?: Prisma.Django_admin_logScalarFieldEnum | Prisma.Django_admin_logScalarFieldEnum[]
 }
 

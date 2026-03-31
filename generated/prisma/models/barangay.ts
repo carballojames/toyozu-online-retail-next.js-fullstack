@@ -182,7 +182,7 @@ export type BarangayGroupByOutputType = {
   _max: BarangayMaxAggregateOutputType | null
 }
 
-type GetBarangayGroupByPayload<T extends barangayGroupByArgs> = Prisma.PrismaPromise<
+export type GetBarangayGroupByPayload<T extends barangayGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<BarangayGroupByOutputType, T['by']> &
       {
@@ -1291,6 +1291,11 @@ export type barangayFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Skip the first `n` barangays.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of barangays.
+   */
   distinct?: Prisma.BarangayScalarFieldEnum | Prisma.BarangayScalarFieldEnum[]
 }
 

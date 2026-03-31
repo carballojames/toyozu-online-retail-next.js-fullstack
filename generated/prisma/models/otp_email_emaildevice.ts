@@ -249,7 +249,7 @@ export type Otp_email_emaildeviceGroupByOutputType = {
   _max: Otp_email_emaildeviceMaxAggregateOutputType | null
 }
 
-type GetOtp_email_emaildeviceGroupByPayload<T extends otp_email_emaildeviceGroupByArgs> = Prisma.PrismaPromise<
+export type GetOtp_email_emaildeviceGroupByPayload<T extends otp_email_emaildeviceGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Otp_email_emaildeviceGroupByOutputType, T['by']> &
       {
@@ -1203,6 +1203,11 @@ export type otp_email_emaildeviceFindManyArgs<ExtArgs extends runtime.Types.Exte
    * Skip the first `n` otp_email_emaildevices.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of otp_email_emaildevices.
+   */
   distinct?: Prisma.Otp_email_emaildeviceScalarFieldEnum | Prisma.Otp_email_emaildeviceScalarFieldEnum[]
 }
 

@@ -211,7 +211,7 @@ export type Delivery_historyGroupByOutputType = {
   _max: Delivery_historyMaxAggregateOutputType | null
 }
 
-type GetDelivery_historyGroupByPayload<T extends delivery_historyGroupByArgs> = Prisma.PrismaPromise<
+export type GetDelivery_historyGroupByPayload<T extends delivery_historyGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<Delivery_historyGroupByOutputType, T['by']> &
       {
@@ -1471,6 +1471,11 @@ export type delivery_historyFindManyArgs<ExtArgs extends runtime.Types.Extension
    * Skip the first `n` delivery_histories.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of delivery_histories.
+   */
   distinct?: Prisma.Delivery_historyScalarFieldEnum | Prisma.Delivery_historyScalarFieldEnum[]
 }
 

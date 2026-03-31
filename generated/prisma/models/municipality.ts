@@ -189,7 +189,7 @@ export type MunicipalityGroupByOutputType = {
   _max: MunicipalityMaxAggregateOutputType | null
 }
 
-type GetMunicipalityGroupByPayload<T extends municipalityGroupByArgs> = Prisma.PrismaPromise<
+export type GetMunicipalityGroupByPayload<T extends municipalityGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<MunicipalityGroupByOutputType, T['by']> &
       {
@@ -1241,6 +1241,11 @@ export type municipalityFindManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Skip the first `n` municipalities.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of municipalities.
+   */
   distinct?: Prisma.MunicipalityScalarFieldEnum | Prisma.MunicipalityScalarFieldEnum[]
 }
 
