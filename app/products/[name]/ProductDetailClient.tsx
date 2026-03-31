@@ -164,7 +164,7 @@ export default function ProductDetailClient({
     <div className="min-h-screen bg-primary-foreground text-foreground">
       <Header />
       {/* Breadcrumb */}
-      <div className="mx-auto w-full max-w-[1270px] px-4 sm:px-6 mt-4 sm:mt-6 mb-3 sm:mb-4">
+      <div className="mx-auto w-full px-85 mt-4 sm:mt-6 mb-3 sm:mb-4">
         <nav className="text-sm text-foreground" aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <li>
@@ -192,7 +192,7 @@ export default function ProductDetailClient({
         </nav>
       </div>
 
-      <div className="mx-auto w-full max-w-[1270px] px-4 sm:px-6 pb-10 sm:pb-12">
+      <div className="mx-auto w-full px-85 sm:px-85 pb-10 sm:pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-12 bg-surface p-4 sm:p-6 rounded-lg shadow-sm">
           {/* Left: Images */}
           <div className="space-y-4">

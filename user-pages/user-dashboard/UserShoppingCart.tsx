@@ -232,7 +232,7 @@ export default function ShoppingCart() {
     <div className="min-h-screen bg-primary-background">
       <Header />
 
-      <div className="max-w-[1500px] mx-auto px-4 pb-28 mt-8">
+      <div className="mt-8 w-full px-85">
         {cartError && (
           <div className="mb-4 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
             {cartError}
@@ -297,8 +297,19 @@ export default function ShoppingCart() {
                               className="w-20 h-20 object-cover"
                               unoptimized={isRemoteImageSrc(imageSrc)}
                             />
-                            <div>
-                              <div className="font-medium text-foreground line-clamp-1">{item.product_name}</div>
+                            <div className="min-w-0 flex-1 max-w-[220px]">
+                              <div
+                                className="font-medium text-foreground leading-5"
+                                style={{
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: "vertical",
+                                  overflow: "hidden",
+                                  wordBreak: "break-word",
+                                }}
+                              >
+                                {item.product_name}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
@@ -394,8 +405,17 @@ export default function ShoppingCart() {
                             unoptimized={isRemoteImageSrc(imageSrc)}
                           />
 
-                          <div className="min-w-0 flex-1">
-                            <div className="font-medium text-foreground text-sm line-clamp-2 wrap-break-word">
+                          <div className="min-w-0 flex-1 max-w-[190px]">
+                            <div
+                              className="font-medium text-foreground text-sm leading-5"
+                              style={{
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                wordBreak: "break-word",
+                              }}
+                            >
                               {item.product_name}
                             </div>
                             <div className="text-xs text-muted-foreground mt-1">

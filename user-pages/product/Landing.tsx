@@ -124,9 +124,9 @@ export default function Landing({
   const displayedCategories = showAllCategories ? categories : categories.slice(0, categoryPageSize);
 
   return (
-    <div className="min-h-screen bg-primary-foreground  mx-auto">
+    <div className="min-h-screen bg-surface  mx-auto ">
       <Header />
-      <section className="relative w-full h-screen overflow-hidden">
+      <section className="flex items-center w-full h-screen overflow-hidden p-80">
         <img
           src={(ToyozuGIF as StaticImageData).src}
           alt="Toyozu Promo GIF"
@@ -134,7 +134,7 @@ export default function Landing({
         />
 
         <div className="relative flex flex-col justify-center items-center h-full bg-opacity-50">
-          <div className="px-4 sm:px-10 py-8">
+          <div className="px-4 sm:px-6 lg:px-15 py-8">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold mb-2 text-primary-foreground drop-shadow-sm">
                 Find Parts for Your Vehicle
@@ -263,12 +263,12 @@ export default function Landing({
               </div>
             </div>
           </div>
-            <section className="py-12 px-4 bg-transparent max-w-[1270px] mx-auto">
+            <section className="py-12 px-4 sm:px-6 lg:px-15 max-w-[1320px] mx-auto">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
               {features.map(({ icon: Icon, title, description }) => (
                 <div
                   key={title}
-                  className="bg-surface rounded-lg shadow-md p-6 flex flex-col items-center gap-3"
+                  className="bg-background rounded-lg shadow-md p-6 flex flex-col items-center gap-3"
                 >
                   <Icon className="w-10 h-10 text-primary" />
                   <h3 className="text-lg font-semibold text-primary">{title}</h3>
@@ -281,8 +281,8 @@ export default function Landing({
       </section>
    
 
-      <section className="py-12 px-4">
-        <div className="max-w-[1270px] mx-auto px-4">
+      <section className="px-70">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-15">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-foreground tracking-tight">Categories</h2>
           </div>
@@ -318,8 +318,8 @@ export default function Landing({
         </div>
       </section>
 
-      <section id="brands" className="py-12 px-4 ">
-        <div className="max-w-[1270px] mx-auto px-4">
+      <section id="brands" className="px-70 py-12">
+        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-15">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-foreground tracking-tight">Trusted Brands</h2>
           </div>
@@ -376,8 +376,8 @@ export default function Landing({
         </div>
       </section>
 
-      <section>
-        <div className="max-w-[1270px] w-full mx-auto flex justify-center items-center flex-col px-4">
+      <section className="px-70 py-12">
+        <div className="max-w-[1320px] w-full mx-auto flex justify-center items-center flex-col px-4 sm:px-6 lg:px-15">
           <div className="w-full h-12 bg-surface rounded-lg shadow-md mb-4 border-b-2 border-border flex justify-center items-center">
             <h2 className="text-2xl font-bold italic text-secondary text-center ">Explore </h2>
           </div>

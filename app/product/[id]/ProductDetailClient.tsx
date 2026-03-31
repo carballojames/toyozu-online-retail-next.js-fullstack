@@ -129,12 +129,12 @@ export default function ProductDetailClient({
   return (
     <div className="min-h-screen bg-primary-background text-foreground">
       <Header />
-       <div className="w-[1300px] mx-auto px-4 mt-4 mb-4">
+       <div className=" mx-auto  mt-4 mb-4 w-full px-70">
         <nav className="text-sm text-foreground" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li>
               <span className="text-primary hover:underline cursor-pointer">
-                Home
+                Home 
               </span>
             </li>
             <li className="text-foreground">›</li>

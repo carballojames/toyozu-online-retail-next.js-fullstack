@@ -4,68 +4,58 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Material light (red) scheme (shadcn variable mapping) */
-  --background: #FFF8F6; /* material.light.background */
-  --foreground: #2A1613; /* material.light.onBackground */
+  /* Neutral Surface Palette (Grayish-White) */
+  /* These are pulled from the Neutral palette in your JSON, shifted toward white */
+  --background: #FFFFFF; 
+  --foreground: #201A19; /* material.neutral.10 */
 
-  /* Updated to match Material Design 3 palette from images - light mode */
-  /* Primary colors */
-  --primary: #BD0002; /* material.light.primary (red) */
+  /* Primary colors (Deep Red) */
+  --primary: #A50007; /* material.light.primary */
   --primary-foreground: #FFFFFF; /* material.light.onPrimary */
-  --primary-container: #EB0505; /* material.light.primaryContainer */
-  --primary-container-foreground: #FFFDFF; /* material.light.onPrimaryContainer */
+  --primary-container: #CD1C18; /* material.light.primaryContainer */
+  --primary-container-foreground: #FFE2DE; /* material.light.onPrimaryContainer */
 
-  /* Secondary colors */
-  --secondary: #B32A1D; /* material.light.secondary */
+  /* Secondary colors (Muted Red) */
+  --secondary: #A6392E; /* material.light.secondary */
   --secondary-foreground: #FFFFFF; /* material.light.onSecondary */
-  --secondary-container: #FC5E4B; /* material.light.secondaryContainer */
-  --secondary-container-foreground: #610000; /* material.light.onSecondaryContainer */
+  --secondary-container: #FC7969; /* material.light.secondaryContainer */
+  --secondary-container-foreground: #70110C; /* material.light.onSecondaryContainer */
 
-  /* Tertiary colors */
-  --tertiary: #805400; /* material.light.tertiary */
+  /* Tertiary colors (Gold/Amber) */
+  --tertiary: #724600; /* material.light.tertiary */
   --tertiary-foreground: #FFFFFF; /* material.light.onTertiary */
-  --tertiary-container: #A16A00; /* material.light.tertiaryContainer */
-  --tertiary-container-foreground: #FFFDFF; /* material.light.onTertiaryContainer */
+  --tertiary-container: #935C00; /* material.light.tertiaryContainer */
+  --tertiary-container-foreground: #FFE4C8; /* material.light.onTertiaryContainer */
 
   /* Error colors */
-  --error: #BA1A1A; /* material.light.error */
-  --error-foreground: #FFFFFF; /* material.light.onError */
-  --error-container: #FFDAD6; /* material.light.errorContainer */
-  --error-container-foreground: #93000A; /* material.light.onErrorContainer */
+  --error: #BA1A1A;
+  --error-foreground: #FFFFFF;
+  --error-container: #FFDAD6;
+  --error-container-foreground: #93000A;
 
-  /* Surface colors */
-  --surface: #FFF8F6; /* material.light.surface */
-  --surface-foreground: #2A1613; /* material.light.onSurface */
-  --surface-variant: #FFDAD4; /* material.light.surfaceVariant */
-  --surface-variant-foreground: #5F3F3A; /* material.light.onSurfaceVariant */
+  /* Surface & Cards (Neutral Grays to avoid Red tint) */
+  --surface: #F9F9F9; 
+  --surface-foreground: #201A19; 
+  --surface-variant: #F5F0EF; 
+  --surface-variant-foreground: #534341; 
 
-  --card: #FFE9E6; /* material.light.surfaceContainer */
-  --card-foreground: #2A1613; /* use onSurface */
-  --popover: #FFF8F6; /* same as surface */
-  --popover-foreground: #2A1613;
-  --muted: #FFF0EE; /* material.light.surfaceContainerLow */
-  --muted-foreground: #5F3F3A; /* material.light.onSurfaceVariant */
-  --accent: #BD0002; /* match primary (red) */
+  --card: #FFFFFF; 
+  --card-foreground: #201A19;
+  --popover: #FFFFFF;
+  --popover-foreground: #201A19;
+  --muted: #F2F2F2; 
+  --muted-foreground: #655C5B; 
+  
+  --accent: #A50007; 
   --accent-foreground: #FFFFFF;
   --destructive: #BA1A1A;
   --destructive-foreground: #FFFFFF;
-  --border: #946E68; /* material.light.outline */
-  --input: #E9BCB5; /* material.light.outlineVariant */
-  --ring: #FFB4A8; /* material.light.inversePrimary / primaryFixedDim */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  
+  --border: #D0C4C2; /* material.neutral.80 */
+  --input: #B4A9A7; /* material.neutral.70 */
+  --ring: #FFB4A9; /* material.dark.primary */
+  
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
 }
 
 @theme inline {
@@ -110,23 +100,11 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 @layer base {
@@ -136,15 +114,4 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-.dark {
-  --sidebar: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }

@@ -180,7 +180,7 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-primary-background ">
       <Header />
 
-      <div className=" mx-auto px-4 pb-12 mt-8 max-w-[1500px]">
+      <div className="w-full px-85 pb-12 mt-8 ">
         {lookupError ? (
           <div className="mb-4 p-3 rounded-md bg-destructive/10 border border-destructive/30 flex items-center justify-between">
             <div className="text-sm text-destructive">{lookupError}</div>

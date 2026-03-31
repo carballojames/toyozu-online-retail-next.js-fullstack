@@ -188,12 +188,12 @@ export default function ProductDetailPage(): JSX.Element {
       <Header />
 
       {/* Breadcrumb */}
-      <div className="w-[1300px] mx-auto px-4 mt-4 mb-4">
+      <div className="w-full mx-auto px-70 mt-4 mb-4">
         <nav className="text-sm text-gray-600" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li>
               <span className="text-primary hover:underline cursor-pointer">
-                {product.category_name}
+                {product.category_name} 
               </span>
             </li>
             <li className="text-gray-500">›</li>

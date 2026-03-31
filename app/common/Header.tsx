@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Home, Search, ShoppingCart, User, Package } from "lucide-react";
-import Logo from "@/assets/toyozu-logo.png";
+import Logo from "@/assets/TL.png";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -194,43 +194,40 @@ export default function Header() {
   }, [mobileSearchOpen]);
 
   return (
-    <header className="sticky top-0 z-50 bg-surface border-b border-border shadow-sm w-full">
-      <div className="relative mx-auto w-full max-w-[1270px] px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm w-full">
+      <div className="relative mx-auto  h-14 sm:h-16 flex items-center gap-3 px-80">
         {/* Left: logo */}
-        <div className="flex items-center gap-3 w-full">
+        <div className="flex lg:basis-1/3 items-center justify-start ">
           <button
             type="button"
-            className="flex items-center gap-2 cursor-pointer"
+            className="h-full flex items-center cursor-pointer"
             onClick={() => router.push("/")}
             aria-label="Go to home"
           >
             <Image
               src={Logo}
               alt="Toyozu Logo"
-              width={56}
-              height={56}
               priority
-              className="h-10 w-10 sm:h-12 sm:w-12"
+              className="object-fill h-15 w-auto"
             />
-            <span className="font-medium text-lg italic">Davao Toyozu Inc.</span>
           </button>
         </div>
 
         {/* Center: desktop search */}
-        <div className="hidden lg:block w-full max-w-xl px-6 ">
-          <form onSubmit={onSearchSubmit} className="relative w-full">
+        <div className="hidden lg:flex lg:basis-1/3 justify-center px-6">
+          <form onSubmit={onSearchSubmit} className="relative w-full max-w-xl">
             <Input
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               placeholder="Search product name"
-              className="w-full rounded-full pr-10 border-border h-10"
+              className="w-full rounded-full pr-10 h-10 hover:bg-transparent "
             />
             <Button
               type="submit"
               variant="ghost"
               size="icon"
               aria-label="Search"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 hover:bg-transparent active:bg-transparent focus-visible:bg-transparent"
             >
               <Search className="h-5 w-5" />
             </Button>
@@ -251,7 +248,7 @@ export default function Header() {
         </div>
 
         {/* Desktop right side (icons) */}
-        <div className="hidden w-full lg:flex items-center justify-end gap-24 flex-1">
+        <div className=" lg:flex flex-1 lg:basis-1/3 flex items-center justify-end gap-20  mr-6">
           {auth.isLoggedIn && (
             <div className="relative">
               <Button

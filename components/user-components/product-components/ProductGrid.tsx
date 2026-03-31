@@ -23,7 +23,7 @@ export default function ProductGrid({
   showMoreButton = false,
   moreHref = "/products",
   category,
-  columns = 5,
+  columns = 6,
   loading = false,
 }: ProductGridProps & {
   category?: string;
@@ -54,7 +54,7 @@ export default function ProductGrid({
       : columns === 4
       ? "lg:grid-cols-4"
       : columns === 5
-      ? "lg:grid-cols-5"
+      ? "lg:grid-cols-6"
       : "lg:grid-cols-6";
 
   const normalizeImageSrc = (src: unknown): string => {
@@ -91,7 +91,7 @@ export default function ProductGrid({
     <div className="flex flex-col items-center mb-5 w-full">
       {/* Product Grid */}
       <div
-        className={`grid grid-cols-2 md:grid-cols-3 ${lgColsClass} gap-4 sm:gap-6 w-full max-w-[1270px] px-4 sm:px-0`}
+        className={`grid grid-cols-2 md:grid-cols-3 ${lgColsClass} gap-2  w-full max-w-[1270px] px-4 sm:px-0`}
       >
         {visibleProducts.map((product) => {
           const firstImage = normalizeImageSrc(
@@ -105,10 +105,10 @@ export default function ProductGrid({
               key={product.product_id}
               href={`/products/${encodeURIComponent(product.name)}`}
               onClick={handleProductClick}
-              className="group flex flex-col bg-surface rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-border overflow-hidden h-full"
+              className="group flex flex-col bg-background rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-border overflow-hidden h-full"
             >
               {/* Image */}
-              <div className="relative w-full aspect-square overflow-hidden bg-muted/50">
+              <div className="relative w-full aspect-square overflow-hidden ">
                 <Image
                   src={firstImage}
                   alt={product.name}
@@ -118,13 +118,13 @@ export default function ProductGrid({
                   unoptimized={isExternalImage}
                 />
                 {product.discount && product.discount > 0 && (
-                  <div className="absolute top-3 left-3 bg-linear-to-r from-primary to-secondary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-md">
+                  <div className="absolute top-3 left-3  text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-md">
                     -{product.discount}%
                   </div>
                 )}
                 {typeof product.quantity === "number" && product.quantity <= 0 && (
-                  <div className="absolute inset-0 bg-background/40 backdrop-blur-[2px] flex items-center justify-center">
-                    <span className="bg-background/90 text-foreground px-4 py-1.5 rounded-full font-semibold text-xs shadow-sm">
+                  <div className="absolute inset-0 bg-surface/40 backdrop-blur-[2px] flex items-center justify-center">
+                    <span className="bg-surface/90 text-surface-foreground px-4 py-1.5 rounded-full font-semibold text-xs shadow-sm">
                       Out of Stock
                     </span>
                   </div>
@@ -178,7 +178,7 @@ export default function ProductGrid({
                       </span>
                     </>
                   ) : (
-                    <span className="text-lg font-extrabold text-foreground">
+                    <span className="text-lg font-medium text-primary">
                       ₱{Number(product.selling_price).toFixed(2)}
                     </span>
                   )}
