@@ -38,33 +38,54 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const q = searchSchema.parse(url.searchParams.get("q") ?? undefined);
+    const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
+    const pageSize = Math.min(200, Math.max(1, parseInt(url.searchParams.get("pageSize") ?? "10", 10) || 10));
+    const skip = (page - 1) * pageSize;
 
-    const users = await prisma.user_employee.findMany({
-      where: q
-        ? {
-            OR: [
-              { username: { contains: q, mode: "insensitive" } },
-              { user_name: { contains: q, mode: "insensitive" } },
-              { email: { contains: q, mode: "insensitive" } },
-            ],
-          }
-        : undefined,
-      select: {
-        user_id: true,
-        user_name: true,
-        username: true,
-        email: true,
-        mobile_phone: true,
-        role_id: true,
-        is_superuser: true,
-        contact_type: true,
-        last_login: true,
+    const where = q
+      ? {
+          OR: [
+            { username: { contains: q, mode: "insensitive" as const } },
+            { user_name: { contains: q, mode: "insensitive" as const } },
+            { email: { contains: q, mode: "insensitive" as const } },
+          ],
+        }
+      : undefined;
+
+    const [users, total] = await prisma.$transaction([
+      prisma.user_employee.findMany({
+        where,
+        select: {
+          user_id: true,
+          user_name: true,
+          username: true,
+          email: true,
+          mobile_phone: true,
+          role_id: true,
+          is_superuser: true,
+          contact_type: true,
+          last_login: true,
+        },
+        orderBy: { user_id: "desc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.user_employee.count({ where }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    return NextResponse.json({
+      data: users,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
       },
-      orderBy: { user_id: "desc" },
-      take: 200,
     });
-
-    return NextResponse.json({ data: users });
   } catch {
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 });
   }

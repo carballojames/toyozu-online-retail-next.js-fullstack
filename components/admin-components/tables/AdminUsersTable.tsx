@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -22,6 +23,11 @@ export type AdminUserRow = {
 
 type Props = {
   users: AdminUserRow[];
+  isLoading?: boolean;
+  currentPage?: number;
+  totalPages?: number;
+  totalItems?: number;
+  onPageChange?: (page: number) => void;
   onRowClick: (userId: number) => void;
 };
 
@@ -33,9 +39,17 @@ function roleLabel(roleId: number): string {
   return String(roleId);
 }
 
-export default function UsersTable({ users, onRowClick }: Props) {
+export default function UsersTable({
+  users,
+  isLoading = false,
+  currentPage = 1,
+  totalPages = 1,
+  totalItems = 0,
+  onPageChange,
+  onRowClick,
+}: Props) {
   return (
-    <div className="">
+    <div className="space-y-4">
       <Table>
         <TableHeader>
           <TableRow>
@@ -62,8 +76,49 @@ export default function UsersTable({ users, onRowClick }: Props) {
               <TableCell>{roleLabel(u.role_id)}</TableCell>
             </TableRow>
           ))}
+          {!isLoading && users.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
+                No users found.
+              </TableCell>
+            </TableRow>
+          )}
+          {isLoading && (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
+                Loading users...
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
+
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-sm text-muted-foreground">
+          Page {currentPage} of {Math.max(1, totalPages)}
+          {totalItems > 0 ? ` • ${totalItems} users` : ""}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange?.(currentPage - 1)}
+            disabled={currentPage <= 1 || isLoading}
+          >
+            Previous
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange?.(currentPage + 1)}
+            disabled={currentPage >= totalPages || isLoading}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

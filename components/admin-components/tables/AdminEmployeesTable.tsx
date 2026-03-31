@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import type { Employee } from "../../../admin-pages/admin-dashboard.types";
+import type { Employee } from "@/pages/admin-pages/admin-dashboard.types";
 
 type Props = {
   employees: Employee[];

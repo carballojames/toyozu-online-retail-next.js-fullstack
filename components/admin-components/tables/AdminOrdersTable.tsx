@@ -11,8 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import type { AdminOrder } from "../../../admin-pages/admin-dashboard.types";
-import { formatPhp, statusVariant } from "../../../admin-pages/admin-dashboard.utils";
+import type { AdminOrder } from "@/pages/admin-pages/admin-dashboard.types";
+import { formatPhp, statusVariant } from "@/pages/admin-pages/admin-dashboard.utils";
 
 type Props = {
   orders: AdminOrder[];

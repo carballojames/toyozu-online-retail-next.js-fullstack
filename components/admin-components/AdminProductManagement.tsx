@@ -9,18 +9,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import ProductsTable from "./tables/AdminProductsTable";
-import type { AdminProduct } from "../../admin-pages/admin-dashboard.types";
+import type { AdminProduct } from "@/pages/admin-pages/admin-dashboard.types";
 
 export default function ProductPage({
     productQuery,
     onProductQueryChange,
     products,
+    isProductsLoading,
+    currentPage,
+    totalPages,
+    totalItems,
+    onPageChange,
     onAddProduct,
     onEditProduct,
 }: {
     productQuery: string;
     onProductQueryChange: (next: string) => void;
     products: AdminProduct[];
+    isProductsLoading: boolean;
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    onPageChange: (page: number) => void;
     onAddProduct: () => void;
     onEditProduct: (id: string) => void;
 }): ReactNode {
@@ -56,6 +66,11 @@ export default function ProductPage({
                 </div>
                 <ProductsTable
                     products={products}
+                    isLoading={isProductsLoading}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    onPageChange={onPageChange}
                     onEdit={(id) => {
                         onEditProduct(id);
                     }}

@@ -14,8 +14,8 @@ import {
   useAdminOrdersQuery,
   useUpdateAdminOrderMutation,
 } from "@/hooks/admin/use-admin-orders";
-import { statusVariant } from "../../admin-pages/admin-dashboard.utils";
-import type { AdminOrder } from "@/admin-pages/admin-dashboard.types";
+import { statusVariant } from "@/pages/admin-pages/admin-dashboard.utils";
+import type { AdminOrder } from "@/pages/admin-pages/admin-dashboard.types";
 
 function formatPhp(value: number): string {
   return `₱${Number(value ?? 0).toLocaleString()}`;

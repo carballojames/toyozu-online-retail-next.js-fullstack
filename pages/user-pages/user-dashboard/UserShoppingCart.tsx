@@ -229,7 +229,7 @@ export default function ShoppingCart() {
   }, [cartItems, sort]);
 
   return (
-    <div className="min-h-screen bg-primary-background">
+    <div className="min-h-screen bg-surface">
       <Header />
 
       <div className="mt-8 w-full px-85">
@@ -240,7 +240,7 @@ export default function ShoppingCart() {
         )}
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h1 className="text-3xl font-bold text-secondary">
+          <h1 className="text-3xl font-medium text-primary">
             <span>Shopping Cart</span>
           </h1>
 
@@ -260,7 +260,7 @@ export default function ShoppingCart() {
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_auto]">
-          <div className="bg-surface text-surface-foreground rounded-xl shadow-sm border border-border">
+          <div className="bg-background text-surface-foreground rounded-xl shadow-sm border border-border">
             <div className="hidden lg:block">
               <Table>
                 <TableHeader>
@@ -371,7 +371,7 @@ export default function ShoppingCart() {
                 const subtotal = (Number(item.selling_price) * quantity).toFixed(2);
 
                 return (
-                  <div key={item.product} className="p-3 hover:bg-muted/50 transition">
+                  <div key={item.product} className="p-3 hover:bg-background transition">
                     <div className="flex items-start gap-3">
                       <div className="shrink-0 pt-1 flex items-center justify-center my-auto">
                         <input
@@ -382,7 +382,7 @@ export default function ShoppingCart() {
                         />
                       </div>
 
-                      <div className="flex-1 relative bg-transparent">
+                      <div className="flex-1 relative bg-background rounded-lg p-3">
                         <div className="absolute top-2 right-2">
                           <Button
                             onClick={() => handleDelete(item.product)}
@@ -454,7 +454,7 @@ export default function ShoppingCart() {
               })}
             </div>
 
-            <div className="flex items-center gap-3 px-6 py-4 border-t border-border bg-muted/30 rounded-b-xl">
+            <div className="flex items-center gap-3 px-6 py-4 border-t border-border bg-background rounded-b-xl">
               <input
                 type="checkbox"
                 checked={cartItems.length > 0 && cartItems.every((item) => selectedItems[item.product])}
@@ -475,7 +475,7 @@ export default function ShoppingCart() {
           </div>
 
           <div className="hidden lg:block h-fit w-fit lg:sticky lg:top-6">
-            <div className="bg-surface text-surface-foreground rounded-xl shadow-sm border border-border p-6">
+            <div className="bg-background text-surface-foreground rounded-xl shadow-sm border border-border p-6">
               <h3 className="text-lg font-semibold mb-4 text-foreground">Order Summary</h3>
 
               <div className="space-y-3 mb-6">
@@ -498,7 +498,7 @@ export default function ShoppingCart() {
 
         <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 p-3">
           <div className="max-w-[1500px] mx-auto px-4">
-            <div className="bg-surface border-t border-border rounded-t-xl shadow-lg p-3 flex items-center gap-3">
+            <div className="bg-background border-t border-border rounded-t-xl shadow-lg p-3 flex items-center gap-3">
               <div className="flex-1">
                 <div className="text-sm text-muted-foreground">Subtotal ({selectedCount} items)</div>
                 <div className="font-semibold text-foreground">₱{selectedTotal.toFixed(2)}</div>

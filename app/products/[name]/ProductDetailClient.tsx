@@ -161,7 +161,7 @@ export default function ProductDetailClient({
   };
 
   return (
-    <div className="min-h-screen bg-primary-foreground text-foreground">
+    <div className="min-h-screen bg-surface text-foreground">
       <Header />
       {/* Breadcrumb */}
       <div className="mx-auto w-full px-85 mt-4 sm:mt-6 mb-3 sm:mb-4">
@@ -193,7 +193,7 @@ export default function ProductDetailClient({
       </div>
 
       <div className="mx-auto w-full px-85 sm:px-85 pb-10 sm:pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-12 bg-surface p-4 sm:p-6 rounded-lg shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-12 bg-background p-4 sm:p-6 rounded-lg shadow-sm">
           {/* Left: Images */}
           <div className="space-y-4">
             <div className="relative overflow-hidden rounded-lg flex items-center justify-center w-full max-w-[520px] mx-auto aspect-5/4">
@@ -336,7 +336,7 @@ export default function ProductDetailClient({
         </div>
 
         {/* Tabs: description / specifications */}
-        <div className="mt-6 bg-surface p-4 sm:p-8 rounded-lg shadow-sm">
+        <div className="mt-6 bg-background p-4 sm:p-8 rounded-lg shadow-sm">
           <nav className="flex gap-6 sm:gap-8 overflow-x-auto">
             {(["description", "specifications"] as const).map((tab) => (
               <button
@@ -353,7 +353,7 @@ export default function ProductDetailClient({
             ))}
           </nav>
 
-          <div className="py-8 bg-surface    rounded-lg">
+          <div className="py-8 bg-background    rounded-lg">
             {activeTab === "description" && (
               <div className="prose max-w-none">
                 <h3 className="text-xl font-semibold mb-4 text-foreground">

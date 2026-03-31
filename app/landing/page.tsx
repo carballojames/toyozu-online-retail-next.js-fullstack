@@ -1,4 +1,4 @@
-import Landing from "@/user-pages/product/Landing";
+import Landing from "@/pages/user-pages/product/Landing";
 import { prisma } from "@/lib/prisma";
 import type { ProductCard } from "@/app/products/[name]/types";
 

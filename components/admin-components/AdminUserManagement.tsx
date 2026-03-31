@@ -13,6 +13,10 @@ export default function UserPage({
   isUsersLoading,
   usersError,
   users,
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
   onSearch,
   onReset,
   onRowClick,
@@ -23,6 +27,10 @@ export default function UserPage({
   isUsersLoading: boolean;
   usersError: string;
   users: AdminUserRow[];
+  currentPage?: number;
+  totalPages?: number;
+  totalItems?: number;
+  onPageChange?: (page: number) => void;
   onSearch: () => void;
   onReset: () => void;
   onRowClick: (userId: number) => void;
@@ -62,11 +70,15 @@ export default function UserPage({
               </Button>
             </div>
           </div>
-        {isUsersLoading ? (
-          <div className="text-sm text-muted-foreground">Loading users…</div>
-        ) : (
-          <UsersTable users={users} onRowClick={onRowClick} />
-        )}
+        <UsersTable
+          users={users}
+          isLoading={isUsersLoading}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={onPageChange}
+          onRowClick={onRowClick}
+        />
       </div>
     </>
   );

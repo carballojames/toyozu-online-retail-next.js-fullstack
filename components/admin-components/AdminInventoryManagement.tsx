@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,22 +10,26 @@ import type { AdminProduct } from "../../admin-pages/admin-dashboard.types";
 
 export default function InventoryPage({
   products,
+  isLoading = false,
+  currentPage = 1,
+  totalPages = 1,
+  totalItems = 0,
+  query = "",
+  onQueryChange,
+  onPageChange,
   onRestock,
 }: {
   products: AdminProduct[];
+  isLoading?: boolean;
+  currentPage?: number;
+  totalPages?: number;
+  totalItems?: number;
+  query?: string;
+  onQueryChange?: (q: string) => void;
+  onPageChange?: (page: number) => void;
   onRestock: () => void;
 }): ReactNode {
-  const [draftQuery, setDraftQuery] = useState<string>("");
-  const [appliedQuery, setAppliedQuery] = useState<string>("");
-
-  const filtered = useMemo(() => {
-    const q = appliedQuery.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter((p) => {
-      const hay = `${p.id} ${p.name} ${p.brand} ${p.category}`.toLowerCase();
-      return hay.includes(q);
-    });
-  }, [appliedQuery, products]);
+  const [draftQuery, setDraftQuery] = useState<string>(query);
 
   return (
     <>
@@ -43,7 +47,7 @@ export default function InventoryPage({
           />
           <Button
             variant="outline"
-            onClick={() => setAppliedQuery(draftQuery)}
+            onClick={() => onQueryChange?.(draftQuery)}
           >
             Search
           </Button>
@@ -51,9 +55,9 @@ export default function InventoryPage({
             variant="outline"
             onClick={() => {
               setDraftQuery("");
-              setAppliedQuery("");
+              onQueryChange?.("");
             }}
-            disabled={!draftQuery && !appliedQuery}
+            disabled={!draftQuery && !query}
           >
             Reset
           </Button>
@@ -63,7 +67,14 @@ export default function InventoryPage({
         </div>
       </div>
       <div className="bg-surface border border-border rounded-xl p-4">
-        <InventoryTable products={filtered} />
+        <InventoryTable
+          products={products}
+          isLoading={isLoading}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={onPageChange}
+        />
       </div>
     </>
   );

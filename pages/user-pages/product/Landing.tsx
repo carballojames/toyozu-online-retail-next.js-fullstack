@@ -263,42 +263,41 @@ export default function Landing({
               </div>
             </div>
           </div>
-            <section className="py-12 px-4 sm:px-6 lg:px-15 max-w-[1320px] mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-              {features.map(({ icon: Icon, title, description }) => (
-                <div
-                  key={title}
-                  className="bg-background rounded-lg shadow-md p-6 flex flex-col items-center gap-3"
-                >
-                  <Icon className="w-10 h-10 text-primary" />
-                  <h3 className="text-lg font-semibold text-primary">{title}</h3>
-                  <p className="text-sm text-muted-foreground ">{description}</p>
-                </div>
-              ))}
-            </div>
+            <section className="py-12 px-4 ">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                {features.map(({ icon: Icon, title, description }) => (
+                  <div
+                    key={title}
+                    className="bg-background rounded-lg shadow-md p-6 flex flex-col items-center gap-3"
+                  >
+                    <Icon className="w-10 h-10 text-primary" />
+                    <h3 className="text-lg font-semibold text-primary">{title}</h3>
+                    <p className="text-sm text-muted-foreground ">{description}</p>
+                  </div>
+                ))}
+              </div>
           </section>
         </div>
       </section>
-   
 
-      <section className="px-70">
+        <section className="px-70">
         <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-15">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">Categories</h2>
+          <div className="py-4 text-center">
+            <h2 className="text-2xl font-medium text-foreground tracking-tight">Categories</h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+          <div className="grid grid-cols-7 gap-4 ">
             {displayedCategories.map((category) => {
               return (
                 <Link
                   key={category.id}
                   href={`/products/category/${encodeURIComponent(category.name)}`}
-                  className="group relative w-full px-4 py-6 rounded-2xl flex items-center justify-center font-semibold hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-lg bg-surface border border-border overflow-hidden"
+                  className="group relative w-full px-4 py-3 rounded-md flex items-center justify-center font-semibold hover:-translate-y-1 transition-all duration-300 shadow-sm hover:shadow-lg bg-background border border-border overflow-hidden"
                 >
                   {/* Subtle gradient overlay on hover */}
                   <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   
-                  <span className="relative z-10 text-sm sm:text-base text-center text-foreground group-hover:text-primary transition-colors duration-300">
+                  <span className="relative text-sm z-10 text-center text-foreground group-hover:text-primary transition-colors duration-300">
                     {category.name}
                   </span>
                 </Link>
@@ -318,68 +317,10 @@ export default function Landing({
         </div>
       </section>
 
-      <section id="brands" className="px-70 py-12">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-15">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground tracking-tight">Trusted Brands</h2>
-          </div>
-
-          <Carousel opts={{ align: "start", loop: true }} className="w-full max-w-5xl lg:max-w-7xl mx-auto relative">
-            <CarouselContent className="-ml-4 sm:-ml-6">
-              {(loadingBrands ? [] : brands).map((brand) => (
-                <CarouselItem
-                  key={brand.name}
-                  className="pl-4 sm:pl-6 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
-                >
-                  <div
-                    onClick={() => handleBrandClick(brand.name)}
-                    className="group cursor-pointer p-6 sm:p-8 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center justify-center bg-surface border border-border h-full min-h-[140px] relative overflow-hidden"
-                  >
-                    {/* Subtle accent line on hover */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-primary to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
-                    <div className="text-center relative z-10">
-                      <div className={`text-xl sm:text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors duration-300 ${getBrandWeightClass(brand.productCount)}`}>
-                        {brand.name}
-                      </div>
-                      <div className="inline-flex items-center justify-center mt-3 px-3 py-1 rounded-full bg-muted text-xs font-medium text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-300">
-                        {brand.productCount} Products
-                      </div>
-                    </div>
-                  </div>
-                </CarouselItem>
-              ))}
-              {loadingBrands && (
-                <CarouselItem className="pl-4 sm:pl-6 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                  <div className="p-8 rounded-2xl bg-surface border border-border h-full min-h-[140px] flex items-center justify-center">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin" />
-                      <div className="text-sm font-medium text-muted-foreground">Loading brands...</div>
-                    </div>
-                  </div>
-                </CarouselItem>
-              )}
-              {!loadingBrands && brands.length === 0 && (
-                <CarouselItem className="pl-4 sm:pl-6 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                  <div className="p-8 rounded-2xl bg-surface border border-border h-full min-h-[140px] flex items-center justify-center">
-                    <div className="text-sm font-medium text-muted-foreground">No brands found.</div>
-                  </div>
-                </CarouselItem>
-              )}
-            </CarouselContent>
-
-            <div className="hidden sm:block">
-              <CarouselPrevious className="bg-surface border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors shadow-sm" />
-              <CarouselNext className="bg-surface border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors shadow-sm" />
-            </div>
-          </Carousel>
-        </div>
-      </section>
-
       <section className="px-70 py-12">
         <div className="max-w-[1320px] w-full mx-auto flex justify-center items-center flex-col px-4 sm:px-6 lg:px-15">
-          <div className="w-full h-12 bg-surface rounded-lg shadow-md mb-4 border-b-2 border-border flex justify-center items-center">
-            <h2 className="text-2xl font-bold italic text-secondary text-center ">Explore </h2>
+          <div className="py-4">
+            <h2 className="text-2xl font-medium italic  text-center ">Explore </h2>
           </div>
           
           <ProductGrid initialProducts={initialProducts} showMoreButton={true} columns={5} />

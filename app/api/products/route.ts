@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 100;
+const MAX_PAGE_SIZE = 200;
+
 function isLocalDatabaseUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
@@ -11,7 +15,7 @@ function isLocalDatabaseUrl(url: string): boolean {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl || (process.env.VERCEL && isLocalDatabaseUrl(databaseUrl))) {
@@ -24,7 +28,34 @@ export async function GET() {
       );
     }
 
+    const { searchParams } = new URL(request.url);
+    const rawPage = Number(searchParams.get("page") ?? DEFAULT_PAGE);
+    const rawPageSize = Number(searchParams.get("pageSize") ?? DEFAULT_PAGE_SIZE);
+    const q = (searchParams.get("q") ?? "").trim();
+
+    const page = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : DEFAULT_PAGE;
+    const pageSize = Number.isFinite(rawPageSize) && rawPageSize > 0
+      ? Math.min(Math.floor(rawPageSize), MAX_PAGE_SIZE)
+      : DEFAULT_PAGE_SIZE;
+    const numericQ = Number(q);
+
+    const where = q
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" as const } },
+            { brand: { is: { name: { contains: q, mode: "insensitive" as const } } } },
+            { category: { is: { name: { contains: q, mode: "insensitive" as const } } } },
+            ...(Number.isFinite(numericQ) && numericQ > 0
+              ? [{ product_id: Math.floor(numericQ) }]
+              : []),
+          ],
+        }
+      : undefined;
+
+    const total = await prisma.product.count({ where });
+
     const products = await prisma.product.findMany({
+      where,
       select: {
         product_id: true,
         name: true,
@@ -41,7 +72,8 @@ export async function GET() {
         },
       },
       orderBy: { product_id: "desc" },
-      take: 100,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
 
     const withUrls = products.map((p) => {
@@ -69,7 +101,19 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ data: withUrls });
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+    return NextResponse.json({
+      data: withUrls,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
   } catch (err) {
     return NextResponse.json(
       { error: "Failed to fetch products" },

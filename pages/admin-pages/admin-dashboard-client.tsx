@@ -1,32 +1,34 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart3, Car, Package, ShoppingBag, UserRoundCog, Wrench } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import AdminHeader from "../components/admin-components/common/AdminHeader";
+import AdminHeader from "@/components/admin-components/common/AdminHeader";
 import { Button } from "@/components/ui/button";
 
-import AddProductModal from "../components/admin-components/modals/AddProductDialog";
-import AdminAside from "../components/admin-components/common/AdminAside";
-import EditProductModal from "../components/admin-components/modals/EditProductDialog";
-import EditUserModal from "../components/admin-components/modals/EditUserDialog";
+import AddProductModal from "@/components/admin-components/modals/AddProductDialog";
+import AdminAside from "@/components/admin-components/common/AdminAside";
+import EditProductModal from "@/components/admin-components/modals/EditProductDialog";
+import EditUserModal from "@/components/admin-components/modals/EditUserDialog";
 
-import InventoryPage from "../components/admin-components/AdminInventoryManagement";
-import OrdersPage from "../components/admin-components/AdminOrdersManagement";
-import ProductPage from "../components/admin-components/AdminProductManagement";
-import UserPage from "../components/admin-components/AdminUserManagement";
-import CarCompatibilityPage from "../components/admin-components/AdminCarCompatibilityManagement";
-import OverviewPage from "../components/admin-components/AdminOverviewManagement";
-import SalesTrackerPage from "../components/admin-components/AdminSalesTrackerManagement";
-import SupplyTrackerPage from "../components/admin-components/AdminSupplyTrackerManagement";
-import { ADMIN_PRODUCTS_QUERY_KEY, useAdminProductsQuery } from "@/hooks/admin/use-admin-products-query";
+import InventoryPage from "@/components/admin-components/AdminInventoryManagement";
+import OrdersPage from "@/components/admin-components/AdminOrdersManagement";
+import ProductPage from "@/components/admin-components/AdminProductManagement";
+import UserPage from "@/components/admin-components/AdminUserManagement";
+import CarCompatibilityPage from "@/components/admin-components/AdminCarCompatibilityManagement";
+import OverviewPage from "@/components/admin-components/AdminOverviewManagement";
+import SalesTrackerPage from "@/components/admin-components/AdminSalesTrackerManagement";
+import SupplyTrackerPage from "@/components/admin-components/AdminSupplyTrackerManagement";
+import {
+  ADMIN_PRODUCTS_QUERY_KEY,
+  useAdminProductsPageQuery,
+} from "@/hooks/admin/use-admin-products-query";
 import { useAdminRole } from "@/hooks/admin/use-admin-role";
-import { ADMIN_USERS_QUERY_KEY, useAdminUsersQuery } from "@/hooks/admin/use-admin-users-query";
+import { ADMIN_USERS_QUERY_KEY, useAdminUsersPageQuery } from "@/hooks/admin/use-admin-users-query";
 
 import type {
-  AdminProduct,
   AdminTabId,
   NavItem,
   Permission,
@@ -128,34 +130,73 @@ export default function AdminDashboardClient({
   const [isEditProductOpen, setIsEditProductOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [productQuery, setProductQuery] = useState<string>("");
+  const [productPage, setProductPage] = useState<number>(1);
+  const [inventoryQuery, setInventoryQuery] = useState<string>("");
+  const [inventoryPage, setInventoryPage] = useState<number>(1);
 
   const [userQuery, setUserQuery] = useState<string>("");
   const [appliedUserQuery, setAppliedUserQuery] = useState<string>("");
+  const [userPage, setUserPage] = useState<number>(1);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
 
   const canManageUsers = roleId !== null && hasPermission(roleId, "MANAGE_USERS");
-  const productsQuery = useAdminProductsQuery();
-  const usersQuery = useAdminUsersQuery(appliedUserQuery, canManageUsers);
+  const inventoryPageQuery = useAdminProductsPageQuery({
+    page: inventoryPage,
+    pageSize: 10,
+    query: inventoryQuery,
+    enabled: activeTab === "inventory",
+  });
+  const pagedProductsQuery = useAdminProductsPageQuery({
+    page: productPage,
+    pageSize: 10,
+    query: productQuery,
+    enabled: activeTab === "stocks",
+  });
+  const usersQuery = useAdminUsersPageQuery({
+    page: userPage,
+    pageSize: 10,
+    query: appliedUserQuery,
+    enabled: canManageUsers,
+  });
 
-  const products = productsQuery.data ?? [];
-  const users = usersQuery.data ?? [];
+  const inventoryProducts = inventoryPageQuery.data?.products ?? [];
+  const inventoryMeta = inventoryPageQuery.data?.meta ?? {
+    page: inventoryPage,
+    pageSize: 10,
+    total: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  };
+  const isInventoryLoading = inventoryPageQuery.isLoading || inventoryPageQuery.isFetching;
+  const pagedProducts = pagedProductsQuery.data?.products ?? [];
+  const pagedProductsMeta = pagedProductsQuery.data?.meta ?? {
+    page: productPage,
+    pageSize: 10,
+    total: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  };
+  const users = usersQuery.data?.users ?? [];
+  const usersMeta = usersQuery.data?.meta ?? {
+    page: userPage,
+    pageSize: 10,
+    total: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  };
   const usersError = usersQuery.error instanceof Error ? usersQuery.error.message : "";
   const isUsersLoading = usersQuery.isLoading || usersQuery.isFetching;
+  const isProductsLoading = pagedProductsQuery.isLoading || pagedProductsQuery.isFetching;
 
   // TODO: Gate this route with real auth/authorization.
   const allowed = true;
 
   // Show all navigation tabs for all users (no role-based filtering)
   const navItems = NAV_ITEMS;
-
-  const filteredProducts = useMemo(() => {
-    const q = productQuery.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter((p) =>
-      [p.id, p.name, p.brand, p.category].some((x) => x.toLowerCase().includes(q))
-    );
-  }, [productQuery, products]);
 
   if (roleId === null) {
     return (
@@ -205,15 +246,8 @@ export default function AdminDashboardClient({
       <AddProductModal
         open={isAddProductOpen}
         onOpenChange={setIsAddProductOpen}
-        onConfirm={(createdProducts) => {
-          queryClient.setQueryData<AdminProduct[]>(ADMIN_PRODUCTS_QUERY_KEY, (previous) => {
-            const current = previous ?? [];
-            const byId = new Map(current.map((product) => [product.id, product]));
-            for (const product of createdProducts) {
-              byId.set(product.id, product);
-            }
-            return Array.from(byId.values());
-          });
+        onConfirm={() => {
+          setProductPage(1);
           void queryClient.invalidateQueries({ queryKey: ADMIN_PRODUCTS_QUERY_KEY });
         }}
       />
@@ -221,7 +255,7 @@ export default function AdminDashboardClient({
       <EditProductModal
         open={isEditProductOpen}
         productId={editingProductId}
-        onOpenChange={(nextOpen) => {
+        onOpenChange={(nextOpen: boolean) => {
           setIsEditProductOpen(nextOpen);
           if (!nextOpen) setEditingProductId(null);
         }}
@@ -233,7 +267,7 @@ export default function AdminDashboardClient({
       <EditUserModal
         open={isEditUserOpen}
         userId={editingUserId}
-        onOpenChange={(nextOpen) => {
+        onOpenChange={(nextOpen: boolean) => {
           setIsEditUserOpen(nextOpen);
           if (!nextOpen) setEditingUserId(null);
         }}
@@ -250,8 +284,16 @@ export default function AdminDashboardClient({
           {activeTab === "stocks" ? (
             <ProductPage
               productQuery={productQuery}
-              onProductQueryChange={setProductQuery}
-              products={filteredProducts}
+              onProductQueryChange={(next) => {
+                setProductQuery(next);
+                setProductPage(1);
+              }}
+              products={pagedProducts}
+              isProductsLoading={isProductsLoading}
+              currentPage={pagedProductsMeta.page}
+              totalPages={pagedProductsMeta.totalPages}
+              totalItems={pagedProductsMeta.total}
+              onPageChange={setProductPage}
               onAddProduct={() => setIsAddProductOpen(true)}
               onEditProduct={(id) => {
                 setEditingProductId(id);
@@ -262,7 +304,17 @@ export default function AdminDashboardClient({
 
           {activeTab === "inventory" ? (
             <InventoryPage
-              products={products}
+              products={inventoryProducts}
+              isLoading={isInventoryLoading}
+              currentPage={inventoryMeta.page}
+              totalPages={inventoryMeta.totalPages}
+              totalItems={inventoryMeta.total}
+              query={inventoryQuery}
+              onQueryChange={(q) => {
+                setInventoryQuery(q);
+                setInventoryPage(1);
+              }}
+              onPageChange={setInventoryPage}
               onRestock={() => {
                 void queryClient.invalidateQueries({ queryKey: ADMIN_PRODUCTS_QUERY_KEY });
               }}
@@ -277,13 +329,19 @@ export default function AdminDashboardClient({
               isUsersLoading={isUsersLoading}
               usersError={usersError}
               users={users}
+              currentPage={usersMeta.page}
+              totalPages={usersMeta.totalPages}
+              totalItems={usersMeta.total}
+              onPageChange={setUserPage}
               onSearch={() => {
+                setUserPage(1);
                 setAppliedUserQuery(userQuery);
                 void queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY });
               }}
               onReset={() => {
                 setUserQuery("");
                 setAppliedUserQuery("");
+                setUserPage(1);
                 void queryClient.invalidateQueries({ queryKey: ADMIN_USERS_QUERY_KEY });
               }}
               onRowClick={(userId) => {

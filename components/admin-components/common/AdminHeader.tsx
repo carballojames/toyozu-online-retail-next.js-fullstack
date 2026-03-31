@@ -48,7 +48,7 @@ export default function AdminHeader({ onSearchClick }: Props) {
 	}, [roleId, username]);
 
 	return (
-		<header className="sticky top-0 z-50 w-full bg-background border-b border-border">
+		<header className="sticky top-0 z-50 w-full bg-surface border-b border-border">
 			<div className="h-16 px-6 flex items-center gap-4">
 				<button
 					type="button"
@@ -59,10 +59,8 @@ export default function AdminHeader({ onSearchClick }: Props) {
 					<Image src={Logo} alt="Toyozu Logo" width={44} height={44} priority />
 				</button>
 
-				<div className="flex items-center gap-3">
-					<Badge variant="secondary" className="max-w-[260px] py-2 truncate">
-						{profileText}
-					</Badge>
+				<div className="flex items-center gap-3 text-primary text-sm font-medium">
+					{profileText}
 				</div>
 			</div>
 		</header>

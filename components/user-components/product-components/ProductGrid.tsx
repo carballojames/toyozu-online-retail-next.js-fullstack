@@ -137,7 +137,7 @@ export default function ProductGrid({
                   {product.brand_name}
                 </div>
                 <h3
-                  className="font-semibold text-foreground text-sm line-clamp-2 leading-snug group-hover:text-primary transition-colors h-10"
+                  className="font-medium text-foreground text-sm line-clamp-2 leading-snug group-hover:text-primary transition-colors h-10"
                   title={product.name}
                 >
                   {product.name}
@@ -178,7 +178,7 @@ export default function ProductGrid({
                       </span>
                     </>
                   ) : (
-                    <span className="text-lg font-medium text-primary">
+                    <span className="  text-primary">
                       ₱{Number(product.selling_price).toFixed(2)}
                     </span>
                   )}

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import UserShoppingCart from "@/user-pages/user-dashboard/UserShoppingCart";
+import UserShoppingCart from "@/pages/user-pages/user-dashboard/UserShoppingCart";
 
 export default function CartPage() {
   return (

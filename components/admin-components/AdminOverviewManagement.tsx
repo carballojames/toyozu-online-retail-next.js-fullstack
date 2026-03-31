@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/table";
 import { useAdminOverviewQuery, type DashboardRange } from "@/hooks/admin/use-admin-overview";
 
-import { statusVariant } from "../../admin-pages/admin-dashboard.utils";
-import type { AdminOrderStatus } from "@/admin-pages/admin-dashboard.types";
+import { statusVariant } from "@/pages/admin-pages/admin-dashboard.utils";
+import type { AdminOrderStatus } from "@/pages/admin-pages/admin-dashboard.types";
 
 const DASHBOARD_RANGES = ["today", "7d", "30d", "all"] as const;
 

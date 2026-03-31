@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import {PanelRightClose , PanelRightOpen  } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-import type { AdminTabId, NavItem } from "../../../admin-pages/admin-dashboard.types";
+import type { AdminTabId, NavItem } from "@/pages/admin-pages/admin-dashboard.types";
 
 function routeForTab(id: AdminTabId): string {
   switch (id) {
@@ -41,6 +44,7 @@ export default function AdminAside({
   onTabChange: (tab: AdminTabId) => void;
 }): ReactNode {
   const pathname = usePathname();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const findItem = (id: AdminTabId) => items.find((it) => it.id === id);
 
@@ -62,35 +66,53 @@ export default function AdminAside({
         <Link
           href={href}
           onClick={() => onTabChange(item.id)}
-          className={`w-full flex items-center gap-3 px-4 py-2 rounded-2xl text-left transition-colors font-medium ${
+          className={`w-full flex items-center ${isCollapsed ? "justify-center px-0" : "gap-3 px-4"} py-2 rounded-2xl text-left transition-all duration-300 font-medium overflow-hidden ${
             isActive ? "bg-secondary text-primary-foreground" : "text-foreground hover:bg-muted"
           }`}
+          title={isCollapsed ? item.label : undefined}
           aria-current={isActive ? "page" : undefined}
         >
-          <span className="text-lg">{item.icon}</span>
-          <span>{item.label}</span>
+          <span className="text-lg shrink-0 flex items-center justify-center">{item.icon}</span>
+          <span className={`truncate transition-all duration-300 ${isCollapsed ? "w-0 opacity-0 ml-0" : "w-auto opacity-100"}`}>
+            {item.label}
+          </span>
         </Link>
       </li>
     );
   };
 
   return (
-    <aside className="w-64 shrink-0 bg-surface border-r border-border min-h-screen sticky top-0">
-      <nav className="p-6">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold italic text-foreground text-center">Admin Dashboard</h2>
+    <aside className={`shrink-0 bg-surface border-r border-border min-h-screen sticky top-0 transition-[width] duration-300 ease-in-out ${isCollapsed ? "w-20" : "w-64"}`}>
+      <nav className={`py-6 flex flex-col h-full overflow-x-hidden ${isCollapsed ? "px-2" : "px-6"}`}>
+        <div className={`flex items-center mb-6 overflow-hidden ${isCollapsed ? "justify-center" : "justify-between"}`}>
+          <div className={`flex items-center gap-2 truncate transition-all duration-300 ${isCollapsed ? "w-0 opacity-0" : "opacity-100"}`}>
+            <h2 className="text-base font-semibold text-foreground truncate">
+              {title}
+            </h2>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="shrink-0"
+            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {isCollapsed ? <PanelRightClose  className="h-5 w-5" /> : <PanelRightOpen  className="h-5 w-5" />}
+          </Button>
         </div>
 
-        <div className="mb-3">
-          <Label className="text-sm font-semibold text-muted-foreground">General</Label>
+        <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "mb-0 h-0 opacity-0" : "mb-3 h-6 opacity-100"}`}>
+          <Label className="text-sm font-medium text-muted-foreground">{isCollapsed ? "" : "General"}</Label>
         </div>
 
         <ul className="space-y-2">
           {findItem("overview") ? renderItem(findItem("overview") as NavItem) : null}
         </ul>
 
-        <div className="mt-6 mb-2">
-          <Label className="text-xs font-medium text-muted-foreground">Product </Label>
+        {isCollapsed && <div className="mt-4 mb-2 border-t border-border mx-2" />}
+
+        <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "mb-0 mt-0 h-0 opacity-0" : "mt-6 mb-2 h-6 opacity-100"}`}>
+          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{isCollapsed ? "" : "Product"}</Label>
         </div>
 
         <ul className="space-y-2">
@@ -100,8 +122,10 @@ export default function AdminAside({
           })}
         </ul>
 
-        <div className="mt-6 mb-2">
-          <Label className="text-xs font-medium text-muted-foreground"> Admin</Label>
+        {isCollapsed && <div className="mt-4 mb-2 border-t border-border mx-2" />}
+
+        <div className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "mb-0 mt-0 h-0 opacity-0" : "mt-6 mb-2 h-6 opacity-100"}`}>
+          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{isCollapsed ? "" : "Admin"}</Label>
         </div>
 
         <ul className="space-y-2">
